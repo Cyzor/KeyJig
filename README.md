@@ -1,16 +1,16 @@
-# Repository for SVG2Keynote GUI
+# Repository for VectorImporter GUI
 
 [Jonathan Lamperth](https://www.linkedin.com/in/jonathan-lamperth-7059b418a) and [Christian Holz](https://www.christianholz.net)<br/>
 [Sensing, Interaction & Perception Lab](https://siplab.org) <br/>
 Department of Computer Science, ETH Zürich
 
-This is the repository for the software project SVG2Keynote, a macOS tool to convert Scalable Vector Graphics to Apple Keynote documents. SVG2Keynote preserves shape information (path styles, fills), such that shapes can be edited in Keynote.
+This is the repository for the software project VectorImporter, a macOS tool to convert Scalable Vector Graphics to Apple Keynote documents. VectorImporter preserves shape information (path styles, fills), such that shapes can be edited in Keynote.
 
-[SVG2Keynote project page](https://siplab.org/releases/SVG2Keynote)
+[VectorImporter project page](https://siplab.org/releases/VectorImporter)
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-For .key file format handling, SVG2Keynote GUI uses our library [SVG2Keynote lib](https://github.com/eth-siplab/SVG2Keynote-lib).
+For .key file format handling, VectorImporter GUI uses our library [VectorImporter lib](https://github.com/eth-siplab/VectorImporter-lib).
 
 
 # Demo
@@ -34,26 +34,26 @@ brew install protobuf
 First clone the repository:
 
 ```bash
-git clone https://github.com/eth-siplab/SVG2Keynote-gui
+git clone https://github.com/eth-siplab/VectorImporter-gui
 ```
 
-Then just open the ".xcodeproj" file with Xcode and build. This will create your own signed `KeynoteSVGUI.app`, allowing the application to be run without any issues.
+Then just open the ".xcodeproj" file with Xcode and build. This will create your own signed `VectorImporter.app`, allowing the application to be run without any issues.
 
 ## Option 2 - Run the executable
 
-[link to executable](bin/KeynoteSVGUI.app/Contents/MacOS/KeynoteSVGUI)
+[link to executable](bin/VectorImporter.app/Contents/MacOS/VectorImporter)
 
 Download and run this executable from the command line. As this is then not packaged as a MacOS application, Apples signing security checks do not come into play.
 
-## Option 3 - Run unsigned KeynoteSVGUI.app
+## Option 3 - Run unsigned VectorImporter.app
 
-[link to KeynoteSVGUI.app](bin/KeynoteSVGUI.app)
+[link to VectorImporter.app](bin/VectorImporter.app)
 
 Due to Apple's Gatekeeping this option is tedious and not recommended.
 
 ### Appendage
 
-It is possible, that you will have an issue due to the protobuf version of KeynoteSVGUI and the locally installed version not matching. Here it should suffice to create a symlink.
+It is possible, that you will have an issue due to the protobuf version of VectorImporter and the locally installed version not matching. Here it should suffice to create a symlink.
 
 To do this you must find out the name of the installed ".dylib" for libprotobuf on your system. You can find this by running
 
@@ -63,7 +63,7 @@ find /usr/local/lib -name "libprotobuf.*"
 
 Say for example you now find "/usr/local/lib/libprotobuf.30.dylib" in the results.
 
-Next you need to find out what file is referenced by the KeynoteSVGUI executable.
+Next you need to find out what file is referenced by the VectorImporter executable.
 
 Currently this is "/usr/local/lib/libprotobuf.26.dylib", but if this changes you can open the executable in a text editor and search for the path beginning in "/usr/local/lib/libprotobuf".
 
@@ -138,11 +138,11 @@ To be able to change the bezier curves, you can right click any node and select 
 - Radial gradients
 - Dash arrays
     - This is due to a limitation in Keynote's handling of "Stroke Patterns", which seems like it cannot be solved.
-- Some shapes render incorrectly. Likely due to miscalculations in [NanoSVG](https://github.com/memononen/nanosvg) or scaling issues in the main [library](https://github.com/eth-siplab/SVG2Keynote-lib/)
+- Some shapes render incorrectly. Likely due to miscalculations in [NanoSVG](https://github.com/memononen/nanosvg) or scaling issues in the main [library](https://github.com/eth-siplab/VectorImporter-lib/)
 
 # How was this tool created?
 
-This tool is built upon the c++ library: [`SVG2Keynote-lib`](https://github.com/eth-siplab/SVG2Keynote-lib/), which I created for the underlying conversions take place. This c++ library uses the [NanoSVG](https://github.com/memononen/nanosvg) C library, from which some of the shortcomings stem from. 
+This tool is built upon the c++ library: [`VectorImporter-lib`](https://github.com/eth-siplab/VectorImporter-lib/), which I created for the underlying conversions take place. This c++ library uses the [NanoSVG](https://github.com/memononen/nanosvg) C library, from which some of the shortcomings stem from. 
 
 NanoSVG does not support "Use" element in SVGs and seems to have some issues converting some shapes into their respective paths.
 

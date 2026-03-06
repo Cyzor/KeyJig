@@ -30,9 +30,9 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "459A278C23AA910B003D50EC"
-            BuildableName = "KeynoteSVGUI.app"
-            BlueprintName = "KeynoteSVGUI"
-            ReferencedContainer = "container:KeynoteSVGUI.xcodeproj">
+            BuildableName = "VectorImporter.app"
+            BlueprintName = "VectorImporter"
+            ReferencedContainer = "container:VectorImporter.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
    </LaunchAction>

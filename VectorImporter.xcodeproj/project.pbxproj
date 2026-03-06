@@ -18,7 +18,7 @@
 
 /* Begin PBXFileReference section */
 		057851852F48F0D900ED1254 /* SwiftUIMenuBar.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = SwiftUIMenuBar.entitlements; sourceTree = "<group>"; };
-		459A278D23AA910B003D50EC /* KeynoteSVGUI.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = KeynoteSVGUI.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		459A278D23AA910B003D50EC /* VectorImporter.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = VectorImporter.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		459A279023AA910B003D50EC /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		459A279223AA910B003D50EC /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		459A279423AA910B003D50EC /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -26,7 +26,7 @@
 		459A279A23AA910B003D50EC /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
 		459A279C23AA910B003D50EC /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		AB4A692526A4678500B3EF9A /* svgToKeyRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = svgToKeyRepository.swift; sourceTree = "<group>"; };
-		AB8978B326A4239F003D201E /* KeynoteSVGUI-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "KeynoteSVGUI-Bridging-Header.h"; sourceTree = "<group>"; };
+		AB8978B326A4239F003D201E /* VectorImporter-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "VectorImporter-Bridging-Header.h"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -44,7 +44,7 @@
 		459A278423AA910A003D50EC = {
 			isa = PBXGroup;
 			children = (
-				459A278F23AA910B003D50EC /* KeynoteSVGUI */,
+				459A278F23AA910B003D50EC /* VectorImporter */,
 				459A278E23AA910B003D50EC /* Products */,
 				AB8978BB26A42A26003D201E /* Frameworks */,
 			);
@@ -53,12 +53,12 @@
 		459A278E23AA910B003D50EC /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				459A278D23AA910B003D50EC /* KeynoteSVGUI.app */,
+				459A278D23AA910B003D50EC /* VectorImporter.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
 		};
-		459A278F23AA910B003D50EC /* KeynoteSVGUI */ = {
+		459A278F23AA910B003D50EC /* VectorImporter */ = {
 			isa = PBXGroup;
 			children = (
 				459A279023AA910B003D50EC /* AppDelegate.swift */,
@@ -67,11 +67,11 @@
 				459A279923AA910B003D50EC /* Main.storyboard */,
 				459A279C23AA910B003D50EC /* Info.plist */,
 				459A279623AA910B003D50EC /* Preview Content */,
-				AB8978B326A4239F003D201E /* KeynoteSVGUI-Bridging-Header.h */,
+				AB8978B326A4239F003D201E /* VectorImporter-Bridging-Header.h */,
 				AB4A692526A4678500B3EF9A /* svgToKeyRepository.swift */,
 				057851852F48F0D900ED1254 /* SwiftUIMenuBar.entitlements */,
 			);
-			path = KeynoteSVGUI;
+			path = VectorImporter;
 			sourceTree = "<group>";
 		};
 		459A279623AA910B003D50EC /* Preview Content */ = {
@@ -92,9 +92,9 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		459A278C23AA910B003D50EC /* KeynoteSVGUI */ = {
+		459A278C23AA910B003D50EC /* VectorImporter */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 459A27A023AA910B003D50EC /* Build configuration list for PBXNativeTarget "KeynoteSVGUI" */;
+			buildConfigurationList = 459A27A023AA910B003D50EC /* Build configuration list for PBXNativeTarget "VectorImporter" */;
 			buildPhases = (
 				459A278923AA910B003D50EC /* Sources */,
 				459A278A23AA910B003D50EC /* Frameworks */,
@@ -104,12 +104,12 @@
 			);
 			dependencies = (
 			);
-			name = KeynoteSVGUI;
+			name = VectorImporter;
 			packageProductDependencies = (
 				AB4A692326A45A5A00B3EF9A /* SVGWebView */,
 			);
 			productName = SwiftUIMenuBar;
-			productReference = 459A278D23AA910B003D50EC /* KeynoteSVGUI.app */;
+			productReference = 459A278D23AA910B003D50EC /* VectorImporter.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -128,7 +128,7 @@
 					};
 				};
 			};
-			buildConfigurationList = 459A278823AA910A003D50EC /* Build configuration list for PBXProject "KeynoteSVGUI" */;
+			buildConfigurationList = 459A278823AA910A003D50EC /* Build configuration list for PBXProject "VectorImporter" */;
 			compatibilityVersion = "Xcode 12.0";
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
@@ -144,7 +144,7 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				459A278C23AA910B003D50EC /* KeynoteSVGUI */,
+				459A278C23AA910B003D50EC /* VectorImporter */,
 			);
 		};
 /* End PBXProject section */
@@ -311,15 +311,15 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_CXX_LIBRARY = "libc++";
 				CLANG_ENABLE_MODULES = YES;
-				CODE_SIGN_ENTITLEMENTS = KeynoteSVGUI/SwiftUIMenuBar.entitlements;
+				CODE_SIGN_ENTITLEMENTS = VectorImporter/SwiftUIMenuBar.entitlements;
 				CODE_SIGN_IDENTITY = "-";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
-				DEVELOPMENT_ASSET_PATHS = "\"KeynoteSVGUI/Preview Content\"";
+				DEVELOPMENT_ASSET_PATHS = "\"VectorImporter/Preview Content\"";
 				DEVELOPMENT_TEAM = "";
 				ENABLE_HARDENED_RUNTIME = NO;
 				ENABLE_PREVIEWS = YES;
-				INFOPLIST_FILE = KeynoteSVGUI/Info.plist;
+				INFOPLIST_FILE = VectorImporter/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
@@ -337,10 +337,10 @@
 				);
 				MACOSX_DEPLOYMENT_TARGET = 10.15;
 				OTHER_LDFLAGS = "";
-				PRODUCT_BUNDLE_IDENTIFIER = jonath4n.KeynoteSVGUI;
+				PRODUCT_BUNDLE_IDENTIFIER = jonath4n.VectorImporter;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
-				SWIFT_OBJC_BRIDGING_HEADER = "KeynoteSVGUI/KeynoteSVGUI-Bridging-Header.h";
+				SWIFT_OBJC_BRIDGING_HEADER = "VectorImporter/VectorImporter-Bridging-Header.h";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
 			};
@@ -353,15 +353,15 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_CXX_LIBRARY = "libc++";
 				CLANG_ENABLE_MODULES = YES;
-				CODE_SIGN_ENTITLEMENTS = KeynoteSVGUI/SwiftUIMenuBar.entitlements;
+				CODE_SIGN_ENTITLEMENTS = VectorImporter/SwiftUIMenuBar.entitlements;
 				CODE_SIGN_IDENTITY = "-";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
-				DEVELOPMENT_ASSET_PATHS = "\"KeynoteSVGUI/Preview Content\"";
+				DEVELOPMENT_ASSET_PATHS = "\"VectorImporter/Preview Content\"";
 				DEVELOPMENT_TEAM = "";
 				ENABLE_HARDENED_RUNTIME = NO;
 				ENABLE_PREVIEWS = YES;
-				INFOPLIST_FILE = KeynoteSVGUI/Info.plist;
+				INFOPLIST_FILE = VectorImporter/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
@@ -380,10 +380,10 @@
 				MACOSX_DEPLOYMENT_TARGET = 10.15;
 				ONLY_ACTIVE_ARCH = YES;
 				OTHER_LDFLAGS = "";
-				PRODUCT_BUNDLE_IDENTIFIER = jonath4n.KeynoteSVGUI;
+				PRODUCT_BUNDLE_IDENTIFIER = jonath4n.VectorImporter;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
-				SWIFT_OBJC_BRIDGING_HEADER = "KeynoteSVGUI/KeynoteSVGUI-Bridging-Header.h";
+				SWIFT_OBJC_BRIDGING_HEADER = "VectorImporter/VectorImporter-Bridging-Header.h";
 				SWIFT_VERSION = 5.0;
 			};
 			name = Release;
@@ -391,7 +391,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		459A278823AA910A003D50EC /* Build configuration list for PBXProject "KeynoteSVGUI" */ = {
+		459A278823AA910A003D50EC /* Build configuration list for PBXProject "VectorImporter" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				459A279E23AA910B003D50EC /* Debug */,
@@ -400,7 +400,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		459A27A023AA910B003D50EC /* Build configuration list for PBXNativeTarget "KeynoteSVGUI" */ = {
+		459A27A023AA910B003D50EC /* Build configuration list for PBXNativeTarget "VectorImporter" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				459A27A123AA910B003D50EC /* Debug */,

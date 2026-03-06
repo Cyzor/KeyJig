@@ -102,7 +102,7 @@ struct ContentView: View {
                 
                 Spacer()
                 
-                Text("SVG2Keynote")
+                Text("VectorImporter")
                     .font(.caption)
                     .foregroundColor(.secondary)
             }
