@@ -1,66 +1,154 @@
-# VectorImporter
+# Repository for VectorImporter GUI
 
-**A lightweight bridge for getting editable vector graphics into Apple Keynote.**
+[Jonathan Lamperth](https://www.linkedin.com/in/jonathan-lamperth-7059b418a) and [Christian Holz](https://www.christianholz.net)<br/>
+[Sensing, Interaction & Perception Lab](https://siplab.org) <br/>
+Department of Computer Science, ETH Zürich
 
-Originally developed as **SVG2Keynote** by [Jonathan Lampérth](https://www.linkedin.com/in/jonathan-lamperth-7059b418a) and [Christian Holz](https://www.christianholz.net) at the [Sensing, Interaction & Perception Lab](https://siplab.org), ETH Zürich.
+This is the repository for the software project VectorImporter, a macOS tool to convert Scalable Vector Graphics to Apple Keynote documents. VectorImporter preserves shape information (path styles, fills), such that shapes can be edited in Keynote.
 
-
-VectorImporter converts graphics from applications such as Adobe Illustrator, Affinity Designer, and Inkscape into native, editable Bezier paths in Apple Keynote.
+[VectorImporter project page](https://siplab.org/releases/VectorImporter)
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
----
-
-## Why use VectorImporter?
-
-Apple Keynote can read SVG files, but it is often inaccessible through standard Copy/Paste from tools like Adobe Illustrator or Affinity Designer (which usually fall back to static PDF images).
-
-**VectorImporter** acts as a clipboard "bridge." It intercepts vector data and feeds it to Keynote in a format that triggers its high-fidelity native importer. This allows you to immediately **"Make Editable"** and have full control over every node and path.
-
-### The Workflow:
-1. **Copy:** Select your vector artwork in Illustrator, Affinity Designer, or any SVG-supporting tool and press `⌘C`.
-2. **Bridge:** Click **"Bridge Clipboard to Keynote"** in VectorImporter.
-3. **Paste:** Go to Keynote and press `⌘V`.
-4. **Break:** Choose **Format > Shapes and Lines > Break Apart**.  Or right-click the pasted object and choose **Break Apart**.
-5. **Edit:** (Optional) Choose **Format > Shapes and Lines > Make Editable**.  Or right-click the pasted object and choose **Make Editable**.
-6. **Modify:** Now that the pasted object is a native Keynote shape, freely alter its color, stroke, and anchor points.
+For .key file format handling, VectorImporter GUI uses our library [VectorImporter lib](https://github.com/eth-siplab/VectorImporter-lib).
 
 
----
+# Demo
 
-## Installation
+https://user-images.githubusercontent.com/56671993/132128636-555d457e-9113-4fcb-b430-506e5e4449ff.mov
 
-### Prerequisites
-- macOS 10.15 (Catalina) or later.
-- No external libraries (Protobuf, Snappy, etc.) are required.
 
-### Build from Source
-1. Clone the repository:
-   ```bash
-   git clone https://github.com/cyzor/keynote-vector-importer.git
-   ```
-2. Open `VectorImporter.xcodeproj` in Xcode.
-3. Select the **VectorImporter** scheme and click **Build** (`⌘B`) or **Run** (`⌘R`).
 
----
+# Installation Process
 
-## Features
+## Prerequisites
 
-- **Clipboard Bridging:** Automatically detects SVG data on your clipboard and prepares it for Keynote.
-- **File Support:** Open any `.svg` file directly to preview and copy it for Keynote.
-- **Zero Dependencies:** The app is 100% Swift and SwiftUI, making it lightweight and easy to maintain.
-- **PDF Fallback:** If native import isn't sufficient, use the "PDF Fallback" (requires [Inkscape](https://inkscape.org/)) to copy as a high-quality vector image.
+- Install the protobuf shared library. This can be done as follows using brew:
 
----
+```jsx
+brew install protobuf
+```
 
-## Technical History
+## Option 1 - Compile with Xcode (Best Choice)
 
-The original project utilized a custom C++ library and Google Protobuf to manually construct Keynote's internal `.iwa` format. While powerful, this was prone to breaking whenever Apple updated Keynote's internal structures or when Protobuf versions changed.
+First clone the repository:
 
-The current version of **VectorImporter** leverages Keynote's native SVG support added in version 10.0+. By providing a temporary file URL as a clipboard promise, we bypass the need for custom binary construction while achieving the same high-fidelity, editable results.
+```bash
+git clone https://github.com/eth-siplab/VectorImporter-gui
+```
 
----
+Then just open the ".xcodeproj" file with Xcode and build. This will create your own signed `VectorImporter.app`, allowing the application to be run without any issues.
 
-## License
+## Option 2 - Run the executable
 
-This project is licensed under the MIT License.
+[link to executable](bin/VectorImporter.app/Contents/MacOS/VectorImporter)
+
+Download and run this executable from the command line. As this is then not packaged as a MacOS application, Apples signing security checks do not come into play.
+
+## Option 3 - Run unsigned VectorImporter.app
+
+[link to VectorImporter.app](bin/VectorImporter.app)
+
+Due to Apple's Gatekeeping this option is tedious and not recommended.
+
+### Appendage
+
+It is possible, that you will have an issue due to the protobuf version of VectorImporter and the locally installed version not matching. Here it should suffice to create a symlink.
+
+To do this you must find out the name of the installed ".dylib" for libprotobuf on your system. You can find this by running
+
+```bash
+find /usr/local/lib -name "libprotobuf.*"
+```
+
+Say for example you now find "/usr/local/lib/libprotobuf.30.dylib" in the results.
+
+Next you need to find out what file is referenced by the VectorImporter executable.
+
+Currently this is "/usr/local/lib/libprotobuf.26.dylib", but if this changes you can open the executable in a text editor and search for the path beginning in "/usr/local/lib/libprotobuf".
+
+Once you have both of these values you can the run:
+
+```bash
+ln -s <installed_library> <referenced_library>
+#In the above mentioned case:
+
+ln -s /usr/local/lib/libprotobuf.30.dylib /usr/local/lib/libprotobuf.26.dylib
+```
+
+In the optimal case you would compile the software in Xcode from source, and then this issue should not arise.
+
+# Using the tool
+
+Once the app has launched you should see the following icon in your toolbar:
+
+<img src="img/icon.png"/>
+
+
+Once clicking on the icon you will be greeted with the following popover:
+
+<img src="img/readme_1_tool.png"/>
+
+
+Here the UI should be pretty straightforward.
+
+1. Use the button "Open SVG File" to select the file which you would like to insert into keynote.
+2. Press "Convert SVG to Keynote Clipboard" to create a keynote clipboard.
+3. After doing so the process should complete and you can now paste your SVG into Keynote in its native vector format using `CMD + V`
+
+There are some shape types and SVG features which unfortunately do not yet work well with this new method. In this case you can use the button "Convert to PDF Clipboard", to convert the SVG into a PDF file, which can then similarly be pasted into your keynote document and scaled as you could any vector graphic. Unfortunately with this backup solution, you cannot edit the shape inside of keynote, as it is only recognised as a PDF file.
+
+**Note: In order to use "Convert to PDF Clipboard", Inkscape must be installed. It was tested via homebrew installation of Inkscape:**
+
+```bash
+brew install inkscape
+```
+
+### Editing the inserted path
+
+The main reason to use this tool, it to be able to edit vector graphics inside of Keynote's native file format. This isn't initially possible upon pasting.
+
+First you must right click on a path and select "Make Editable":
+
+<img src="img/readme_2_keynote.png" width="600"/>
+
+Then you can see and move all of the nodes:
+
+<img src="img/readme_3_keynote.png" width="600"/>
+
+To be able to change the bezier curves, you can right click any node and select "Make Bézier Point", and then should be able to move the in and out Points.
+
+<img src="img/readme_4_keynote.png"/>
+<img src="img/readme_5_keynote.png"/>
+
+
+# What works and what doesn't?
+
+### Working
+
+- Most different type of paths with stroke and fill style.
+- Different types of line caps and line joins
+    - Keynote supports these natively, but does not give the user access to create them in their GUI.
+- Linear Gradients (partially)
+    - It seems depending how the gradient is defined in SVG, it gets misinterpreted and the transformation vector can be off.
+
+### Not yet working
+
+- [Use elements](https://developer.mozilla.org/en-US/docs/Web/SVG/Element/use)
+- Radial gradients
+- Dash arrays
+    - This is due to a limitation in Keynote's handling of "Stroke Patterns", which seems like it cannot be solved.
+- Some shapes render incorrectly. Likely due to miscalculations in [NanoSVG](https://github.com/memononen/nanosvg) or scaling issues in the main [library](https://github.com/eth-siplab/VectorImporter-lib/)
+
+# How was this tool created?
+
+This tool is built upon the c++ library: [`VectorImporter-lib`](https://github.com/eth-siplab/VectorImporter-lib/), which I created for the underlying conversions take place. This c++ library uses the [NanoSVG](https://github.com/memononen/nanosvg) C library, from which some of the shortcomings stem from. 
+
+NanoSVG does not support "Use" element in SVGs and seems to have some issues converting some shapes into their respective paths.
+
+## Possible future developments
+
+- [ ]  Drag-and-drop functionality
+- [ ]  Get SVG from clipboard functionality
+- [ ]  General code optimizations
+- [ ]  Use a more advanced SVG parsing library.
