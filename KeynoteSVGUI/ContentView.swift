@@ -1,103 +1,120 @@
 import SwiftUI
-import Cocoa
 import SVGWebView
 import WebKit
 
-var status: String = "Currently no status.";
-var svgURL: String = "";
-
-
 struct ContentView: View {
-    @State var svgString: String =  """
-                <svg xmlns="http://www.w3.org/2000/svg"
-                     viewBox="0 0 100 100">
-                  <rect x="10" y="10"
-                        width="80" height="80"
-                        fill="gold" stroke="blue"
-                        stroke-width="4" />
-                </svg>
-                """
-    @State var localStatus: String = status;
+    @ObservedObject var appState = AppState.shared
+    @State var localStatus: String = "Ready to bridge vectors";
+    
     var body: some View {
-        VStack {
-            SVGWebView(svg: svgString)
+        VStack(spacing: 0) {
+            // Preview Area
+            ZStack {
+                Color(NSColor.windowBackgroundColor)
+                
+                if !appState.svgString.isEmpty {
+                    SVGWebView(svg: appState.svgString)
+                        .padding(10)
+                } else {
+                    VStack(spacing: 8) {
+                        // SF Symbols are 11.0+, so we use a text fallback or simple shape
+                        Text("􀈄") // Folder/Download symbol often works if font supports it, else "SVG"
+                            .font(.system(size: 40))
+                            .foregroundColor(.secondary)
+                        Text("No SVG Loaded")
+                            .font(.headline)
+                            .foregroundColor(.secondary)
+                    }
+                }
+            }
+            .frame(height: 180)
+            .cornerRadius(8)
+            .padding([.horizontal, .top])
+            
+            // Status area
             Text(localStatus)
-            Button("Open SVG File") {
-                svgString = browseFile();
-                localStatus = status;
-            }
-            Button("Convert SVG to Keynote Clipboard") {
-                if (svgToClipboard(svgData: svgString)) {
-                    updateStatus(newStatus: "SVG successfully converted to Keynote");
-                    localStatus = status;
+                .font(.subheadline)
+                .multilineTextAlignment(.center)
+                .padding(.horizontal)
+                .padding(.top, 12)
+                .foregroundColor(.secondary)
+                .frame(height: 50)
+            
+            Divider().padding(.vertical, 8)
+            
+            // Action Buttons
+            VStack(spacing: 8) {
+                Button(action: {
+                    let picked = browseFile();
+                    if !picked.isEmpty {
+                        appState.svgString = picked;
+                        localStatus = "Loaded: " + (URL(fileURLWithPath: appState.svgURL).lastPathComponent);
+                    }
+                }) {
+                    Text("Open SVG File...")
+                        .frame(maxWidth: .infinity)
                 }
+                
+                Button(action: {
+                    let svg = convertClipboardToSVG()
+                    if !svg.isEmpty {
+                        appState.svgString = svg
+                        if svgToClipboard(svgData: svg) {
+                            localStatus = "Clipboard content bridged! Paste into Keynote.";
+                        }
+                    } else {
+                        localStatus = "No SVG data found on clipboard.";
+                    }
+                }) {
+                    Text("Bridge Clipboard to Keynote")
+                        .frame(maxWidth: .infinity)
+                }
+                
+                HStack(spacing: 8) {
+                    Button("Copy Preview") {
+                        if (svgToClipboard(svgData: appState.svgString)) {
+                            localStatus = "Preview copied for Keynote.";
+                        }
+                    }
+                    .disabled(appState.svgString.isEmpty)
+                    .frame(maxWidth: .infinity)
+                    
+                    Button("PDF Fallback") {
+                        if (convertWithInkscape(svgPath: appState.svgURL)) {
+                            localStatus = "Copied as PDF (Fallback)";
+                        } else {
+                            localStatus = "Inkscape not found";
+                        }
+                    }
+                    .disabled(appState.svgURL.isEmpty)
+                    .frame(maxWidth: .infinity)
                 }
             }
-        
-        
-        Button("Convert to PDF Clipboard") {
-            setenv("PATH", "\("usr/local/bin"):\(ProcessInfo.processInfo.environment["PATH"]!)", 1)
+            .padding(.horizontal)
             
-            let fileName = "temp.pdf"
-            let tempDir = NSTemporaryDirectory()
-            let fileURL = URL(fileURLWithPath: tempDir, isDirectory: true).appendingPathComponent(fileName)
+            Spacer(minLength: 16)
             
-            
-            let path = fileURL.path;
-            let outpipe = Pipe()
-            
-            let inkscape = Process();
-            inkscape.launchPath = "/usr/bin/env"
-            inkscape.arguments = ["inkscape", svgURL, "-o", path];
-            inkscape.standardOutput = outpipe
-            
-            inkscape.launch();
-            inkscape.waitUntilExit();
-            
-            if (pdfToClipboard(pdfData: readFile(url: fileURL))) {
-                updateStatus(newStatus: "SVG successfully converted to PDF");
-                localStatus = status;
-            } else {
-                updateStatus(newStatus: "Failed to convert SVG to PDF");
-                localStatus = status;
-
+            // Footer
+            HStack {
+                Button("Quit") {
+                    NSApplication.shared.terminate(nil)
+                }
+                
+                Spacer()
+                
+                Text("SVG2Keynote")
+                    .font(.caption)
+                    .foregroundColor(.secondary)
             }
+            .padding()
+            .background(Color(NSColor.controlBackgroundColor).opacity(0.5))
         }
-        Button("Decode and Encode") {
-            decodeAndEncodeSwift();
-        }
-            Spacer()
-        }
+        .frame(width: 380, height: 480) 
     }
-
-
-
-struct ContentView_Previews: PreviewProvider {
-    static var previews: some View {
-        ContentView()
-    }
-}
-
-func updateStatus(newStatus: String) -> Void {
-    status = newStatus;
-}
-
-func readFile(url: URL) -> Data? {
-    do {
-        return try Data(contentsOf: url);
-    }
-        catch {
-            NSLog("Error reading file");
-        }
-    
-    return Data();
-    
 }
 
 func browseFile() -> String {
-    
     let dialog = NSOpenPanel();
-    
     dialog.title                   = "Choose a .svg file";
     dialog.showsResizeIndicator    = true;
     dialog.showsHiddenFiles        = false;
@@ -107,29 +124,14 @@ func browseFile() -> String {
     dialog.allowedFileTypes        = ["svg"];
 
     if (dialog.runModal() == NSApplication.ModalResponse.OK) {
-        let result = dialog.url // Pathname of the file
-        
-        if (result != nil) {
-
-            let path = URL(fileURLWithPath: result!.path)
-            NSLog(path.absoluteString);
-            NSLog(path.path);
-            svgURL = path.path;
-            
+        if let result = dialog.url {
+            AppState.shared.svgURL = result.path;
             do {
-                status = "SVG successfully loaded"
-                return try String(contentsOf: path, encoding: .utf8);
+                return try String(contentsOf: result, encoding: .utf8);
+            } catch {
+                NSLog("Error reading file");
             }
-                catch {
-                    NSLog("Error reading file");
-                }
-            
-
         }
-    } else {
-        // User clicked on "Cancel"
-        status = "SVG loading failed!"
-        return ""
     }
     return "";
 }
