@@ -1,0 +1,8 @@
+<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+  <rect id="MySquare" x="10" y="10" width="30" height="30" fill="red">
+    <title>SquareTitle</title>
+  </rect>
+  <circle id="MyCircle" cx="70" cy="70" r="20" fill="blue">
+    <title>CircleTitle</title>
+  </circle>
+</svg>
