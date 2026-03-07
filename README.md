@@ -4,7 +4,8 @@
 
 Originally developed as **SVG2Keynote** by [Jonathan Lampérth](https://www.linkedin.com/in/jonathan-lamperth-7059b418a) and [Christian Holz](https://www.christianholz.net) at the [Sensing, Interaction & Perception Lab](https://siplab.org), ETH Zürich.
 
-VectorImporter has been modernized and simplified to provide a zero-dependency workflow for professional designers who need native, editable Bezier paths in Keynote.
+
+VectorImporter converts graphics from applications such as Adobe Illustrator, Affinity Designer, and Inkscape into native, editable Bezier paths in Apple Keynote.
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
@@ -12,7 +13,7 @@ VectorImporter has been modernized and simplified to provide a zero-dependency w
 
 ## Why use VectorImporter?
 
-Apple Keynote has a powerful native SVG import engine, but it is often inaccessible through standard Copy/Paste from tools like Adobe Illustrator or Affinity Designer (which usually fall back to static PDF images).
+Apple Keynote can read SVG files, but it is often inaccessible through standard Copy/Paste from tools like Adobe Illustrator or Affinity Designer (which usually fall back to static PDF images).
 
 **VectorImporter** acts as a clipboard "bridge." It intercepts vector data and feeds it to Keynote in a format that triggers its high-fidelity native importer. This allows you to immediately **"Make Editable"** and have full control over every node and path.
 
