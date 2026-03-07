@@ -17,10 +17,13 @@ Apple Keynote has a powerful native SVG import engine, but it is often inaccessi
 **VectorImporter** acts as a clipboard "bridge." It intercepts vector data and feeds it to Keynote in a format that triggers its high-fidelity native importer. This allows you to immediately **"Make Editable"** and have full control over every node and path.
 
 ### The Workflow:
-1. **Copy:** Select your vector artwork in Illustrator, Affinity Designer, or any SVG-supporting tool and press `CMD+C`.
+1. **Copy:** Select your vector artwork in Illustrator, Affinity Designer, or any SVG-supporting tool and press `⌘C`.
 2. **Bridge:** Click **"Bridge Clipboard to Keynote"** in VectorImporter.
-3. **Paste:** Go to Keynote and press `CMD+V`.
-4. **Edit:** Right-click the object and select **"Make Editable"**.
+3. **Paste:** Go to Keynote and press `⌘V`.
+4. **Break:** Choose **Format > Shapes and Lines > Break Apart**.  Or right-click the pasted object and choose **Break Apart**.
+5. **Edit:** (Optional) Choose **Format > Shapes and Lines > Make Editable**.  Or right-click the pasted object and choose **Make Editable**.
+6. **Modify:** Now that the pasted object is a native Keynote shape, freely alter its color, stroke, and anchor points.
+
 
 ---
 
@@ -33,10 +36,10 @@ Apple Keynote has a powerful native SVG import engine, but it is often inaccessi
 ### Build from Source
 1. Clone the repository:
    ```bash
-   git clone https://github.com/eth-siplab/VectorImporter-gui
+   git clone https://github.com/cyzor/keynote-vector-importer.git
    ```
 2. Open `VectorImporter.xcodeproj` in Xcode.
-3. Select the **VectorImporter** scheme and click **Build** (`CMD+B`) or **Run** (`CMD+R`).
+3. Select the **VectorImporter** scheme and click **Build** (`⌘B`) or **Run** (`⌘R`).
 
 ---
 
