@@ -61,15 +61,17 @@ struct ContentView: View {
                 } else {
                     VStack(spacing: 8) {
                         Image("Placeholder")
+                            .renderingMode(.template)
                             .resizable()
                             .aspectRatio(contentMode: .fit)
-                            .frame(width: 90, height: 90)
+                            .frame(width: 80, height: 80)
                             .foregroundColor(.secondary)
                         Text("No SVG Loaded")
                             .font(.headline)
                             .foregroundColor(.secondary)
                     }
                 }
+
             }
             .frame(height: 180)
             .cornerRadius(8)
