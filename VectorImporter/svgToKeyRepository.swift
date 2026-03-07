@@ -24,18 +24,20 @@ func convertClipboardToSVG() -> String {
     return ""
 }
 
+func getTempSVGURL() -> URL {
+    let tempDir = NSTemporaryDirectory()
+    return URL(fileURLWithPath: tempDir).appendingPathComponent("VectorImporter_bridge.svg")
+}
+
 func svgToClipboard(svgData: String) -> Bool {
     let pasteboard = NSPasteboard.general
-    // We clear after reading if we're doing a bridge, but here we just clear to write
     pasteboard.clearContents()
     
-    let tempDir = NSTemporaryDirectory()
-    let tempFile = URL(fileURLWithPath: tempDir).appendingPathComponent("bridge_clip.svg")
+    let tempFile = getTempSVGURL()
     
     do {
         try svgData.write(to: tempFile, atomically: true, encoding: .utf8)
         // Put the file URL on the pasteboard. 
-        // This is what makes Keynote use its native "Editable" engine.
         pasteboard.writeObjects([tempFile as NSURL])
         return true
     } catch {

@@ -24,10 +24,10 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         self.statusBarItem = NSStatusBar.system.statusItem(withLength: CGFloat(NSStatusItem.variableLength))
         
         if let button = self.statusBarItem.button {
-            if #available(macOS 11.0, *) {
-                button.image = NSImage(systemSymbolName: "point.topleft.down.curvedto.point.bottomright.up", accessibilityDescription: nil)
-            } else {
-                // Todo: Fallback for earlier versions
+            if let iconImage = NSImage(named: "Icon") {
+                iconImage.size = NSSize(width: 18, height: 18) // Standard macOS menu bar size
+                iconImage.isTemplate = true
+                button.image = iconImage
             }
             button.action = #selector(toggle(_:))
         }

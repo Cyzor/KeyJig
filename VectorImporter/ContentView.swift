@@ -8,18 +8,62 @@ struct ContentView: View {
     
     var body: some View {
         VStack(spacing: 0) {
-            // Preview Area
+            // Preview Area (Draggable)
             ZStack {
                 Color(NSColor.windowBackgroundColor)
                 
                 if !appState.svgString.isEmpty {
+                    // The actual SVG rendered in a WebView
                     SVGWebView(svg: appState.svgString)
                         .padding(10)
+                    
+                    // Transparent overlay to capture drag events (WebViews swallow them)
+                    Group {
+                        if #available(macOS 12.0, *) {
+                            Color.white.opacity(0.001)
+                                .onDrag {
+                                    _ = svgToClipboard(svgData: appState.svgString)
+                                    return NSItemProvider(contentsOf: getTempSVGURL()) ?? NSItemProvider()
+                                } preview: {
+                                    // Professional "Vector Card" preview
+                                    VStack(spacing: 12) {
+                                        ZStack {
+                                            RoundedRectangle(cornerRadius: 8)
+                                                .fill(Color.blue.opacity(0.1))
+                                            Text("SVG")
+                                                .font(.system(size: 30, weight: .black, design: .monospaced))
+                                                .foregroundColor(.blue)
+                                        }
+                                        .frame(width: 80, height: 80)
+                                        
+                                        Text("Vector Asset")
+                                            .font(.system(size: 13, weight: .bold))
+                                            .foregroundColor(.primary)
+                                    }
+                                    .frame(width: 140, height: 140)
+                                    .background(Color(NSColor.windowBackgroundColor))
+                                    .cornerRadius(12)
+                                    .overlay(
+                                        RoundedRectangle(cornerRadius: 12)
+                                            .stroke(Color.blue.opacity(0.2), lineWidth: 1)
+                                    )
+                                    .shadow(radius: 10)
+                                }
+                        } else {
+                            // Fallback for macOS 10.15/11.0
+                            Color.white.opacity(0.001)
+                                .onDrag {
+                                    _ = svgToClipboard(svgData: appState.svgString)
+                                    return NSItemProvider(contentsOf: getTempSVGURL()) ?? NSItemProvider()
+                                }
+                        }
+                    }
                 } else {
                     VStack(spacing: 8) {
-                        // SF Symbols are 11.0+, so we use a text fallback or simple shape
-                        Text("􀈄") // Folder/Download symbol often works if font supports it, else "SVG"
-                            .font(.system(size: 40))
+                        Image("Placeholder")
+                            .resizable()
+                            .aspectRatio(contentMode: .fit)
+                            .frame(width: 90, height: 90)
                             .foregroundColor(.secondary)
                         Text("No SVG Loaded")
                             .font(.headline)
@@ -29,6 +73,10 @@ struct ContentView: View {
             }
             .frame(height: 180)
             .cornerRadius(8)
+            .overlay(
+                RoundedRectangle(cornerRadius: 8)
+                    .stroke(Color.secondary.opacity(0.2), lineWidth: 1)
+            )
             .padding([.horizontal, .top])
             
             // Status area
@@ -60,7 +108,7 @@ struct ContentView: View {
                     if !svg.isEmpty {
                         appState.svgString = svg
                         if svgToClipboard(svgData: svg) {
-                            localStatus = "Clipboard content bridged! Paste into Keynote.";
+                            localStatus = "Bridged! Switch to Keynote and Paste (⌘V).";
                         }
                     } else {
                         localStatus = "No SVG data found on clipboard.";
