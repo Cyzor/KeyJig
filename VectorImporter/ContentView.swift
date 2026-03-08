@@ -1,10 +1,107 @@
+import AppKit
 import SVGWebView
 import SwiftUI
 import WebKit
 
+// Custom NSView for proper drag handling with cursor-relative offset
+class DraggablePreviewView: NSView {
+    var onDragStart: (() -> URL?)?
+
+    override func mouseDown(with event: NSEvent) {
+        guard let fileURL = onDragStart?() else {
+            super.mouseDown(with: event)
+            return
+        }
+
+        // Get the mouse location in this view's coordinates
+        let dragPoint = event.locationInWindow
+        let viewPoint = self.convert(dragPoint, from: nil)
+
+        // Create drag image - a simple box with icon and text
+        let dragImage = NSImage(size: NSSize(width: 180, height: 180))
+        dragImage.lockFocus()
+
+        NSColor.controlBackgroundColor.setFill()
+        NSBezierPath(
+            roundedRect: NSRect(x: 0, y: 0, width: 180, height: 180), xRadius: 12, yRadius: 12
+        ).fill()
+
+        // Draw SF Symbol icon
+        if #available(macOS 11.0, *) {
+            if let icon = NSImage(
+                systemSymbolName: "photo.fill.on.rectangle.fill", accessibilityDescription: "image")
+            {
+                let iconRect = NSRect(x: 50, y: 60, width: 80, height: 80)
+                icon.draw(in: iconRect)
+            }
+        } else {
+            // Fallback for older macOS: draw a simple circle as placeholder
+            NSColor.controlAccentColor.setFill()
+            NSBezierPath(ovalIn: NSRect(x: 65, y: 105, width: 50, height: 50)).fill()
+        }
+
+        let style = NSMutableParagraphStyle()
+        style.alignment = .center
+
+        let attrs: [NSAttributedString.Key: Any] = [
+            .font: NSFont.systemFont(ofSize: 15, weight: .semibold),
+            .foregroundColor: NSColor.labelColor,
+            .paragraphStyle: style,
+        ]
+
+        let text = NSAttributedString(string: "Drag into Keynote", attributes: attrs)
+        let textRect = NSRect(x: 0, y: 15, width: 180, height: 30)
+        text.draw(in: textRect)
+
+        dragImage.unlockFocus()
+
+        // Create dragging item with the file URL
+        let draggingItem = NSDraggingItem(pasteboardWriter: fileURL as NSURL)
+        let imageFrame = NSRect(x: viewPoint.x - 90, y: viewPoint.y - 90, width: 180, height: 180)
+        draggingItem.setDraggingFrame(imageFrame, contents: dragImage)
+
+        // Begin dragging session
+        _ = self.beginDraggingSession(
+            with: [draggingItem], event: event, source: self)
+    }
+}
+
+// Make it a dragging source
+extension DraggablePreviewView: NSDraggingSource {
+    func draggingSession(
+        _ session: NSDraggingSession, sourceOperationMaskFor context: NSDraggingContext
+    ) -> NSDragOperation {
+        return .copy
+    }
+}
+
+// SwiftUI wrapper for the custom drag view
+struct DraggablePreviewViewWrapper: NSViewRepresentable {
+    let svgString: String
+    var onDragStart: (() -> URL?)?
+
+    func makeNSView(context: Context) -> DraggablePreviewView {
+        let view = DraggablePreviewView()
+        view.onDragStart = onDragStart
+        return view
+    }
+
+    func updateNSView(_ nsView: DraggablePreviewView, context: Context) {
+        nsView.onDragStart = onDragStart
+    }
+}
+
+extension DraggablePreviewViewWrapper {
+    func onDragStart(_ callback: @escaping () -> URL?) -> Self {
+        var copy = self
+        copy.onDragStart = callback
+        return copy
+    }
+}
+
 struct ContentView: View {
     @ObservedObject var appState = AppState.shared
-    @State var localStatus: String = "Ready to bridge vectors"
+    @State var localStatus: String = "Awaiting vector data for conversion"
 
     var body: some View {
         VStack(spacing: 0) {
@@ -16,70 +113,29 @@ struct ContentView: View {
                     SVGWebView(svg: appState.svgString)
                         .padding(5)
 
-                    // Transparent overlay to capture drag events
-                    if #available(macOS 12.0, *) {
-                        Color.white.opacity(0.001)
-                            .contentShape(Rectangle())
-                            .onDrag {
-                                let tempURL = getTempSVGURL()
-                                do {
-                                    try appState.svgString.write(
-                                        to: tempURL, atomically: true, encoding: .utf8)
-                                } catch {
-                                    NSLog("Error writing temp SVG: \(error)")
-                                }
-                                return NSItemProvider(contentsOf: tempURL) ?? NSItemProvider()
-                            } preview: {
-                                VStack(spacing: 12) {
-                                    Image(systemName: "arrow.down.doc.fill")
-                                        .font(.system(size: 48))
-                                        .foregroundColor(.blue)
-
-                                    Text("Drag into Keynote")
-                                        .font(.system(.body, design: .rounded))
-                                        .fontWeight(.semibold)
-                                        .foregroundColor(.primary)
-                                }
-                                .frame(width: 180, height: 180)
-                                .background(Color(NSColor.controlBackgroundColor))
-                                .cornerRadius(12)
-                                .opacity(0.9)
-                                .shadow(radius: 6)
+                    // Custom NSView wrapper for proper drag handling
+                    DraggablePreviewViewWrapper(svgString: appState.svgString)
+                        .onDragStart { [weak appState] in
+                            let tempURL = getTempSVGURL()
+                            do {
+                                try appState?.svgString.write(
+                                    to: tempURL, atomically: true, encoding: .utf8)
+                            } catch {
+                                NSLog("Error writing temp SVG: \(error)")
+                                return nil
                             }
-                            .contextMenu {
-                                Button("Convert and Copy for Keynote") {
-                                    let svg = appState.svgString
-                                    if !svg.isEmpty {
-                                        if svgToClipboard(svgData: svg) {
-                                            localStatus = "Converted and copied for Keynote!"
-                                        }
+                            return tempURL
+                        }
+                        .contextMenu {
+                            Button("Convert and Copy for Keynote") {
+                                let svg = appState.svgString
+                                if !svg.isEmpty {
+                                    if svgToClipboard(svgData: svg) {
+                                        localStatus = "Converted and copied for Keynote!"
                                     }
                                 }
                             }
-                    } else {
-                        Color.white.opacity(0.001)
-                            .contentShape(Rectangle())
-                            .onDrag {
-                                let tempURL = getTempSVGURL()
-                                do {
-                                    try appState.svgString.write(
-                                        to: tempURL, atomically: true, encoding: .utf8)
-                                } catch {
-                                    NSLog("Error writing temp SVG: \(error)")
-                                }
-                                return NSItemProvider(contentsOf: tempURL) ?? NSItemProvider()
-                            }
-                            .contextMenu {
-                                Button("Convert and Copy for Keynote") {
-                                    let svg = appState.svgString
-                                    if !svg.isEmpty {
-                                        if svgToClipboard(svgData: svg) {
-                                            localStatus = "Converted and copied for Keynote!"
-                                        }
-                                    }
-                                }
-                            }
-                    }
+                        }
                 }
                 .cornerRadius(8)
                 .overlay(
@@ -145,35 +201,16 @@ struct ContentView: View {
                     if !svg.isEmpty {
                         appState.svgString = svg
                         if svgToClipboard(svgData: svg) {
-                            localStatus = "Bridged! Switch to Keynote and Paste (⌘V)."
+                            localStatus = "Converted! Switch to Keynote and Paste (⌘V)."
                         }
                     } else {
                         localStatus = "No SVG data found on clipboard."
                     }
                 }) {
-                    Text("Bridge Clipboard to Keynote")
+                    Text("Convert into Editable Keynote Format")
                         .frame(maxWidth: .infinity)
                 }
 
-                HStack(spacing: 8) {
-                    Button("Copy Preview") {
-                        if svgToClipboard(svgData: appState.svgString) {
-                            localStatus = "Preview copied for Keynote."
-                        }
-                    }
-                    .disabled(appState.svgString.isEmpty)
-                    .frame(maxWidth: .infinity)
-
-                    Button("PDF Fallback") {
-                        if convertWithInkscape(svgPath: appState.svgURL) {
-                            localStatus = "Copied as PDF (Fallback)"
-                        } else {
-                            localStatus = "Inkscape not found"
-                        }
-                    }
-                    .disabled(appState.svgURL.isEmpty)
-                    .frame(maxWidth: .infinity)
-                }
             }
             .padding(.horizontal)
 
@@ -213,4 +250,9 @@ func browseFile() -> String {
         }
     }
     return ""
+}
+
+#Preview {
+    ContentView()
+        .frame(width: 480, height: 680)
 }
