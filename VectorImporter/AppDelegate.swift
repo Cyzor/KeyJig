@@ -87,7 +87,7 @@ class AppMenu {
             keyEquivalent: "N"
         ).keyEquivalentModifierMask = [.command, .shift]
         fileMenu.addItem(
-            withTitle: "Open SVG...", action: #selector(AppDelegate.openSVGFile), keyEquivalent: "o"
+            withTitle: "Open SVG File…", action: #selector(AppDelegate.openSVGFile), keyEquivalent: "o"
         )
         fileMenu.addItem(NSMenuItem.separator())
         fileMenu.addItem(
