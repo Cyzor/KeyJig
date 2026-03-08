@@ -31,25 +31,20 @@ struct ContentView: View {
                                 return NSItemProvider(contentsOf: tempURL) ?? NSItemProvider()
                             } preview: {
                                 VStack(spacing: 12) {
-                                    SVGWebView(svg: appState.svgString)
-                                        .scaledToFit()
-                                        .frame(width: 120, height: 120)
-                                        .background(Color(NSColor.windowBackgroundColor))
-                                        .cornerRadius(8)
+                                    Image(systemName: "arrow.down.doc.fill")
+                                        .font(.system(size: 48))
+                                        .foregroundColor(.blue)
 
-                                    Text("Drag SVG into Keynote…")
-                                        .font(.system(.caption, design: .rounded))
+                                    Text("Drag into Keynote")
+                                        .font(.system(.body, design: .rounded))
                                         .fontWeight(.semibold)
-                                        .foregroundColor(.white)
-                                        .padding(.horizontal, 12)
-                                        .padding(.vertical, 6)
-                                        .background(Color.black.opacity(0.7))
-                                        .cornerRadius(6)
+                                        .foregroundColor(.primary)
                                 }
-                                .padding(12)
-                                .background(Color(NSColor.windowBackgroundColor))
+                                .frame(width: 180, height: 180)
+                                .background(Color(NSColor.controlBackgroundColor))
                                 .cornerRadius(12)
-                                .shadow(radius: 8)
+                                .opacity(0.9)
+                                .shadow(radius: 6)
                             }
                             .contextMenu {
                                 Button("Convert and Copy for Keynote") {

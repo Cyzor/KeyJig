@@ -9,18 +9,20 @@ class AppState: ObservableObject {
 
 func convertClipboardToSVG() -> String {
     let pasteboard = NSPasteboard.general
-    
+
     // 1. Check for explicit SVG types (Affinity Designer often provides this)
     let svgType = NSPasteboard.PasteboardType("public.svg-image")
-    if let data = pasteboard.data(forType: svgType), let svgString = String(data: data, encoding: .utf8) {
+    if let data = pasteboard.data(forType: svgType),
+        let svgString = String(data: data, encoding: .utf8)
+    {
         return svgString
     }
-    
+
     // 2. Check for raw SVG text in the string type
     if let content = pasteboard.string(forType: .string), content.contains("<svg") {
         return content
     }
-    
+
     return ""
 }
 
@@ -32,12 +34,12 @@ func getTempSVGURL() -> URL {
 func svgToClipboard(svgData: String) -> Bool {
     let pasteboard = NSPasteboard.general
     pasteboard.clearContents()
-    
+
     let tempFile = getTempSVGURL()
-    
+
     do {
         try svgData.write(to: tempFile, atomically: true, encoding: .utf8)
-        // Put the file URL on the pasteboard. 
+        // Put the file URL on the pasteboard.
         pasteboard.writeObjects([tempFile as NSURL])
         return true
     } catch {
@@ -58,7 +60,10 @@ func pdfToClipboard(pdfData: Data?) -> Bool {
 }
 
 func convertWithInkscape(svgPath: String) -> Bool {
-    let inkscapePaths = ["/usr/local/bin/inkscape", "/opt/homebrew/bin/inkscape", "/Applications/Inkscape.app/Contents/MacOS/inkscape"]
+    let inkscapePaths = [
+        "/usr/local/bin/inkscape", "/opt/homebrew/bin/inkscape",
+        "/Applications/Inkscape.app/Contents/MacOS/inkscape",
+    ]
     var foundPath: String?
     for path in inkscapePaths {
         if FileManager.default.fileExists(atPath: path) {
@@ -77,6 +82,6 @@ func convertWithInkscape(svgPath: String) -> Bool {
         if let data = try? Data(contentsOf: URL(fileURLWithPath: tempPDF)) {
             return pdfToClipboard(pdfData: data)
         }
-    } catch { }
+    } catch {}
     return false
 }
