@@ -53,10 +53,10 @@ class AppMenu {
         appMenu.addItem(
             withTitle: "About VectorImporter", action: #selector(AppDelegate.showAbout),
             keyEquivalent: "")
-//        appMenu.addItem(NSMenuItem.separator())
-//        appMenu.addItem(
-//            withTitle: "Preferences...", action: #selector(AppDelegate.showPreferences),
-//            keyEquivalent: ",")
+        //        appMenu.addItem(NSMenuItem.separator())
+        //        appMenu.addItem(
+        //            withTitle: "Preferences...", action: #selector(AppDelegate.showPreferences),
+        //            keyEquivalent: ",")
         appMenu.addItem(NSMenuItem.separator())
         appMenu.addItem(
             withTitle: "Hide VectorImporter", action: #selector(NSApplication.hide(_:)),
@@ -139,9 +139,13 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     var popover: NSPopover?
     var statusBarItem: NSStatusItem?
     var floatingWindows: [MainWindowController] = []
+    var windowCascadeOffset: Int = 0
 
     func applicationDidFinishLaunching(_ aNotification: Notification) {
         AppDelegate.shared = self
+
+        // Set as delegate for Dock menu FIRST, before any other setup
+        NSApplication.shared.delegate = self
 
         // Set up the menu bar
         AppMenu.setupMenuBar()
@@ -210,12 +214,19 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         // Check clipboard before showing new window
         checkAndLoadClipboardSVG()
 
-        // Position the new window
+        // Position the new window with cascading offset
         if let screenFrame = NSScreen.main?.frame {
-            let x = screenFrame.midX - 200
-            let y = screenFrame.midY - 260
+            let cascadeAmount = 20
+            let x = screenFrame.midX - 200 + CGFloat(windowCascadeOffset * cascadeAmount)
+            let y = screenFrame.midY - 260 - CGFloat(windowCascadeOffset * cascadeAmount)
             windowController.window?.setFrame(
                 NSRect(x: x, y: y, width: 400, height: 520), display: true)
+
+            // Increment offset for next window, reset if it gets too large
+            windowCascadeOffset += 1
+            if windowCascadeOffset > 10 {
+                windowCascadeOffset = 0
+            }
         }
 
         windowController.window?.makeKeyAndOrderFront(nil)
@@ -250,15 +261,15 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         let alert = NSAlert()
         alert.messageText = "Vector Importer"
         alert.informativeText = """
-        A utility for converting vector graphics to Keynote-compatible formats.
+            A utility for converting vector graphics to Keynote-compatible formats.
 
-        Version 1.1
+            Version 1.1
 
-        Copyright © 2021 Jonathan Lampérth
+            Copyright © 2021 Jonathan Lampérth
 
-        The Noun Project licensed under CC-BY-3.0 US:
-        https://thenounproject.com/legal/terms-of-use/#icon-licenses
-        """
+            The Noun Project licensed under CC-BY-3.0 US:
+            https://thenounproject.com/legal/terms-of-use/#icon-licenses
+            """
         alert.alertStyle = .informational
         alert.addButton(withTitle: "Noted")
         alert.runModal()
@@ -318,7 +329,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
     // MARK: - Dock Menu
 
-    func applicationDockMenu(_ sender: NSApplication) -> NSMenu? {
+    @objc func applicationDockMenu(_ sender: NSApplication) -> NSMenu? {
         let menu = NSMenu()
         menu.addItem(
             withTitle: "Show Panel", action: #selector(showPanel), keyEquivalent: "")
