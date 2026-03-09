@@ -53,10 +53,10 @@ class AppMenu {
         appMenu.addItem(
             withTitle: "About VectorImporter", action: #selector(AppDelegate.showAbout),
             keyEquivalent: "")
-        appMenu.addItem(NSMenuItem.separator())
-        appMenu.addItem(
-            withTitle: "Preferences...", action: #selector(AppDelegate.showPreferences),
-            keyEquivalent: ",")
+//        appMenu.addItem(NSMenuItem.separator())
+//        appMenu.addItem(
+//            withTitle: "Preferences...", action: #selector(AppDelegate.showPreferences),
+//            keyEquivalent: ",")
         appMenu.addItem(NSMenuItem.separator())
         appMenu.addItem(
             withTitle: "Hide VectorImporter", action: #selector(NSApplication.hide(_:)),
@@ -87,7 +87,8 @@ class AppMenu {
             keyEquivalent: "N"
         ).keyEquivalentModifierMask = [.command, .shift]
         fileMenu.addItem(
-            withTitle: "Open SVG File…", action: #selector(AppDelegate.openSVGFile), keyEquivalent: "o"
+            withTitle: "Open SVG File…", action: #selector(AppDelegate.openSVGFile),
+            keyEquivalent: "o"
         )
         fileMenu.addItem(NSMenuItem.separator())
         fileMenu.addItem(
@@ -110,6 +111,9 @@ class AppMenu {
             withTitle: "Copy", action: nil, keyEquivalent: "c")
         editMenu.addItem(
             withTitle: "Paste", action: nil, keyEquivalent: "v")
+        editMenu.addItem(NSMenuItem.separator())
+        editMenu.addItem(
+            withTitle: "Clear", action: #selector(AppDelegate.clearSVG), keyEquivalent: "")
 
         editMenuItem.submenu = editMenu
 
@@ -245,11 +249,24 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     @objc func showAbout() {
         let alert = NSAlert()
         alert.messageText = "Vector Importer"
-        alert.informativeText =
-            "A utility for converting vector graphics to Keynote-compatible formats.\n\nVersion 1.1\n\nCopyright © 2021 Jonathan Lampérth"
+        alert.informativeText = """
+        A utility for converting vector graphics to Keynote-compatible formats.
+
+        Version 1.1
+
+        Copyright © 2021 Jonathan Lampérth
+
+        The Noun Project licensed under CC-BY-3.0 US:
+        https://thenounproject.com/legal/terms-of-use/#icon-licenses
+        """
         alert.alertStyle = .informational
-        alert.addButton(withTitle: "OK")
+        alert.addButton(withTitle: "Noted")
         alert.runModal()
+    }
+
+    @objc func clearSVG() {
+        AppState.shared.svgString = ""
+        AppState.shared.svgURL = ""
     }
 
     @objc func showPreferences() {
@@ -297,5 +314,16 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     func applicationWillBecomeActive(_ notification: Notification) {
         // Check clipboard when app is reactivated
         checkAndLoadClipboardSVG()
+    }
+
+    // MARK: - Dock Menu
+
+    func applicationDockMenu(_ sender: NSApplication) -> NSMenu? {
+        let menu = NSMenu()
+        menu.addItem(
+            withTitle: "Show Panel", action: #selector(showPanel), keyEquivalent: "")
+        menu.addItem(
+            withTitle: "New Viewer", action: #selector(newFloatingWindow), keyEquivalent: "")
+        return menu
     }
 }

@@ -85,3 +85,122 @@ func convertWithInkscape(svgPath: String) -> Bool {
     } catch {}
     return false
 }
+
+// Extract SVG dimensions from SVG string
+func extractSVGDimensions(svgString: String) -> (width: String, height: String)? {
+    // Look for viewBox attribute first (more reliable)
+    if let viewBoxRange = svgString.range(
+        of: "viewBox=[\"']([^\"']+)[\"']", options: .regularExpression)
+    {
+        let viewBoxValue = String(svgString[viewBoxRange])
+        let cleanValue = String(viewBoxValue.dropFirst(9).dropLast(1))
+        let parts = cleanValue.split(separator: " ")
+        if parts.count >= 4 {
+            return (String(parts[2]), String(parts[3]))
+        }
+    }
+
+    // Fallback: look for width and height attributes
+    var width: String?
+    var height: String?
+
+    if let widthRange = svgString.range(
+        of: "width=[\"']([^\"']+)[\"']", options: .regularExpression)
+    {
+        let widthValue = String(svgString[widthRange])
+        width = String(widthValue.dropFirst(7).dropLast(1))
+    }
+    if let heightRange = svgString.range(
+        of: "height=[\"']([^\"']+)[\"']", options: .regularExpression)
+    {
+        let heightValue = String(svgString[heightRange])
+        height = String(heightValue.dropFirst(8).dropLast(1))
+    }
+
+    if let w = width, let h = height {
+        return (w, h)
+    }
+
+    return nil
+}
+
+// Get file size in human-readable format
+func getFileSizeString(svgString: String) -> String {
+    let bytes = svgString.utf8.count
+
+    if bytes < 1024 {
+        return "\(bytes) B"
+    } else if bytes < 1024 * 1024 {
+        let kb = Double(bytes) / 1024.0
+        return String(format: "%.1f KB", kb)
+    } else {
+        let mb = Double(bytes) / (1024.0 * 1024.0)
+        return String(format: "%.1f MB", mb)
+    }
+}
+
+// Extract creator/application from SVG metadata
+func extractSVGCreator(svgString: String) -> String? {
+    // Look for common creator attributes
+    let patterns = [
+        "<!--.*?Creator:\\s*([^-]+)-->",  // SVG comment format
+        "<meta\\s+name=[\"']creator[\"']\\s+content=[\"']([^\"']+)[\"']",
+        "application-name=[\"']([^\"']+)[\"']",
+        "Creator:\\s*([^\\n<]+)",
+    ]
+
+    for pattern in patterns {
+        if let range = svgString.range(of: pattern, options: .regularExpression) {
+            let match = String(svgString[range])
+            // Try to extract the actual value
+            if let valueRange = match.range(
+                of: ":\\s*(.+?)(?:[\"']|-->|<|$)", options: .regularExpression)
+            {
+                let value = String(match[valueRange]).trimmingCharacters(
+                    in: CharacterSet(charactersIn: ": \"'"))
+                if !value.isEmpty && value != "Creator" {
+                    return value
+                }
+            }
+        }
+    }
+
+    return nil
+}
+
+// Wrap SVG with responsive HTML/CSS to fill container
+func wrapSVGForResponsiveDisplay(svgString: String) -> String {
+    return """
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <meta charset="UTF-8">
+            <style>
+                * {
+                    margin: 0;
+                    padding: 0;
+                    box-sizing: border-box;
+                }
+                html, body {
+                    width: 100%;
+                    height: 100%;
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                    background: transparent;
+                }
+                svg {
+                    width: 100%;
+                    height: 100%;
+                    max-width: 100%;
+                    max-height: 100%;
+                    object-fit: contain;
+                }
+            </style>
+        </head>
+        <body>
+            \(svgString)
+        </body>
+        </html>
+        """
+}

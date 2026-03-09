@@ -99,9 +99,61 @@ extension DraggablePreviewViewWrapper {
     }
 }
 
+// Metadata info overlay for SVG details
+struct MetadataOverlay: View {
+    let svgString: String
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 4) {
+            if let (width, height) = extractSVGDimensions(svgString: svgString) {
+                MetadataRow(label: "Dimensions", value: "\(width) × \(height)")
+            }
+
+            MetadataRow(label: "Size", value: getFileSizeString(svgString: svgString))
+
+            if let creator = extractSVGCreator(svgString: svgString) {
+                MetadataRow(label: "Source", value: creator)
+            }
+        }
+        .font(.system(size: 10, design: .monospaced))
+        .foregroundColor(.white)
+        .padding(.horizontal, 8)
+        .padding(.vertical, 6)
+        .background(Color.black.opacity(0.75))
+        .cornerRadius(6)
+        .frame(maxWidth: 200)
+    }
+}
+
+// Helper for aligned metadata rows
+struct MetadataRow: View {
+    let label: String
+    let value: String
+
+    var body: some View {
+        HStack(alignment: .top, spacing: 0) {
+            Text(label)
+                .frame(width: 65, alignment: .trailing)
+            Text(":")
+                .padding(.horizontal, 3)
+            Text(value)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .lineLimit(1)
+        }
+    }
+}
+
 struct ContentView: View {
     @ObservedObject var appState = AppState.shared
-    @State var localStatus: String = "Awaiting vector data for conversion"
+    @State var localStatus: String = ""
+
+    var statusMessage: String {
+        if !appState.svgString.isEmpty {
+            return "Ready to drag into Keynote"
+        } else {
+            return "Open a file, paste from clipboard, or drag SVG here"
+        }
+    }
 
     var body: some View {
         VStack(spacing: 0) {
@@ -111,7 +163,6 @@ struct ContentView: View {
                     Color(NSColor.windowBackgroundColor)
 
                     SVGWebView(svg: appState.svgString)
-                        .padding(5)
 
                     // Custom NSView wrapper for proper drag handling
                     DraggablePreviewViewWrapper(svgString: appState.svgString)
@@ -131,11 +182,25 @@ struct ContentView: View {
                                 let svg = appState.svgString
                                 if !svg.isEmpty {
                                     if svgToClipboard(svgData: svg) {
-                                        localStatus = "Converted and copied for Keynote!"
+                                        localStatus = "Copied to clipboard!"
                                     }
                                 }
                             }
+                            Divider()
+                            Button("Clear") {
+                                appState.svgString = ""
+                                appState.svgURL = ""
+                                localStatus = ""
+                            }
                         }
+
+                    // Metadata overlay in bottom-right corner
+                    VStack(alignment: .trailing) {
+                        Spacer()
+                        MetadataOverlay(svgString: appState.svgString)
+                            .padding(8)
+                    }
+                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomTrailing)
                 }
                 .cornerRadius(8)
                 .overlay(
@@ -171,7 +236,7 @@ struct ContentView: View {
             }
 
             // Status area
-            Text(localStatus)
+            Text(statusMessage)
                 .font(.subheadline)
                 .multilineTextAlignment(.center)
                 .padding(.horizontal)
@@ -188,8 +253,7 @@ struct ContentView: View {
                     let picked = browseFile()
                     if !picked.isEmpty {
                         appState.svgString = picked
-                        localStatus =
-                            "Loaded: " + (URL(fileURLWithPath: appState.svgURL).lastPathComponent)
+                        localStatus = "Loaded!"
                     }
                 }) {
                     Text("Open SVG File...")
@@ -201,13 +265,13 @@ struct ContentView: View {
                     if !svg.isEmpty {
                         appState.svgString = svg
                         if svgToClipboard(svgData: svg) {
-                            localStatus = "Converted! Switch to Keynote and Paste (⌘V)."
+                            localStatus = "Ready to paste into Keynote!"
                         }
                     } else {
-                        localStatus = "No SVG data found on clipboard."
+                        localStatus = "No SVG found on clipboard."
                     }
                 }) {
-                    Text("Convert into Editable Keynote Format")
+                    Text("Copy to Clipboard")
                         .frame(maxWidth: .infinity)
                 }
 
