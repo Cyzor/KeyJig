@@ -1,4 +1,5 @@
 import Cocoa
+import Combine
 import SwiftUI
 import WebKit
 
@@ -8,6 +9,9 @@ class MainWindowController: NSWindowController, NSWindowDelegate {
 
     /// Each window owns its own state — changes in one window never affect another.
     let appState: AppState
+
+    /// Retains the Combine subscription that keeps the proxy icon current.
+    private var representedURLCancellable: AnyCancellable?
 
     init(appState: AppState = AppState(), isPrimary: Bool = false) {
         self.appState = appState
@@ -30,6 +34,9 @@ class MainWindowController: NSWindowController, NSWindowDelegate {
         window.contentViewController = NSHostingController(
             rootView: ContentView(appState: appState))
 
+        // Enable the proxy icon. representedURL will be kept current below.
+        window.isExcludedFromWindowsMenu = false
+
         if isPrimary {
             // Setting the autosave name AFTER super.init means AppKit can
             // actually find and restore the previously saved frame.
@@ -41,9 +48,58 @@ class MainWindowController: NSWindowController, NSWindowDelegate {
             // Secondary windows cascade; they don't clobber the primary's saved frame.
             window.center()
         }
+
+        // Subscribe to AppState changes and update the proxy icon accordingly.
+        // Priority order:
+        //   1. Temp bridge file — exists once svgToClipboard() or an outbound
+        //      drag has run, i.e. the file Keynote actually consumed.
+        //   2. Source file — set when the SVG was opened from disk or dropped.
+        //   3. nil — well is empty; clears the proxy icon.
+        representedURLCancellable = appState.objectWillChange
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] _ in
+                // objectWillChange fires before the value changes, so we
+                // defer by one run-loop turn to read the new value.
+                DispatchQueue.main.async { self?.updateRepresentedURL() }
+            }
     }
 
     required init?(coder: NSCoder) { fatalError("init(coder:) not used") }
+
+    // MARK: Proxy icon
+
+    /// Resolves and applies the most meaningful file URL to the window's proxy icon.
+    func updateRepresentedURL() {
+        guard !appState.svgString.isEmpty else {
+            // Well is empty — remove proxy icon.
+            window?.representedURL = nil
+            window?.title = "Vector Importer"
+            return
+        }
+
+        // Prefer the temp bridge file (the converted output Keynote consumed)
+        // if it actually exists on disk and is non-empty.
+        let tempURL = getTempSVGURL()
+        if FileManager.default.fileExists(atPath: tempURL.path),
+            (try? tempURL.resourceValues(forKeys: [.fileSizeKey]).fileSize ?? 0) ?? 0 > 0
+        {
+            window?.representedURL = tempURL
+            window?.title = tempURL.deletingPathExtension().lastPathComponent
+            return
+        }
+
+        // Fall back to the original source file if one is known.
+        if !appState.svgURL.isEmpty {
+            let sourceURL = URL(fileURLWithPath: appState.svgURL)
+            window?.representedURL = sourceURL
+            window?.title = sourceURL.deletingPathExtension().lastPathComponent
+            return
+        }
+
+        // SVG came from the clipboard — no file to represent yet.
+        window?.representedURL = nil
+        window?.title = "Vector Importer"
+    }
 
     // MARK: NSWindowDelegate
 
@@ -91,9 +147,13 @@ class AppMenu {
             withTitle: "File", action: nil, keyEquivalent: "")
         let fileMenu = NSMenu(title: "File")
         fileMenu.addItem(
+            withTitle: "Show Menubar Panel",
+            action: #selector(AppDelegate.togglePopover),
+            keyEquivalent: "n")
+        fileMenu.addItem(
             withTitle: "Show Window",
             action: #selector(AppDelegate.showMainWindow),
-            keyEquivalent: "n")
+            keyEquivalent: "")
         fileMenu.addItem(
             withTitle: "New Viewer",
             action: #selector(AppDelegate.newFloatingWindow),
@@ -154,8 +214,12 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     /// All open windows, including the primary.
     var floatingWindows: [MainWindowController] = []
 
-    /// Status-bar item — secondary shortcut to surface the app.
+    /// Status-bar item — click toggles the menubar popover.
     var statusBarItem: NSStatusItem?
+
+    /// The menubar popover and its own independent AppState.
+    var popover: NSPopover?
+    var popoverAppState: AppState = AppState()
 
     // MARK: Lifecycle
 
@@ -164,6 +228,14 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         NSApplication.shared.delegate = self
 
         AppMenu.setupMenuBar()
+
+        // ── Menubar popover ───────────────────────────────────────────────
+        let popover = NSPopover()
+        popover.contentSize = NSSize(width: 400, height: 520)
+        popover.contentViewController = NSHostingController(
+            rootView: ContentView(appState: popoverAppState))
+        popover.behavior = .transient
+        self.popover = popover
 
         // ── Status bar ────────────────────────────────────────────────────
         statusBarItem = NSStatusBar.system.statusItem(
@@ -174,7 +246,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                 icon.isTemplate = true
                 button.image = icon
             }
-            button.action = #selector(showMainWindow)
+            button.action = #selector(togglePopover)
             button.target = self
         }
 
@@ -222,6 +294,22 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     // MARK: Actions
+
+    /// Toggles the menubar popover, seeding it from the clipboard when opening.
+    @objc func togglePopover() {
+        guard let popover = self.popover,
+            let button = statusBarItem?.button
+        else { return }
+        if popover.isShown {
+            popover.performClose(nil)
+        } else {
+            checkAndLoadClipboardSVG(into: popoverAppState)
+            popover.show(
+                relativeTo: button.bounds,
+                of: button,
+                preferredEdge: .minY)
+        }
+    }
 
     /// Brings the primary window to the front, recreating it if it was closed,
     /// and seeds it with whatever is currently on the clipboard.
@@ -347,6 +435,10 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         // transferred yet.
         if let state = frontWindowState {
             checkAndLoadClipboardSVG(into: state)
+        }
+        // Also seed the popover if it happens to be open.
+        if popover?.isShown == true {
+            checkAndLoadClipboardSVG(into: popoverAppState)
         }
     }
 
