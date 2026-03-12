@@ -351,7 +351,7 @@ struct ContentView: View {
                     let svg = convertClipboardToSVG()
                     if !svg.isEmpty {
                         appState.svgString = svg
-                        if svgToClipboard(svgData: svg) {
+                        if svgToClipboard(svgData: svg, appState: appState) != nil {
                             localStatus = "Ready to paste into Keynote!"
                         }
                     } else {
@@ -393,9 +393,10 @@ struct ContentView: View {
             SVGInteractionViewWrapper(
                 onDragStart: { [weak appState] in
                     guard let svg = appState?.svgString else { return nil }
-                    let url = getTempSVGURL()
+                    let url = makeTempSVGURL()
                     do {
                         try svg.write(to: url, atomically: true, encoding: .utf8)
+                        appState?.bridgeFileURL = url
                     } catch {
                         NSLog("VectorImporter: error writing temp SVG: \(error)")
                         return nil
@@ -407,7 +408,7 @@ struct ContentView: View {
                     localStatus = "Loaded!"
                 },
                 onCopyForKeynote: {
-                    if svgToClipboard(svgData: appState.svgString) {
+                    if svgToClipboard(svgData: appState.svgString, appState: appState) != nil {
                         localStatus = "Copied to clipboard!"
                     }
                 },

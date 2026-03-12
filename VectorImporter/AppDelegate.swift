@@ -77,14 +77,14 @@ class MainWindowController: NSWindowController, NSWindowDelegate {
             return
         }
 
-        // Prefer the temp bridge file (the converted output Keynote consumed)
-        // if it actually exists on disk and is non-empty.
-        let tempURL = getTempSVGURL()
-        if FileManager.default.fileExists(atPath: tempURL.path),
-            (try? tempURL.resourceValues(forKeys: [.fileSizeKey]).fileSize ?? 0) ?? 0 > 0
+        // Prefer the temp bridge file (the converted output Keynote consumed).
+        // We read it from appState.bridgeFileURL rather than recomputing a
+        // name, because the name is now randomised per write.
+        if let bridgeURL = appState.bridgeFileURL,
+            FileManager.default.fileExists(atPath: bridgeURL.path)
         {
-            window?.representedURL = tempURL
-            window?.title = tempURL.deletingPathExtension().lastPathComponent
+            window?.representedURL = bridgeURL
+            window?.title = bridgeURL.deletingPathExtension().lastPathComponent
             return
         }
 
