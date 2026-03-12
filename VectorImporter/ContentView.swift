@@ -3,103 +3,252 @@ import SVGWebView
 import SwiftUI
 import WebKit
 
-// Custom NSView for proper drag handling with cursor-relative offset
-class DraggablePreviewView: NSView {
+// MARK: - Unified interaction view (drag source + drop target + context menu)
+
+/// A single NSView that handles all three interaction modes without Z-order conflicts:
+///   • mouseDown  → outbound drag to Keynote (drag source)
+///   • draggingEntered/performDragOperation → inbound SVG drop (drag destination)
+///   • menu(for:) → right-click context menu
+class SVGInteractionView: NSView {
+
+    // MARK: Callbacks
+
+    /// Return the file URL to use as the drag payload, or nil to cancel the drag.
     var onDragStart: (() -> URL?)?
 
+    /// Called with the loaded SVG string when a valid inbound drop lands.
+    var onSVGDropped: ((String) -> Void)?
+
+    /// Called when the user chooses "Convert and Copy for Keynote" from the context menu.
+    var onCopyForKeynote: (() -> Void)?
+
+    /// Called when the user chooses "Clear" from the context menu.
+    var onClear: (() -> Void)?
+
+    // MARK: Private state
+
+    private var isDropHighlighted = false {
+        didSet { needsDisplay = true }
+    }
+
+    // Accepted inbound pasteboard types
+    private static let acceptedTypes: [NSPasteboard.PasteboardType] = [
+        .fileURL,
+        NSPasteboard.PasteboardType("public.svg-image"),
+        NSPasteboard.PasteboardType("public.file-url"),
+        .string,
+    ]
+
+    // MARK: Init
+
+    override init(frame frameRect: NSRect) {
+        super.init(frame: frameRect)
+        registerForDraggedTypes(Self.acceptedTypes)
+    }
+
+    required init?(coder: NSCoder) {
+        super.init(coder: coder)
+        registerForDraggedTypes(Self.acceptedTypes)
+    }
+
+    // MARK: Drawing
+
+    override func draw(_ dirtyRect: NSRect) {
+        super.draw(dirtyRect)
+        guard isDropHighlighted else { return }
+        NSColor.controlAccentColor.withAlphaComponent(0.15).setFill()
+        bounds.fill()
+        NSColor.controlAccentColor.setStroke()
+        let path = NSBezierPath(
+            roundedRect: bounds.insetBy(dx: 1, dy: 1),
+            xRadius: 8, yRadius: 8)
+        path.lineWidth = 2
+        path.stroke()
+    }
+
+    // MARK: Outbound drag (NSDraggingSource)
+
     override func mouseDown(with event: NSEvent) {
+        // If there is no drag payload, fall through to default behaviour
+        // (which lets SwiftUI handle taps etc.).
         guard let fileURL = onDragStart?() else {
             super.mouseDown(with: event)
             return
         }
 
-        // Get the mouse location in this view's coordinates
         let dragPoint = event.locationInWindow
         let viewPoint = self.convert(dragPoint, from: nil)
 
-        // Create drag image - a simple box with icon and text
+        // Build a lightweight drag image
         let dragImage = NSImage(size: NSSize(width: 180, height: 180))
         dragImage.lockFocus()
-
         NSColor.controlBackgroundColor.setFill()
         NSBezierPath(
-            roundedRect: NSRect(x: 0, y: 0, width: 180, height: 180), xRadius: 12, yRadius: 12
+            roundedRect: NSRect(x: 0, y: 0, width: 180, height: 180),
+            xRadius: 12, yRadius: 12
         ).fill()
-
-        // Draw SF Symbol icon
         if #available(macOS 11.0, *) {
             if let icon = NSImage(
-                systemSymbolName: "photo.fill.on.rectangle.fill", accessibilityDescription: "image")
-            {
-                let iconRect = NSRect(x: 50, y: 60, width: 80, height: 80)
-                icon.draw(in: iconRect)
+                systemSymbolName: "photo.fill.on.rectangle.fill",
+                accessibilityDescription: "image"
+            ) {
+                icon.draw(in: NSRect(x: 50, y: 60, width: 80, height: 80))
             }
-        } else {
-            // Fallback for older macOS: draw a simple circle as placeholder
-            NSColor.controlAccentColor.setFill()
-            NSBezierPath(ovalIn: NSRect(x: 65, y: 105, width: 50, height: 50)).fill()
         }
-
         let style = NSMutableParagraphStyle()
         style.alignment = .center
-
         let attrs: [NSAttributedString.Key: Any] = [
             .font: NSFont.systemFont(ofSize: 15, weight: .semibold),
             .foregroundColor: NSColor.labelColor,
             .paragraphStyle: style,
         ]
-
-        let text = NSAttributedString(string: "Drag into Keynote", attributes: attrs)
-        let textRect = NSRect(x: 0, y: 15, width: 180, height: 30)
-        text.draw(in: textRect)
-
+        NSAttributedString(string: "Drag into Keynote", attributes: attrs)
+            .draw(in: NSRect(x: 0, y: 15, width: 180, height: 30))
         dragImage.unlockFocus()
 
-        // Create dragging item with the file URL
         let draggingItem = NSDraggingItem(pasteboardWriter: fileURL as NSURL)
-        let imageFrame = NSRect(x: viewPoint.x - 90, y: viewPoint.y - 90, width: 180, height: 180)
-        draggingItem.setDraggingFrame(imageFrame, contents: dragImage)
-
-        // Begin dragging session
-        _ = self.beginDraggingSession(
-            with: [draggingItem], event: event, source: self)
+        draggingItem.setDraggingFrame(
+            NSRect(x: viewPoint.x - 90, y: viewPoint.y - 90, width: 180, height: 180),
+            contents: dragImage)
+        _ = self.beginDraggingSession(with: [draggingItem], event: event, source: self)
     }
-}
 
-// Make it a dragging source
-extension DraggablePreviewView: NSDraggingSource {
-    func draggingSession(
-        _ session: NSDraggingSession, sourceOperationMaskFor context: NSDraggingContext
-    ) -> NSDragOperation {
+    // MARK: Inbound drop (NSDraggingDestination)
+
+    override func draggingEntered(_ sender: NSDraggingInfo) -> NSDragOperation {
+        // Reject drags that originated from this same view (outbound drags
+        // loop back through the destination protocol; we don't want to accept
+        // our own payload as a new drop).
+        guard sender.draggingSource as? SVGInteractionView !== self else { return [] }
+        guard svgString(from: sender.draggingPasteboard) != nil else { return [] }
+        isDropHighlighted = true
         return .copy
     }
+
+    override func draggingUpdated(_ sender: NSDraggingInfo) -> NSDragOperation {
+        guard sender.draggingSource as? SVGInteractionView !== self else { return [] }
+        guard svgString(from: sender.draggingPasteboard) != nil else { return [] }
+        return .copy
+    }
+
+    override func draggingExited(_ sender: NSDraggingInfo?) {
+        isDropHighlighted = false
+    }
+
+    override func prepareForDragOperation(_ sender: NSDraggingInfo) -> Bool {
+        guard sender.draggingSource as? SVGInteractionView !== self else { return false }
+        return svgString(from: sender.draggingPasteboard) != nil
+    }
+
+    override func performDragOperation(_ sender: NSDraggingInfo) -> Bool {
+        isDropHighlighted = false
+        guard sender.draggingSource as? SVGInteractionView !== self else { return false }
+        guard let svg = svgString(from: sender.draggingPasteboard) else { return false }
+        onSVGDropped?(svg)
+        return true
+    }
+
+    override func concludeDragOperation(_ sender: NSDraggingInfo?) {
+        isDropHighlighted = false
+    }
+
+    // MARK: Context menu
+
+    override func menu(for event: NSEvent) -> NSMenu? {
+        // Only show a menu when there is loaded content to act on.
+        guard onCopyForKeynote != nil || onClear != nil else { return nil }
+        let menu = NSMenu()
+        let copyItem = menu.addItem(
+            withTitle: "Convert and Copy for Keynote",
+            action: #selector(handleCopyForKeynote),
+            keyEquivalent: "")
+        copyItem.target = self
+        copyItem.isEnabled = onCopyForKeynote != nil
+        menu.addItem(NSMenuItem.separator())
+        let clearItem = menu.addItem(
+            withTitle: "Clear",
+            action: #selector(handleClear),
+            keyEquivalent: "")
+        clearItem.target = self
+        clearItem.isEnabled = onClear != nil
+        return menu
+    }
+
+    @objc private func handleCopyForKeynote() { onCopyForKeynote?() }
+    @objc private func handleClear() { onClear?() }
+
+    // MARK: SVG pasteboard helper
+
+    /// Tries every accepted type in priority order and returns the first valid SVG string.
+    private func svgString(from pasteboard: NSPasteboard) -> String? {
+        // 1. Explicit SVG data type (Affinity Designer, some exporters)
+        let svgType = NSPasteboard.PasteboardType("public.svg-image")
+        if let data = pasteboard.data(forType: svgType),
+            let s = String(data: data, encoding: .utf8),
+            s.contains("<svg")
+        {
+            return s
+        }
+
+        // 2. File URL — accept only .svg files
+        if let urls = pasteboard.readObjects(
+            forClasses: [NSURL.self],
+            options: [.urlReadingFileURLsOnly: true]) as? [URL]
+        {
+            for url in urls where url.pathExtension.lowercased() == "svg" {
+                if let s = try? String(contentsOf: url, encoding: .utf8),
+                    s.contains("<svg")
+                {
+                    return s
+                }
+            }
+        }
+
+        // 3. Plain string containing SVG markup
+        if let s = pasteboard.string(forType: .string), s.contains("<svg") {
+            return s
+        }
+
+        return nil
+    }
 }
 
-// SwiftUI wrapper for the custom drag view
-struct DraggablePreviewViewWrapper: NSViewRepresentable {
-    let svgString: String
+// Make SVGInteractionView a proper drag source
+extension SVGInteractionView: NSDraggingSource {
+    func draggingSession(
+        _ session: NSDraggingSession,
+        sourceOperationMaskFor context: NSDraggingContext
+    ) -> NSDragOperation { .copy }
+}
+
+// MARK: - SwiftUI wrapper
+
+struct SVGInteractionViewWrapper: NSViewRepresentable {
+
+    // Drag-source callback
     var onDragStart: (() -> URL?)?
 
-    func makeNSView(context: Context) -> DraggablePreviewView {
-        let view = DraggablePreviewView()
-        view.onDragStart = onDragStart
-        return view
+    // Drop-destination callback
+    var onSVGDropped: ((String) -> Void)?
+
+    // Context-menu callbacks (nil when the well is empty)
+    var onCopyForKeynote: (() -> Void)?
+    var onClear: (() -> Void)?
+
+    func makeNSView(context: Context) -> SVGInteractionView {
+        SVGInteractionView()
     }
 
-    func updateNSView(_ nsView: DraggablePreviewView, context: Context) {
+    func updateNSView(_ nsView: SVGInteractionView, context: Context) {
         nsView.onDragStart = onDragStart
+        nsView.onSVGDropped = onSVGDropped
+        nsView.onCopyForKeynote = onCopyForKeynote
+        nsView.onClear = onClear
     }
 }
 
-extension DraggablePreviewViewWrapper {
-    func onDragStart(_ callback: @escaping () -> URL?) -> Self {
-        var copy = self
-        copy.onDragStart = callback
-        return copy
-    }
-}
+// MARK: - Metadata overlay
 
-// Metadata info overlay for SVG details
 struct MetadataOverlay: View {
     let svgString: String
 
@@ -108,9 +257,7 @@ struct MetadataOverlay: View {
             if let (width, height) = extractSVGDimensions(svgString: svgString) {
                 MetadataRow(label: "Dimensions", value: "\(width) × \(height)")
             }
-
             MetadataRow(label: "Size", value: getFileSizeString(svgString: svgString))
-
             if let creator = extractSVGCreator(svgString: svgString) {
                 MetadataRow(label: "Source", value: creator)
             }
@@ -125,7 +272,6 @@ struct MetadataOverlay: View {
     }
 }
 
-// Helper for aligned metadata rows
 struct MetadataRow: View {
     let label: String
     let value: String
@@ -143,99 +289,44 @@ struct MetadataRow: View {
     }
 }
 
+// MARK: - Main content view
+
 struct ContentView: View {
-    @ObservedObject var appState = AppState.shared
-    @State var localStatus: String = ""
+    @ObservedObject var appState: AppState
+    @State private var localStatus: String = ""
+
+    init(appState: AppState = AppState()) {
+        self.appState = appState
+    }
 
     var statusMessage: String {
+        if !localStatus.isEmpty { return localStatus }
         if !appState.svgString.isEmpty {
-            return "Ready to drag into Keynote"
-        } else {
-            return "Open a file, paste from clipboard, or drag SVG here"
+            return "Ready — drag the preview into Keynote, or Copy to Clipboard"
         }
+        return "Open a file, paste from clipboard, or drop an SVG here"
     }
 
     var body: some View {
         VStack(spacing: 0) {
-            // Preview Area (Draggable) - Fills entire container
-            if !appState.svgString.isEmpty {
-                ZStack {
-                    Color(NSColor.windowBackgroundColor)
 
-                    SVGWebView(svg: appState.svgString)
-
-                    // Custom NSView wrapper for proper drag handling
-                    DraggablePreviewViewWrapper(svgString: appState.svgString)
-                        .onDragStart { [weak appState] in
-                            let tempURL = getTempSVGURL()
-                            do {
-                                try appState?.svgString.write(
-                                    to: tempURL, atomically: true, encoding: .utf8)
-                            } catch {
-                                NSLog("Error writing temp SVG: \(error)")
-                                return nil
-                            }
-                            return tempURL
-                        }
-                        .contextMenu {
-                            Button("Convert and Copy for Keynote") {
-                                let svg = appState.svgString
-                                if !svg.isEmpty {
-                                    if svgToClipboard(svgData: svg) {
-                                        localStatus = "Copied to clipboard!"
-                                    }
-                                }
-                            }
-                            Divider()
-                            Button("Clear") {
-                                appState.svgString = ""
-                                appState.svgURL = ""
-                                localStatus = ""
-                            }
-                        }
-
-                    // Metadata overlay in bottom-right corner
-                    VStack(alignment: .trailing) {
-                        Spacer()
-                        MetadataOverlay(svgString: appState.svgString)
-                            .padding(8)
-                    }
-                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomTrailing)
+            // ── Preview / drop well ───────────────────────────────────────
+            Group {
+                if !appState.svgString.isEmpty {
+                    loadedPreview
+                } else {
+                    emptyWell
                 }
-                .cornerRadius(8)
-                .overlay(
-                    RoundedRectangle(cornerRadius: 8)
-                        .stroke(Color.secondary.opacity(0.2), lineWidth: 1)
-                )
-                .padding([.horizontal, .top])
-                .frame(minHeight: 100, maxHeight: .infinity)
-            } else {
-                VStack(spacing: 12) {
-                    Image("Placeholder")
-                        .renderingMode(.template)
-                        .resizable()
-                        .aspectRatio(contentMode: .fit)
-                        .frame(width: 80, height: 80)
-                        .foregroundColor(.secondary)
-                    Text("No SVG Loaded")
-                        .font(.headline)
-                        .foregroundColor(.secondary)
-                    Text("Open a file, paste from clipboard, or drag SVG content here")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-                        .multilineTextAlignment(.center)
-                }
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
-                .background(Color(NSColor.windowBackgroundColor))
-                .cornerRadius(8)
-                .overlay(
-                    RoundedRectangle(cornerRadius: 8)
-                        .stroke(Color.secondary.opacity(0.2), lineWidth: 1)
-                )
-                .padding([.horizontal, .top])
             }
+            .cornerRadius(8)
+            .overlay(
+                RoundedRectangle(cornerRadius: 8)
+                    .stroke(Color.secondary.opacity(0.2), lineWidth: 1)
+            )
+            .padding([.horizontal, .top])
+            .frame(minHeight: 100, maxHeight: .infinity)
 
-            // Status area
+            // ── Status ────────────────────────────────────────────────────
             Text(statusMessage)
                 .font(.subheadline)
                 .multilineTextAlignment(.center)
@@ -247,20 +338,16 @@ struct ContentView: View {
 
             Divider().padding(.vertical, 8)
 
-            // Action Buttons
+            // ── Action buttons ────────────────────────────────────────────
             VStack(spacing: 8) {
-                Button(action: {
-                    let picked = browseFile()
-                    if !picked.isEmpty {
-                        appState.svgString = picked
-                        localStatus = "Loaded!"
-                    }
-                }) {
-                    Text("Open SVG File...")
-                        .frame(maxWidth: .infinity)
+                Button {
+                    let picked = browseFile(into: appState)
+                    if !picked.isEmpty { localStatus = "Loaded!" }
+                } label: {
+                    Text("Open SVG File…").frame(maxWidth: .infinity)
                 }
 
-                Button(action: {
+                Button {
                     let svg = convertClipboardToSVG()
                     if !svg.isEmpty {
                         appState.svgString = svg
@@ -270,53 +357,143 @@ struct ContentView: View {
                     } else {
                         localStatus = "No SVG found on clipboard."
                     }
-                }) {
-                    Text("Copy to Clipboard")
-                        .frame(maxWidth: .infinity)
+                } label: {
+                    Text("Copy to Clipboard").frame(maxWidth: .infinity)
                 }
-
+                .disabled(appState.svgString.isEmpty)
             }
             .padding(.horizontal)
 
             Spacer(minLength: 0)
 
-            // Footer
+            // ── Footer ────────────────────────────────────────────────────
             HStack {
                 Text("VectorImporter")
                     .font(.caption)
                     .foregroundColor(.secondary)
-
                 Spacer()
             }
             .padding()
             .background(Color(NSColor.controlBackgroundColor).opacity(0.5))
         }
     }
+
+    // MARK: Sub-views
+
+    /// Shown when an SVG is loaded: renders the graphic and supports both
+    /// outbound drag to Keynote and inbound replacement drops.
+    private var loadedPreview: some View {
+        ZStack {
+            Color(NSColor.windowBackgroundColor)
+
+            SVGWebView(svg: appState.svgString)
+
+            // Single interaction layer — handles outbound drag, inbound drop,
+            // and right-click menu with no Z-order conflict.
+            SVGInteractionViewWrapper(
+                onDragStart: { [weak appState] in
+                    guard let svg = appState?.svgString else { return nil }
+                    let url = getTempSVGURL()
+                    do {
+                        try svg.write(to: url, atomically: true, encoding: .utf8)
+                    } catch {
+                        NSLog("VectorImporter: error writing temp SVG: \(error)")
+                        return nil
+                    }
+                    return url
+                },
+                onSVGDropped: { svg in
+                    appState.svgString = svg
+                    localStatus = "Loaded!"
+                },
+                onCopyForKeynote: {
+                    if svgToClipboard(svgData: appState.svgString) {
+                        localStatus = "Copied to clipboard!"
+                    }
+                },
+                onClear: {
+                    appState.svgString = ""
+                    appState.svgURL = ""
+                    localStatus = ""
+                }
+            )
+
+            // Metadata badge — no hit testing so events reach the layer below.
+            VStack {
+                Spacer()
+                HStack {
+                    Spacer()
+                    MetadataOverlay(svgString: appState.svgString)
+                        .padding(8)
+                }
+            }
+            .allowsHitTesting(false)
+        }
+    }
+
+    /// Shown when no SVG is loaded: drop target only, no drag source or menu.
+    private var emptyWell: some View {
+        ZStack {
+            Color(NSColor.windowBackgroundColor)
+
+            // Interaction layer (drop only — onDragStart and menu callbacks are nil).
+            SVGInteractionViewWrapper(
+                onSVGDropped: { svg in
+                    appState.svgString = svg
+                    localStatus = "Loaded!"
+                }
+            )
+
+            // Visual prompt — no hit testing so drops reach the layer below.
+            VStack(spacing: 12) {
+                Image("Placeholder")
+                    .renderingMode(.template)
+                    .resizable()
+                    .aspectRatio(contentMode: .fit)
+                    .frame(width: 80, height: 80)
+                    .foregroundColor(.secondary)
+
+                Text("No SVG Loaded")
+                    .font(.headline)
+                    .foregroundColor(.secondary)
+
+                Text(
+                    "Drop an SVG file here, open one with the button below,\n"
+                        + "or copy artwork to your clipboard and click Copy to Clipboard"
+                )
+                .font(.caption)
+                .foregroundColor(.secondary)
+                .multilineTextAlignment(.center)
+                .padding(.horizontal, 16)
+            }
+            .allowsHitTesting(false)
+        }
+    }
 }
 
-func browseFile() -> String {
+// MARK: - File browser helper
+
+@discardableResult
+func browseFile(into appState: AppState) -> String {
     let dialog = NSOpenPanel()
     dialog.title = "Choose a .svg file"
     dialog.showsHiddenFiles = false
     dialog.canChooseDirectories = false
-    dialog.canCreateDirectories = true
     dialog.allowsMultipleSelection = false
     dialog.allowedFileTypes = ["svg"]
 
-    if dialog.runModal() == NSApplication.ModalResponse.OK {
-        if let result = dialog.url {
-            AppState.shared.svgURL = result.path
-            do {
-                return try String(contentsOf: result, encoding: .utf8)
-            } catch {
-                NSLog("Error reading file")
-            }
-        }
+    guard dialog.runModal() == .OK, let url = dialog.url else { return "" }
+    let content = (try? String(contentsOf: url, encoding: .utf8)) ?? ""
+    if !content.isEmpty {
+        appState.svgURL = url.path
+        appState.svgString = content
     }
-    return ""
+    return content
 }
 
+// MARK: - Preview
+
 #Preview {
-    ContentView()
+    ContentView(appState: AppState())
         .frame(width: 480, height: 680)
 }
