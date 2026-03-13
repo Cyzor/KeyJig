@@ -266,10 +266,34 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
     /// Pushes clipboard SVG content into `state` only if the clipboard has
     /// something new — avoids stomping content the user loaded via file/drop.
+    ///
+    /// Fast path: checks for native SVG types synchronously.
+    /// Slow path: if no SVG is found but PDF/AICB is present and Inkscape is
+    /// installed, converts asynchronously and updates state on completion.
     private func checkAndLoadClipboardSVG(into state: AppState) {
+        // Fast path — native SVG, completes instantly.
         let svg = convertClipboardToSVG()
         if !svg.isEmpty, svg != state.svgString {
             state.svgString = svg
+            return
+        }
+
+        // Slow path — only attempt if the window is empty, there is convertible
+        // data on the clipboard, and Inkscape is actually installed.
+        guard state.svgString.isEmpty,
+            clipboardHasConvertibleVectorData(),
+            inkscapeURL() != nil
+        else { return }
+
+        state.conversionStatus = .converting
+        convertClipboardPDFToSVG { [weak state] result in
+            guard let state = state else { return }
+            if let svg = result, !svg.isEmpty {
+                state.svgString = svg
+                state.conversionStatus = .idle
+            } else {
+                state.conversionStatus = .failed
+            }
         }
     }
 
@@ -345,27 +369,54 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         floatingWindows.append(wc)
     }
 
-    /// Opens an SVG file into whichever window is currently key.
+    /// Opens a vector file into whichever window is currently key.
     /// Falls back to the primary window if no key window can be found.
+    /// Accepts SVG directly; converts PDF and AI via Inkscape when available.
     @objc func openSVGFile() {
         let dialog = NSOpenPanel()
-        dialog.title = "Choose a .svg file"
+        dialog.title = "Choose a vector file"
         dialog.showsHiddenFiles = false
         dialog.canChooseDirectories = false
         dialog.allowsMultipleSelection = false
-        dialog.allowedFileTypes = ["svg"]
+
+        var types = ["svg"]
+        if inkscapeURL() != nil {
+            types += ["pdf", "ai"]
+        }
+        dialog.allowedFileTypes = types
 
         guard dialog.runModal() == .OK, let url = dialog.url else { return }
 
         let target = frontWindowState
         guard let state = target else { return }
 
-        do {
-            let content = try String(contentsOf: url, encoding: .utf8)
-            state.svgURL = url.path
-            state.svgString = content
-        } catch {
-            NSLog("VectorImporter: error reading file: \(error)")
+        let ext = url.pathExtension.lowercased()
+
+        if ext == "svg" {
+            do {
+                let content = try String(contentsOf: url, encoding: .utf8)
+                state.svgURL = url.path
+                state.svgString = content
+            } catch {
+                NSLog("VectorImporter: error reading file: \(error)")
+            }
+            return
+        }
+
+        if ext == "pdf" || ext == "ai" {
+            state.conversionStatus = .converting
+            DispatchQueue.global(qos: .userInitiated).async {
+                let svg = convertFileToSVGWithInkscape(url: url)
+                DispatchQueue.main.async {
+                    if let svg = svg, !svg.isEmpty {
+                        state.svgURL = url.path
+                        state.svgString = svg
+                        state.conversionStatus = .idle
+                    } else {
+                        state.conversionStatus = .failed
+                    }
+                }
+            }
         }
     }
 
