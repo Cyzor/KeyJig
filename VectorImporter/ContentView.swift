@@ -36,6 +36,8 @@ class SVGInteractionView: NSView {
         .fileURL,
         NSPasteboard.PasteboardType("public.svg-image"),
         NSPasteboard.PasteboardType("public.file-url"),
+        NSPasteboard.PasteboardType("com.adobe.pdf"),
+        NSPasteboard.PasteboardType("Apple PDF pasteboard type"),
         .string,
     ]
 
@@ -190,21 +192,57 @@ class SVGInteractionView: NSView {
             return s
         }
 
-        // 2. File URL — accept only .svg files
+        // 2. File URL — SVG files are read directly; PDF and AI files are
+        //    converted via Inkscape if it is installed.
         if let urls = pasteboard.readObjects(
             forClasses: [NSURL.self],
             options: [.urlReadingFileURLsOnly: true]) as? [URL]
         {
-            for url in urls where url.pathExtension.lowercased() == "svg" {
-                if let s = try? String(contentsOf: url, encoding: .utf8),
-                    s.contains("<svg")
-                {
-                    return s
+            for url in urls {
+                switch url.pathExtension.lowercased() {
+                case "svg":
+                    if let s = try? String(contentsOf: url, encoding: .utf8),
+                        s.contains("<svg")
+                    {
+                        return s
+                    }
+                case "pdf", "ai":
+                    // Synchronous — drop operations are already dispatched off
+                    // the main thread by AppKit's drag machinery.
+                    if let s = convertFileToSVGWithInkscape(url: url) {
+                        return s
+                    }
+                default:
+                    break
                 }
             }
         }
 
-        // 3. Plain string containing SVG markup
+        // 3. PDF data on the pasteboard itself (e.g. dragged from a browser or
+        //    another app that provides PDF but not a file URL).
+        //    Only attempt if Inkscape is available.
+        if inkscapeURL() != nil {
+            let pdfTypes: [NSPasteboard.PasteboardType] = [
+                NSPasteboard.PasteboardType("com.adobe.pdf"),
+                NSPasteboard.PasteboardType("Apple PDF pasteboard type"),
+            ]
+            for type in pdfTypes {
+                if let data = pasteboard.data(forType: type), !data.isEmpty {
+                    let tempURL = URL(fileURLWithPath: NSTemporaryDirectory())
+                        .appendingPathComponent(UUID().uuidString)
+                        .appendingPathExtension("pdf")
+                    if (try? data.write(to: tempURL)) != nil,
+                        let s = convertFileToSVGWithInkscape(url: tempURL)
+                    {
+                        try? FileManager.default.removeItem(at: tempURL)
+                        return s
+                    }
+                    try? FileManager.default.removeItem(at: tempURL)
+                }
+            }
+        }
+
+        // 4. Plain string containing SVG markup
         if let s = pasteboard.string(forType: .string), s.contains("<svg") {
             return s
         }
@@ -300,6 +338,14 @@ struct ContentView: View {
     }
 
     var statusMessage: String {
+        switch appState.conversionStatus {
+        case .converting:
+            return "Converting via Inkscape…"
+        case .failed:
+            return "Conversion failed — no SVG or convertible data found."
+        case .idle:
+            break
+        }
         if !localStatus.isEmpty { return localStatus }
         if !appState.svgString.isEmpty {
             return "Ready — drag the preview into Keynote, or Copy to Clipboard"
@@ -327,30 +373,53 @@ struct ContentView: View {
             .frame(minHeight: 100, maxHeight: .infinity)
 
             // ── Status ────────────────────────────────────────────────────
-            Text(statusMessage)
-                .font(.subheadline)
-                .multilineTextAlignment(.center)
-                .padding(.horizontal)
-                .padding(.top, 8)
-                .padding(.bottom, 4)
-                .foregroundColor(.secondary)
-                .frame(height: 50, alignment: .top)
+            HStack(spacing: 6) {
+                if appState.conversionStatus == .converting {
+                    if #available(macOS 11.0, *) {
+                        ProgressView()
+                            .progressViewStyle(.circular)
+                            .scaleEffect(0.6)
+                            .frame(width: 14, height: 14)
+                    } else {
+                        // Fallback: animated ellipsis is handled in statusMessage
+                        EmptyView()
+                    }
+                }
+                Text(statusMessage)
+                    .font(.subheadline)
+                    .multilineTextAlignment(.center)
+                    .foregroundColor(
+                        appState.conversionStatus == .failed ? .red : .secondary)
+            }
+            .padding(.horizontal)
+            .padding(.top, 8)
+            .padding(.bottom, 4)
+            .frame(height: 50, alignment: .top)
 
             Divider().padding(.vertical, 8)
 
             // ── Action buttons ────────────────────────────────────────────
+            let isConverting = appState.conversionStatus == .converting
             VStack(spacing: 8) {
                 Button {
                     let picked = browseFile(into: appState)
-                    if !picked.isEmpty { localStatus = "Loaded!" }
+                    // "(converting)" is the sentinel returned when a background
+                    // conversion was kicked off — conversionStatus drives the
+                    // message in that case, so we don't overwrite it here.
+                    if picked != "(converting)" && !picked.isEmpty {
+                        localStatus = "Loaded!"
+                        appState.conversionStatus = .idle
+                    }
                 } label: {
                     Text("Open SVG File…").frame(maxWidth: .infinity)
                 }
+                .disabled(isConverting)
 
                 Button {
                     let svg = convertClipboardToSVG()
                     if !svg.isEmpty {
                         appState.svgString = svg
+                        appState.conversionStatus = .idle
                         if svgToClipboard(svgData: svg, appState: appState) != nil {
                             localStatus = "Ready to paste into Keynote!"
                         }
@@ -360,7 +429,7 @@ struct ContentView: View {
                 } label: {
                     Text("Copy to Clipboard").frame(maxWidth: .infinity)
                 }
-                .disabled(appState.svgString.isEmpty)
+                .disabled(appState.svgString.isEmpty || isConverting)
             }
             .padding(.horizontal)
 
@@ -415,6 +484,8 @@ struct ContentView: View {
                 onClear: {
                     appState.svgString = ""
                     appState.svgURL = ""
+                    appState.bridgeFileURL = nil
+                    appState.conversionStatus = .idle
                     localStatus = ""
                 }
             )
@@ -429,6 +500,13 @@ struct ContentView: View {
                 }
             }
             .allowsHitTesting(false)
+        }
+        .onReceive(appState.$svgString) { newValue in
+            // When content arrives externally (clipboard detection, drop),
+            // clear any stale local status so the computed statusMessage shows.
+            if !newValue.isEmpty {
+                localStatus = ""
+            }
         }
     }
 
@@ -477,19 +555,54 @@ struct ContentView: View {
 @discardableResult
 func browseFile(into appState: AppState) -> String {
     let dialog = NSOpenPanel()
-    dialog.title = "Choose a .svg file"
+    dialog.title = "Choose a vector file"
     dialog.showsHiddenFiles = false
     dialog.canChooseDirectories = false
     dialog.allowsMultipleSelection = false
-    dialog.allowedFileTypes = ["svg"]
+
+    // Always offer SVG. Offer PDF and AI only when Inkscape is available,
+    // so the extra types don't appear greyed-out and confuse the user.
+    var types = ["svg"]
+    if inkscapeURL() != nil {
+        types += ["pdf", "ai"]
+    }
+    dialog.allowedFileTypes = types
 
     guard dialog.runModal() == .OK, let url = dialog.url else { return "" }
-    let content = (try? String(contentsOf: url, encoding: .utf8)) ?? ""
-    if !content.isEmpty {
-        appState.svgURL = url.path
-        appState.svgString = content
+
+    let ext = url.pathExtension.lowercased()
+
+    if ext == "svg" {
+        // Fast path — read directly.
+        let content = (try? String(contentsOf: url, encoding: .utf8)) ?? ""
+        if !content.isEmpty {
+            appState.svgURL = url.path
+            appState.svgString = content
+        }
+        return content
     }
-    return content
+
+    if ext == "pdf" || ext == "ai" {
+        // Slow path — convert via Inkscape on a background thread.
+        appState.conversionStatus = .converting
+        DispatchQueue.global(qos: .userInitiated).async {
+            let svg = convertFileToSVGWithInkscape(url: url)
+            DispatchQueue.main.async {
+                if let svg = svg, !svg.isEmpty {
+                    appState.svgURL = url.path
+                    appState.svgString = svg
+                    appState.conversionStatus = .idle
+                } else {
+                    appState.conversionStatus = .failed
+                }
+            }
+        }
+        // Return a sentinel so the caller knows a conversion was kicked off,
+        // without blocking the main thread.
+        return "(converting)"
+    }
+
+    return ""
 }
 
 // MARK: - Preview

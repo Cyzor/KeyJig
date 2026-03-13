@@ -1,6 +1,12 @@
 import Cocoa
 import SwiftUI
 
+enum ConversionStatus: Equatable {
+    case idle
+    case converting
+    case failed
+}
+
 class AppState: ObservableObject {
     @Published var svgURL: String = ""
     @Published var svgString: String = ""
@@ -8,25 +14,65 @@ class AppState: ObservableObject {
     /// Stored here so the proxy icon can find it even though each write now
     /// produces a uniquely-named file.
     @Published var bridgeFileURL: URL? = nil
+    /// Tracks background PDF→SVG conversion so the UI can show feedback.
+    @Published var conversionStatus: ConversionStatus = .idle
 }
 
+// MARK: - Clipboard SVG detection
+
+/// Synchronously checks the clipboard for SVG content.
+/// Returns the SVG string if found, empty string otherwise.
+/// Fast path only — no subprocesses, no I/O beyond the pasteboard read.
 func convertClipboardToSVG() -> String {
     let pasteboard = NSPasteboard.general
 
-    // 1. Check for explicit SVG types (Affinity Designer often provides this)
+    // 1. Explicit SVG data type (Affinity Designer with SVG export enabled,
+    //    Inkscape, some web browsers)
     let svgType = NSPasteboard.PasteboardType("public.svg-image")
     if let data = pasteboard.data(forType: svgType),
-        let svgString = String(data: data, encoding: .utf8)
+        let svgString = String(data: data, encoding: .utf8),
+        svgString.contains("<svg")
     {
         return svgString
     }
 
-    // 2. Check for raw SVG text in the string type
+    // 2. Raw SVG text on the string pasteboard
     if let content = pasteboard.string(forType: .string), content.contains("<svg") {
         return content
     }
 
     return ""
+}
+
+/// Returns true if the clipboard contains PDF or AICB vector data that could
+/// be converted via Inkscape, but no native SVG was found.
+/// Used to decide whether to attempt the slow conversion path.
+func clipboardHasConvertibleVectorData() -> Bool {
+    let pasteboard = NSPasteboard.general
+    let types = pasteboard.types ?? []
+    let vectorTypes: [NSPasteboard.PasteboardType] = [
+        NSPasteboard.PasteboardType("Apple PDF pasteboard type"),
+        NSPasteboard.PasteboardType("com.adobe.pdf"),
+        NSPasteboard.PasteboardType("com.adobe.illustrator.aicb"),
+    ]
+    return vectorTypes.contains { types.contains($0) }
+}
+
+/// Extracts the best available PDF data from the clipboard.
+/// Prefers the Adobe PDF type; falls back to Apple's.
+func pdfDataFromClipboard() -> Data? {
+    let pasteboard = NSPasteboard.general
+    if let data = pasteboard.data(
+        forType: NSPasteboard.PasteboardType("com.adobe.pdf")), !data.isEmpty
+    {
+        return data
+    }
+    if let data = pasteboard.data(
+        forType: NSPasteboard.PasteboardType("Apple PDF pasteboard type")), !data.isEmpty
+    {
+        return data
+    }
+    return nil
 }
 
 // MARK: - Temp file naming
@@ -141,31 +187,102 @@ func pdfToClipboard(pdfData: Data?) -> Bool {
     return true
 }
 
-func convertWithInkscape(svgPath: String) -> Bool {
-    let inkscapePaths = [
-        "/usr/local/bin/inkscape", "/opt/homebrew/bin/inkscape",
+// MARK: - Inkscape integration
+
+/// Returns the path to the first Inkscape executable found on this machine,
+/// or nil if Inkscape is not installed.  Result is cached after the first call.
+func inkscapeURL() -> URL? {
+    let candidates = [
         "/Applications/Inkscape.app/Contents/MacOS/inkscape",
+        "/opt/homebrew/bin/inkscape",
+        "/usr/local/bin/inkscape",
     ]
-    var foundPath: String?
-    for path in inkscapePaths {
-        if FileManager.default.fileExists(atPath: path) {
-            foundPath = path
-            break
+    for path in candidates {
+        if FileManager.default.isExecutableFile(atPath: path) {
+            return URL(fileURLWithPath: path)
         }
     }
-    guard let path = foundPath else { return false }
-    let tempPDF = "/tmp/svg_fallback.pdf"
+    return nil
+}
+
+/// Converts the given input file to SVG using Inkscape and returns the SVG
+/// string, or nil if conversion fails or Inkscape is not installed.
+/// Must be called on a background thread — blocks until Inkscape exits.
+func convertToSVGWithInkscape(inputURL: URL) -> String? {
+    guard let inkscape = inkscapeURL() else { return nil }
+
+    let outputURL = URL(fileURLWithPath: NSTemporaryDirectory())
+        .appendingPathComponent(UUID().uuidString)
+        .appendingPathExtension("svg")
+
     let task = Process()
-    task.executableURL = URL(fileURLWithPath: path)
-    task.arguments = ["--export-type=pdf", "--export-filename=\(tempPDF)", svgPath]
+    task.executableURL = inkscape
+    // --export-plain-svg produces cleaner output (no Inkscape-specific attributes)
+    task.arguments = [
+        "--export-type=svg",
+        "--export-plain-svg",
+        "--export-filename=\(outputURL.path)",
+        inputURL.path,
+    ]
+
+    // Suppress Inkscape's verbose stderr so it doesn't pollute the console.
+    task.standardError = FileHandle.nullDevice
+    task.standardOutput = FileHandle.nullDevice
+
     do {
         try task.run()
         task.waitUntilExit()
-        if let data = try? Data(contentsOf: URL(fileURLWithPath: tempPDF)) {
-            return pdfToClipboard(pdfData: data)
+    } catch {
+        NSLog("VectorImporter: Inkscape launch failed: \(error)")
+        return nil
+    }
+
+    guard task.terminationStatus == 0 else {
+        NSLog("VectorImporter: Inkscape exited with status \(task.terminationStatus)")
+        return nil
+    }
+
+    let svg = try? String(contentsOf: outputURL, encoding: .utf8)
+    // Clean up the temp output file.
+    try? FileManager.default.removeItem(at: outputURL)
+    return svg?.contains("<svg") == true ? svg : nil
+}
+
+/// Asynchronously converts clipboard PDF/AICB data to SVG via Inkscape.
+/// Calls `completion` on the main queue with the SVG string, or nil on failure.
+/// Should only be called after `convertClipboardToSVG()` has already returned "".
+func convertClipboardPDFToSVG(completion: @escaping (String?) -> Void) {
+    guard let pdfData = pdfDataFromClipboard() else {
+        DispatchQueue.main.async { completion(nil) }
+        return
+    }
+
+    DispatchQueue.global(qos: .userInitiated).async {
+        // Write PDF data to a temp file for Inkscape to read.
+        let inputURL = URL(fileURLWithPath: NSTemporaryDirectory())
+            .appendingPathComponent(UUID().uuidString)
+            .appendingPathExtension("pdf")
+
+        do {
+            try pdfData.write(to: inputURL)
+        } catch {
+            NSLog("VectorImporter: failed to write temp PDF: \(error)")
+            DispatchQueue.main.async { completion(nil) }
+            return
         }
-    } catch {}
-    return false
+
+        let svg = convertToSVGWithInkscape(inputURL: inputURL)
+        // Clean up the temp input file.
+        try? FileManager.default.removeItem(at: inputURL)
+        DispatchQueue.main.async { completion(svg) }
+    }
+}
+
+/// Synchronous Inkscape conversion of an arbitrary file (PDF, AI, etc.) to SVG.
+/// Convenience wrapper around convertToSVGWithInkscape for use in drop handling,
+/// which already runs on a background queue via a coordinator.
+func convertFileToSVGWithInkscape(url: URL) -> String? {
+    return convertToSVGWithInkscape(inputURL: url)
 }
 
 // Extract SVG dimensions from SVG string
