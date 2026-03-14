@@ -1,16 +1,15 @@
 {
-  "object": {
-    "pins": [
-      {
-        "package": "SVGWebView",
-        "repositoryURL": "https://github.com/ZeeZide/SVGWebView.git",
-        "state": {
-          "branch": null,
-          "revision": "4f7d0fabcc0c89c5f770b8ffa1e36550e3cb7fe9",
-          "version": "1.0.0"
-        }
+  "originHash" : "b4d9434b34154d2ab27921b6ca2e8743f074bea258a836b9cdf98729d34c4289",
+  "pins" : [
+    {
+      "identity" : "svgwebview",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/ZeeZide/SVGWebView.git",
+      "state" : {
+        "revision" : "4f7d0fabcc0c89c5f770b8ffa1e36550e3cb7fe9",
+        "version" : "1.0.0"
       }
-    ]
-  },
-  "version": 1
+    }
+  ],
+  "version" : 3
 }

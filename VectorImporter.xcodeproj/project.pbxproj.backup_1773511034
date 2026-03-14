@@ -7,8 +7,6 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		05F195182F65DE4C008DEF94 /* VectorImporter.sdef in Resources */ = {isa = PBXBuildFile; fileRef = 05F195172F65DE4C008DEF94 /* VectorImporter.sdef */; };
-		05F195192F65DE4C008DEF94 /* ScriptingCommands.swift in Sources */ = {isa = PBXBuildFile; fileRef = 05F1951A2F65DE4C008DEF94 /* ScriptingCommands.swift */; };
 		459A279123AA910B003D50EC /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 459A279023AA910B003D50EC /* AppDelegate.swift */; };
 		459A279323AA910B003D50EC /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 459A279223AA910B003D50EC /* ContentView.swift */; };
 		459A279523AA910B003D50EC /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 459A279423AA910B003D50EC /* Assets.xcassets */; };
@@ -20,8 +18,6 @@
 
 /* Begin PBXFileReference section */
 		057851852F48F0D900ED1254 /* SwiftUIMenuBar.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = SwiftUIMenuBar.entitlements; sourceTree = "<group>"; };
-		05F195172F65DE4C008DEF94 /* VectorImporter.sdef */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = VectorImporter.sdef; sourceTree = "<group>"; };
-		05F1951A2F65DE4C008DEF94 /* ScriptingCommands.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScriptingCommands.swift; sourceTree = "<group>"; };
 		459A278D23AA910B003D50EC /* VectorImporter.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = VectorImporter.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		459A279023AA910B003D50EC /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		459A279223AA910B003D50EC /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
@@ -65,10 +61,8 @@
 		459A278F23AA910B003D50EC /* VectorImporter */ = {
 			isa = PBXGroup;
 			children = (
-				05F195172F65DE4C008DEF94 /* VectorImporter.sdef */,
 				459A279023AA910B003D50EC /* AppDelegate.swift */,
 				459A279223AA910B003D50EC /* ContentView.swift */,
-				05F1951A2F65DE4C008DEF94 /* ScriptingCommands.swift */,
 				459A279423AA910B003D50EC /* Assets.xcassets */,
 				459A279923AA910B003D50EC /* Main.storyboard */,
 				459A279C23AA910B003D50EC /* Info.plist */,
@@ -160,7 +154,6 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				05F195182F65DE4C008DEF94 /* VectorImporter.sdef in Resources */,
 				459A279B23AA910B003D50EC /* Main.storyboard in Resources */,
 				459A279823AA910B003D50EC /* Preview Assets.xcassets in Resources */,
 				459A279523AA910B003D50EC /* Assets.xcassets in Resources */,
@@ -177,7 +170,6 @@
 				459A279323AA910B003D50EC /* ContentView.swift in Sources */,
 				459A279123AA910B003D50EC /* AppDelegate.swift in Sources */,
 				AB4A692626A4678500B3EF9A /* svgToKeyRepository.swift in Sources */,
-				05F195192F65DE4C008DEF94 /* ScriptingCommands.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -327,11 +319,6 @@
 				DEVELOPMENT_TEAM = "";
 				ENABLE_HARDENED_RUNTIME = NO;
 				ENABLE_PREVIEWS = YES;
-				HEADER_SEARCH_PATHS = (
-					"$(inherited)",
-					/usr/local/include,
-					/opt/homebrew/include,
-				);
 				INFOPLIST_FILE = VectorImporter/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -342,6 +329,11 @@
 					"$(PROJECT_DIR)",
 					/usr/local/lib,
 					/opt/homebrew/lib,
+				);
+				HEADER_SEARCH_PATHS = (
+					"$(inherited)",
+					/usr/local/include,
+					/opt/homebrew/include,
 				);
 				MACOSX_DEPLOYMENT_TARGET = 10.15;
 				OTHER_LDFLAGS = "";
@@ -369,11 +361,6 @@
 				DEVELOPMENT_TEAM = "";
 				ENABLE_HARDENED_RUNTIME = NO;
 				ENABLE_PREVIEWS = YES;
-				HEADER_SEARCH_PATHS = (
-					"$(inherited)",
-					/usr/local/include,
-					/opt/homebrew/include,
-				);
 				INFOPLIST_FILE = VectorImporter/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -384,6 +371,11 @@
 					"$(PROJECT_DIR)",
 					/usr/local/lib,
 					/opt/homebrew/lib,
+				);
+				HEADER_SEARCH_PATHS = (
+					"$(inherited)",
+					/usr/local/include,
+					/opt/homebrew/include,
 				);
 				MACOSX_DEPLOYMENT_TARGET = 10.15;
 				ONLY_ACTIVE_ARCH = YES;

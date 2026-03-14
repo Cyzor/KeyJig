@@ -1,22 +1,232 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE dictionary SYSTEM "file://localhost/System/Library/DTDs/sdef.dtd">
 <dictionary title="VectorImporter Terminology">
-	<suite name="Standard Suite" code="????" description="Common classes and commands for all applications.">
-		<class name="application" code="capp" description="The application's top-level scripting object.">
-			<cocoa class="NSApplication"/>
+
+	<suite
+        name="Standard Suite"
+        code="????"
+        description="Common classes and commands for all applications."
+    >
+		<class
+            name="application"
+            code="capp"
+            description="The application's top-level scripting object."
+        >
+			<cocoa class="NSApplication" />
 		</class>
 	</suite>
-	<suite name="VectorImporter Suite" code="VcIm" description="VectorImporter-specific commands and classes.">
-		<class name="application" code="capp" description="The application's top-level scripting object.">
-			<cocoa class="NSApplication"/>
-			<command name="convert" code="VcImCnvt" description="Convert the current SVG to Keynote format and copy to clipboard.">
-				<cocoa class="ConvertCommand"/>
-				<result type="boolean" description="True if successful."/>
-			</command>
-			<command name="clear" code="VcImClr" description="Clear the current SVG content from the image well.">
-				<cocoa class="ClearCommand"/>
-				<result type="boolean" description="True if successful."/>
-			</command>
+
+	<suite
+        name="VectorImporter Suite"
+        code="VcIm"
+        description="Commands for automating VectorImporter."
+    >
+
+		<class
+            name="application"
+            code="capp"
+            description="The application's top-level scripting object."
+        >
+			<cocoa class="NSApplication" />
 		</class>
+
+		<record-type name="SVG dimensions" code="VcDm">
+			<property
+                name="width"
+                code="VcDW"
+                type="text"
+                description="Width of the SVG."
+            />
+			<property
+                name="height"
+                code="VcDH"
+                type="text"
+                description="Height of the SVG."
+            />
+		</record-type>
+
+		<!-- Core SVG Operations -->
+
+		<command
+            name="convert"
+            code="VcImCnvt"
+            description="Convert the loaded SVG to Keynote format and copy it to the clipboard."
+        >
+			<cocoa class="ConvertCommand" />
+			<result type="boolean" description="True if successful." />
+		</command>
+
+		<command
+            name="clear"
+            code="VcImCler"
+            description="Clear the currently loaded SVG from memory."
+        >
+			<cocoa class="ClearCommand" />
+			<result type="boolean" description="True if successful." />
+		</command>
+
+		<!-- File Operations -->
+
+		<command
+            name="load SVG file"
+            code="VcImLdSV"
+            description="Load an SVG file from the specified path."
+        >
+			<cocoa class="LoadSVGFileCommand" />
+			<direct-parameter type="text" description="The POSIX path to the SVG file." />
+			<result
+                type="boolean"
+                description="True if the file was loaded successfully."
+            />
+		</command>
+
+		<command
+            name="open file"
+            code="VcImOpnF"
+            description="Open the file-picker dialog to select an SVG file."
+        >
+			<cocoa class="OpenFileCommand" />
+			<result type="boolean" description="True if a file was selected and loaded." />
+		</command>
+
+		<!-- Clipboard Operations -->
+
+		<command
+            name="check clipboard"
+            code="VcImChCB"
+            description="Check the clipboard for SVG content without modifying it."
+        >
+			<cocoa class="CheckClipboardCommand" />
+			<result
+                type="text"
+                description="The SVG string if found, or an empty string."
+            />
+		</command>
+
+		<command
+            name="check for convertible"
+            code="VcImChCV"
+            description="Check whether the clipboard contains PDF or vector data convertible to SVG via Inkscape."
+        >
+			<cocoa class="CheckConvertibleCommand" />
+			<result
+                type="boolean"
+                description="True if convertible vector data is present."
+            />
+		</command>
+
+		<command
+            name="convert clipboard"
+            code="VcImCvCB"
+            description="Convert PDF or vector clipboard data to SVG using Inkscape. Blocks until complete (up to 30 s)."
+        >
+			<cocoa class="ConvertClipboardCommand" />
+			<result
+                type="text"
+                description="The resulting SVG string, or an empty string if conversion failed."
+            />
+		</command>
+
+		<!-- Information Queries -->
+
+		<command
+            name="get SVG"
+            code="VcImGtSV"
+            description="Return the currently loaded SVG as a text string."
+        >
+			<cocoa class="GetSVGCommand" />
+			<result type="text" description="The current SVG string." />
+		</command>
+
+		<command
+            name="get SVG file path"
+            code="VcImGtFP"
+            description="Return the file-system path of the loaded SVG."
+        >
+			<cocoa class="GetSVGFilePathCommand" />
+			<result
+                type="text"
+                description="The file path, or an empty string if no file is loaded."
+            />
+		</command>
+
+		<command
+            name="get SVG dimensions"
+            code="VcImGtDm"
+            description="Return the width and height of the loaded SVG."
+        >
+			<cocoa class="GetSVGDimensionsCommand" />
+			<result
+                type="SVG dimensions"
+                description="A record with 'width' and 'height' text properties."
+            />
+		</command>
+
+		<command
+            name="get file size"
+            code="VcImGtSz"
+            description="Return the size of the loaded SVG as a human-readable string."
+        >
+			<cocoa class="GetFileSizeCommand" />
+			<result type="text" description="Formatted size, e.g. '42.3 KB'." />
+		</command>
+
+		<command
+            name="get SVG creator"
+            code="VcImGtCr"
+            description="Return creator metadata extracted from the loaded SVG."
+        >
+			<cocoa class="GetSVGCreatorCommand" />
+			<result
+                type="text"
+                description="The creator string if found, or an empty string."
+            />
+		</command>
+
+		<!-- Window Management -->
+
+		<command
+            name="show main window"
+            code="VcImShMW"
+            description="Bring the main application window to the front."
+        >
+			<cocoa class="ShowMainWindowCommand" />
+			<result type="boolean" description="Always true." />
+		</command>
+
+		<command
+            name="show popover"
+            code="VcImShPo"
+            description="Show the menu-bar popover."
+        >
+			<cocoa class="ShowPopoverCommand" />
+			<result type="boolean" description="Always true." />
+		</command>
+
+		<command
+            name="new floating window"
+            code="VcImNwFW"
+            description="Open a new floating viewer window."
+        >
+			<cocoa class="NewFloatingWindowCommand" />
+			<result type="boolean" description="Always true." />
+		</command>
+
+		<!-- Help and Info -->
+
+		<command name="show about" code="VcImAbut" description="Show the About dialog.">
+			<cocoa class="ShowAboutCommand" />
+			<result type="boolean" description="Always true." />
+		</command>
+
+		<command
+            name="show help"
+            code="VcImHelp"
+            description="Show help documentation."
+        >
+			<cocoa class="ShowHelpCommand" />
+			<result type="boolean" description="Always true." />
+		</command>
+
 	</suite>
 </dictionary>
