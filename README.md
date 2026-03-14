@@ -50,6 +50,49 @@ Apple Keynote can read SVG files, but it is often inaccessible through standard 
 - **File Support:** Open any `.svg` file directly to preview and copy it for Keynote.
 - **Zero Dependencies:** The app is 100% Swift and SwiftUI, making it lightweight and easy to maintain.
 - **PDF Fallback:** If native import isn't sufficient, use the "PDF Fallback" (requires [Inkscape](https://inkscape.org/)) to copy as a high-quality vector image.
+- **AppleScript Automation:** Fully scriptable via AppleScript for integration with workflows, automation tools, and other applications.
+
+---
+
+## AppleScript Automation
+
+VectorImporter is fully scriptable via AppleScript, allowing you to automate SVG conversions, file operations, and window management. 
+
+### Quick Example
+
+```applescript
+tell application "VectorImporter"
+    load SVG file "/Users/john/Documents/design.svg"
+    convert
+    get SVG dimensions
+end tell
+```
+
+### Available Commands
+
+- **Core Operations:** `convert`, `clear`
+- **File Operations:** `load SVG file`, `open file`
+- **Clipboard:** `check clipboard`, `check for convertible`, `convert clipboard`
+- **Information:** `get SVG`, `get SVG file path`, `get SVG dimensions`, `get file size`, `get SVG creator`
+- **Windows:** `show main window`, `show popover`, `new floating window`
+- **Help:** `show about`, `show help`
+
+For complete documentation, syntax examples, and advanced workflows, see [**applescript.md**](./applescript.md).
+
+### View the Dictionary
+
+To see all available commands in Script Editor:
+1. Open **Script Editor** (in Applications > Utilities)
+2. Go to **File > Open Dictionary**
+3. Select **VectorImporter**
+
+---
+
+## Documentation
+
+- [**user_guide.md**](./user_guide.md) — Installation, usage modes, importing SVGs, drag and drop, and troubleshooting
+- [**applescript.md**](./applescript.md) — Complete AppleScript command reference and examples
+- [**scripting_implementation.md**](./scripting_implementation.md) — Technical implementation notes for developers
 
 ---
 

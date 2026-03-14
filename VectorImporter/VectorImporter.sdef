@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE dictionary SYSTEM "file://localhost/System/Library/DTDs/sdef.dtd">
+<dictionary title="VectorImporter Terminology">
+	<suite name="Standard Suite" code="????" description="Common classes and commands for all applications.">
+		<class name="application" code="capp" description="The application's top-level scripting object.">
+			<cocoa class="NSApplication"/>
+		</class>
+	</suite>
+	<suite name="VectorImporter Suite" code="VcIm" description="VectorImporter-specific commands and classes.">
+		<class name="application" code="capp" description="The application's top-level scripting object.">
+			<cocoa class="NSApplication"/>
+			<command name="convert" code="VcImCnvt" description="Convert the current SVG to Keynote format and copy to clipboard.">
+				<cocoa class="ConvertCommand"/>
+				<result type="boolean" description="True if successful."/>
+			</command>
+			<command name="clear" code="VcImClr" description="Clear the current SVG content from the image well.">
+				<cocoa class="ClearCommand"/>
+				<result type="boolean" description="True if successful."/>
+			</command>
+		</class>
+	</suite>
+</dictionary>
