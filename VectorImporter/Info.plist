@@ -29,11 +29,13 @@
 	<string>Copyright © 2021 Jonathan Lampérth. All rights reserved.</string>
 	<key>NSMainStoryboardFile</key>
 	<string>Main</string>
-	<key>NSPrincipalClass</key>
-	<string>NSApplication</string>
 	<key>NSSupportsAutomaticTermination</key>
 	<true />
 	<key>NSSupportsSuddenTermination</key>
+	<true />
+	<key>OSAScriptingDefinition</key>
+	<string>VectorImporter.sdef</string>
+	<key>NSAppleScriptEnabled</key>
 	<true />
 </dict>
 </plist>

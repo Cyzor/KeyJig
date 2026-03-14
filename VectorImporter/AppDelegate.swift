@@ -507,4 +507,5 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             keyEquivalent: "")
         return menu
     }
+
 }
