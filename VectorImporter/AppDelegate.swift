@@ -221,6 +221,44 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     var popover: NSPopover?
     var popoverAppState: AppState = AppState()
 
+    // MARK: Scriptable properties for Explorer visibility
+
+    /// Returns the SVG content from the frontmost window.
+    @objc dynamic var scriptingSVG: String {
+        return frontWindowState?.svgString ?? ""
+    }
+
+    /// Returns the file path of the SVG in the frontmost window.
+    @objc dynamic var scriptingSVGFilePath: String {
+        return frontWindowState?.svgURL ?? ""
+    }
+
+    /// Returns the width of the SVG in the frontmost window as text.
+    @objc dynamic var scriptingSVGWidth: String {
+        guard let svg = frontWindowState?.svgString, !svg.isEmpty else { return "" }
+        guard let dims = extractSVGDimensions(svgString: svg) else { return "" }
+        return dims.width
+    }
+
+    /// Returns the height of the SVG in the frontmost window as text.
+    @objc dynamic var scriptingSVGHeight: String {
+        guard let svg = frontWindowState?.svgString, !svg.isEmpty else { return "" }
+        guard let dims = extractSVGDimensions(svgString: svg) else { return "" }
+        return dims.height
+    }
+
+    /// Returns the file size of the SVG in the frontmost window as a formatted string.
+    @objc dynamic var scriptingFileSize: String {
+        guard let svg = frontWindowState?.svgString else { return "" }
+        return getFileSizeString(svgString: svg)
+    }
+
+    /// Returns the creator metadata from the SVG in the frontmost window.
+    @objc dynamic var scriptingSVGCreator: String {
+        guard let svg = frontWindowState?.svgString, !svg.isEmpty else { return "" }
+        return extractSVGCreator(svgString: svg) ?? ""
+    }
+
     // MARK: Lifecycle
 
     func applicationDidFinishLaunching(_ aNotification: Notification) {

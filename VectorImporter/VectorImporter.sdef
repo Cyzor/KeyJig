@@ -2,6 +2,19 @@
 <!DOCTYPE dictionary SYSTEM "file://localhost/System/Library/DTDs/sdef.dtd">
 <dictionary title="VectorImporter Terminology">
 
+	<!--
+	     Standard Suite — minimal declaration that gives Script Debugger the
+	     name / frontmost / version properties it uses to populate the Explorer
+	     header.  We do NOT redeclare get / set / quit here because Foundation
+	     already registers those handlers at runtime; redeclaring them causes
+	     duplicate-handler conflicts that hang the app on the first Apple Event.
+
+	     The application class here has NO "inherits" attribute — it IS the
+	     base definition.  The VectorImporter Suite application class below
+	     also omits "inherits"; Cocoa Scripting merges same-code classes from
+	     different suites automatically, so there is no inheritance cycle.
+	-->
+
 	<suite
         name="Standard Suite"
         code="????"
@@ -13,39 +26,129 @@
             description="The application's top-level scripting object."
         >
 			<cocoa class="NSApplication" />
+
+			<property
+                name="name"
+                code="pnam"
+                type="text"
+                access="r"
+                description="The name of the application."
+            />
+
+			<property
+                name="frontmost"
+                code="pisf"
+                type="boolean"
+                access="r"
+                description="Is this the active (frontmost) application?"
+            >
+				<cocoa key="isActive" />
+			</property>
+
+			<property
+                name="version"
+                code="vers"
+                type="text"
+                access="r"
+                description="The version string of the application."
+            />
+
 		</class>
 	</suite>
+
+
+	<!--
+	     VectorImporter Suite — all custom commands, the SVG dimensions
+	     record-type, and the application-class extensions that power the
+	     Script Debugger Explorer tab.
+	-->
 
 	<suite
         name="VectorImporter Suite"
         code="VcIm"
-        description="Commands for automating VectorImporter."
+        description="Commands and types for automating VectorImporter."
     >
 
+
+
+
+		<!--
+		     Application class extension — merges with the Standard Suite
+		     definition above (same code "capp") to add the VectorImporter-
+		     specific properties visible in Script Debugger's Explorer tab.
+		     No "inherits" attribute; Cocoa Scripting merges by class code.
+		-->
 		<class
             name="application"
             code="capp"
-            description="The application's top-level scripting object."
+            description="VectorImporter's top-level scripting object."
         >
 			<cocoa class="NSApplication" />
+
+			<property
+                name="SVG"
+                code="SVGc"
+                type="text"
+                access="r"
+                description="The currently loaded SVG content as text."
+            >
+				<cocoa key="scriptingSVG" />
+			</property>
+
+			<property
+                name="SVG file path"
+                code="SVGp"
+                type="text"
+                access="r"
+                description="The file path of the currently loaded SVG."
+            >
+				<cocoa key="scriptingSVGFilePath" />
+			</property>
+
+			<property
+                name="pixel width"
+                code="SVGw"
+                type="text"
+                access="r"
+                description="The width of the currently loaded SVG."
+            >
+				<cocoa key="scriptingSVGWidth" />
+			</property>
+
+			<property
+                name="pixel height"
+                code="SVGh"
+                type="text"
+                access="r"
+                description="The height of the currently loaded SVG."
+            >
+				<cocoa key="scriptingSVGHeight" />
+			</property>
+
+			<property
+                name="file size"
+                code="SVGs"
+                type="text"
+                access="r"
+                description="The file size of the currently loaded SVG as a formatted string (e.g. &quot;42.3 KB&quot;)."
+            >
+				<cocoa key="scriptingFileSize" />
+			</property>
+
+			<property
+                name="SVG creator"
+                code="SVGr"
+                type="text"
+                access="r"
+                description="Creator metadata extracted from the currently loaded SVG."
+            >
+				<cocoa key="scriptingSVGCreator" />
+			</property>
+
 		</class>
 
-		<record-type name="SVG dimensions" code="VcDm">
-			<property
-                name="width"
-                code="VcDW"
-                type="text"
-                description="Width of the SVG."
-            />
-			<property
-                name="height"
-                code="VcDH"
-                type="text"
-                description="Height of the SVG."
-            />
-		</record-type>
 
-		<!-- Core SVG Operations -->
+		<!-- ── Core SVG Operations ──────────────────────────────────── -->
 
 		<command
             name="convert"
@@ -53,7 +156,7 @@
             description="Convert the loaded SVG to Keynote format and copy it to the clipboard."
         >
 			<cocoa class="ConvertCommand" />
-			<result type="boolean" description="True if successful." />
+			<result type="boolean" description="True if conversion succeeded." />
 		</command>
 
 		<command
@@ -65,12 +168,13 @@
 			<result type="boolean" description="True if successful." />
 		</command>
 
-		<!-- File Operations -->
+
+		<!-- ── File Operations ─────────────────────────────────────── -->
 
 		<command
             name="load SVG file"
             code="VcImLdSV"
-            description="Load an SVG file from the specified path."
+            description="Load an SVG file from the specified POSIX path."
         >
 			<cocoa class="LoadSVGFileCommand" />
 			<direct-parameter type="text" description="The POSIX path to the SVG file." />
@@ -83,13 +187,17 @@
 		<command
             name="open file"
             code="VcImOpnF"
-            description="Open the file-picker dialog to select an SVG file."
+            description="Open the system file-picker dialog so the user can choose an SVG file."
         >
 			<cocoa class="OpenFileCommand" />
-			<result type="boolean" description="True if a file was selected and loaded." />
+			<result
+                type="boolean"
+                description="True — the dialog is shown asynchronously."
+            />
 		</command>
 
-		<!-- Clipboard Operations -->
+
+		<!-- ── Clipboard Operations ────────────────────────────────── -->
 
 		<command
             name="check clipboard"
@@ -127,7 +235,8 @@
             />
 		</command>
 
-		<!-- Information Queries -->
+
+		<!-- ── Information Queries ──────────────────────────────────── -->
 
 		<command
             name="get SVG"
@@ -141,26 +250,16 @@
 		<command
             name="get SVG file path"
             code="VcImGtFP"
-            description="Return the file-system path of the loaded SVG."
+            description="Return the POSIX file-system path of the loaded SVG."
         >
 			<cocoa class="GetSVGFilePathCommand" />
 			<result
                 type="text"
-                description="The file path, or an empty string if no file is loaded."
+                description="The POSIX file path, or an empty string if no file is loaded."
             />
 		</command>
 
-		<command
-            name="get SVG dimensions"
-            code="VcImGtDm"
-            description="Return the width and height of the loaded SVG."
-        >
-			<cocoa class="GetSVGDimensionsCommand" />
-			<result
-                type="SVG dimensions"
-                description="A record with 'width' and 'height' text properties."
-            />
-		</command>
+
 
 		<command
             name="get file size"
@@ -168,7 +267,10 @@
             description="Return the size of the loaded SVG as a human-readable string."
         >
 			<cocoa class="GetFileSizeCommand" />
-			<result type="text" description="Formatted size, e.g. '42.3 KB'." />
+			<result
+                type="text"
+                description="Formatted size string, e.g. &quot;42.3 KB&quot;."
+            />
 		</command>
 
 		<command
@@ -183,7 +285,8 @@
             />
 		</command>
 
-		<!-- Window Management -->
+
+		<!-- ── Window Management ───────────────────────────────────── -->
 
 		<command
             name="show main window"
@@ -212,7 +315,8 @@
 			<result type="boolean" description="Always true." />
 		</command>
 
-		<!-- Help and Info -->
+
+		<!-- ── Help and Info ───────────────────────────────────────── -->
 
 		<command name="show about" code="VcImAbut" description="Show the About dialog.">
 			<cocoa class="ShowAboutCommand" />
@@ -222,11 +326,12 @@
 		<command
             name="show help"
             code="VcImHelp"
-            description="Show help documentation."
+            description="Show the help documentation."
         >
 			<cocoa class="ShowHelpCommand" />
 			<result type="boolean" description="Always true." />
 		</command>
 
 	</suite>
+
 </dictionary>
