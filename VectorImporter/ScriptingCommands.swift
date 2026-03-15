@@ -1,5 +1,37 @@
 import Cocoa
 
+// MARK: - NSApplication Extension for Scripting Properties
+//
+// AppleScript accesses application properties via KVC on NSApplication.
+// This extension forwards those calls to AppDelegate, which maintains
+// the actual state via frontWindowState.
+
+extension NSApplication {
+    @objc dynamic var scriptingSVG: String {
+        return (delegate as? AppDelegate)?.scriptingSVG ?? ""
+    }
+
+    @objc dynamic var scriptingSVGFilePath: String {
+        return (delegate as? AppDelegate)?.scriptingSVGFilePath ?? ""
+    }
+
+    @objc dynamic var scriptingSVGWidth: String {
+        return (delegate as? AppDelegate)?.scriptingSVGWidth ?? ""
+    }
+
+    @objc dynamic var scriptingSVGHeight: String {
+        return (delegate as? AppDelegate)?.scriptingSVGHeight ?? ""
+    }
+
+    @objc dynamic var scriptingFileSize: String {
+        return (delegate as? AppDelegate)?.scriptingFileSize ?? ""
+    }
+
+    @objc dynamic var scriptingSVGCreator: String {
+        return (delegate as? AppDelegate)?.scriptingSVGCreator ?? ""
+    }
+}
+
 // MARK: - Helpers
 
 /// Returns the AppState for the frontmost window, falling back to the primary
@@ -155,20 +187,6 @@ class GetSVGCommand: NSScriptCommand {
 class GetSVGFilePathCommand: NSScriptCommand {
     override func performDefaultImplementation() -> Any? {
         return frontState()?.svgURL ?? ""
-    }
-}
-
-/// Return a record with "width" and "height" text properties.
-/// Cocoa Scripting translates an NSDictionary whose keys are the property
-/// *names* (as declared in the SDEF record-type) into an AppleScript record.
-@objc(GetSVGDimensionsCommand)
-class GetSVGDimensionsCommand: NSScriptCommand {
-    override func performDefaultImplementation() -> Any? {
-        guard let svg = frontState()?.svgString, !svg.isEmpty else { return [:] }
-        guard let dims = extractSVGDimensions(svgString: svg) else { return [:] }
-        // Keys must match the `name` attributes of the <property> elements in
-        // the SDEF record-type definition (not the four-char codes).
-        return ["width": dims.width, "height": dims.height] as NSDictionary
     }
 }
 
