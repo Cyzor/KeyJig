@@ -1,287 +1,153 @@
-# AppleScript Implementation Summary
+# VectorImporter — AppleScript Implementation Notes
 
-This document describes the AppleScript scripting capabilities that have been added to VectorImporter, making it a fully automation-friendly application.
+Implementation reference for the AppleScript scripting layer. Covers architecture decisions, known pitfalls, and the final working state.
 
-## Overview
+---
 
-VectorImporter is now fully scriptable via AppleScript, exposing nearly all of its core functionality through a comprehensive command dictionary. This allows users to:
+## Files Involved
 
-- Automate SVG file loading and conversion
-- Programmatically query SVG metadata
-- Control application windows and UI elements
-- Integrate VectorImporter into larger automation workflows
-- Call commands from shell scripts, Python, JavaScript, and other languages
+| File | Role |
+|---|---|
+| `VectorImporter/VectorImporter.sdef` | Scripting definition — commands, properties, event codes |
+| `VectorImporter/ScriptingCommands.swift` | `NSScriptCommand` subclasses, one per command |
+| `VectorImporter/AppDelegate.swift` | `@objc dynamic` properties for Explorer visibility |
+| `VectorImporter/VectorImporter.xcodeproj/project.pbxproj` | `ScriptingCommands.swift` must be listed in both the file-reference group and the compile-sources build phase |
 
-## Files Modified and Created
+---
 
-### Modified Files
+## SDEF Structure
 
-1. **VectorImporter/VectorImporter.sdef**
-   - Completely rewritten to include 20+ new commands
-   - Organized into logical command groups
-   - Full parameter and return type documentation
-   - Proper Cocoa class bindings
+Two suites. Neither application class uses `inherits="application"` — doing so creates a cycle that hangs the app permanently on the first Apple Event (infinite loop in `-[NSScriptClassDescription supportsCommand:]`).
 
-2. **VectorImporter/ScriptingCommands.swift**
-   - Expanded from 2 basic commands to 20+ comprehensive commands
-   - Added proper error handling and state management
-   - Implemented blocking operations with semaphores where needed
-   - Added support for all app functionality
+### Standard Suite (`????`)
 
-3. **README.md**
-   - Added new "AppleScript Automation" section
-   - Quick example and command overview
-   - Reference to documentation files
+Declares the base `application` class (`capp` / `NSApplication`) with three properties that Script Debugger uses to populate its Explorer header:
 
-### Created Files
+- `name` (`pnam`)
+- `frontmost` (`pisf`) — `<cocoa key="isActive" />`
+- `version` (`vers`)
 
-1. **APPLESCRIPT.md** (438 lines)
-   - Complete reference documentation
-   - All 20+ commands fully documented
-   - Parameter descriptions and return types
-   - 4 complete workflow examples
-   - Troubleshooting section
-   - Requirements and limitations
+Do **not** redeclare `get`, `set`, or `quit` here. Foundation registers those handlers at runtime; duplicating them in the SDEF causes duplicate-handler conflicts that produce the same -1712 timeout hang.
 
-2. **APPLESCRIPT_EXAMPLES.md** (460 lines)
-   - 18 copy-and-paste ready examples
-   - Quick one-liners for common tasks
-   - Batch processing workflows
-   - Integration examples with other apps
-   - Folder Actions and Automator integration
-   - Error handling templates
-   - Command-line usage examples
+### VectorImporter Suite (`VcIm`)
 
-3. **SCRIPTING_IMPLEMENTATION.md** (this file)
-   - Implementation overview
-   - List of available commands
-   - Developer notes
+A second `application` class block (same `capp` code) adds the VectorImporter-specific properties. Cocoa Scripting merges same-code classes across suites automatically — no `inherits` needed or wanted.
 
-## Commands Implemented
+All 16 commands live here as siblings of the class, not nested inside it.
 
-### Core SVG Operations (2 commands)
-- `convert` - Convert SVG to Keynote format and copy to clipboard
-- `clear` - Clear the currently loaded SVG
+---
 
-### File Operations (2 commands)
-- `load SVG file` - Load an SVG from a specified file path
-- `open file` - Open file browser dialog to select an SVG
+## Application Properties
 
-### Clipboard Operations (3 commands)
-- `check clipboard` - Check clipboard for native SVG content
-- `check for convertible` - Check for PDF/vector data that can be converted
-- `convert clipboard` - Convert PDF/vector data to SVG using Inkscape
+Backed by `@objc dynamic` computed vars on `AppDelegate`, forwarded from `NSApplication` via an extension in `ScriptingCommands.swift`. All read-only.
 
-### Information Queries (5 commands)
-- `get SVG` - Get current SVG content as text
-- `get SVG file path` - Get the file path of loaded SVG
-- `get SVG dimensions` - Get width and height of current SVG
-- `get file size` - Get human-readable file size
-- `get SVG creator` - Extract creator metadata from SVG
+| Name | Code | Cocoa key | Returns |
+|---|---|---|---|
+| `SVG` | `SVGc` | `scriptingSVG` | Full SVG text of the loaded file |
+| `SVG file path` | `SVGp` | `scriptingSVGFilePath` | POSIX path, or `""` |
+| `pixel width` | `SVGw` | `scriptingSVGWidth` | Width string extracted from SVG |
+| `pixel height` | `SVGh` | `scriptingSVGHeight` | Height string extracted from SVG |
+| `file size` | `SVGs` | `scriptingFileSize` | Human-readable size, e.g. `"42.3 KB"` |
+| `SVG creator` | `SVGr` | `scriptingSVGCreator` | Creator metadata, or `""` |
 
-### Window Management (3 commands)
-- `show main window` - Display the main application window
-- `show popover` - Show the status bar popover
-- `new floating window` - Create a new floating window
+**Naming pitfalls:** Property names share the AppleScript namespace with built-ins.
+- `SVG width` / `SVG height` — AppleScript parses `SVG` as a complete property reference, leaving `width`/`height` unresolved. Fixed by renaming to `pixel width` / `pixel height`.
+- Plain `width` / `height` — clash with the built-in window property terms. Same fix applies.
 
-### Help Commands (2 commands)
-- `show about` - Display the about dialog
-- `show help` - Open help documentation
+---
 
-**Total: 20 commands**
+## Commands (16 total)
 
-## Technical Implementation Details
+All event codes are exactly 8 characters. All commands are direct children of the suite, not nested inside the class.
 
-### Scripting Architecture
+### Core
 
-Each AppleScript command is implemented as a Swift class inheriting from `NSScriptCommand`:
+| Name | Code | Class | Returns |
+|---|---|---|---|
+| `convert` | `VcImCnvt` | `ConvertCommand` | `boolean` |
+| `clear` | `VcImCler` | `ClearCommand` | `boolean` |
 
-```swift
-@objc(CommandName)
-class CommandName: NSScriptCommand {
-    override func performDefaultImplementation() -> Any? {
-        // Implementation
-        return result
-    }
-}
-```
+### File
 
-### State Management
+| Name | Code | Class | Returns |
+|---|---|---|---|
+| `load SVG file` | `VcImLdSV` | `LoadSVGFileCommand` | `boolean` — takes POSIX path as direct parameter |
+| `open file` | `VcImOpnF` | `OpenFileCommand` | `boolean` — shows panel asynchronously |
 
-- All commands access the application's shared state via `AppState.shared`
-- Commands are dispatched to the main thread using `DispatchQueue.main.async`
-- Blocking operations use `DispatchSemaphore` with timeouts
-- Commands return appropriate types: `Boolean`, `String`, `Record`, etc.
+### Clipboard
 
-### Error Handling
+| Name | Code | Class | Returns |
+|---|---|---|---|
+| `check clipboard` | `VcImChCB` | `CheckClipboardCommand` | `text` — SVG string or `""` |
+| `check for convertible` | `VcImChCV` | `CheckConvertibleCommand` | `boolean` |
+| `convert clipboard` | `VcImCvCB` | `ConvertClipboardCommand` | `text` — blocks up to 30 s |
 
-- File operations check for valid paths and readable files
-- Conversion operations check for required dependencies (Inkscape)
-- Commands gracefully degrade, returning empty values on failure
-- Error messages are logged when available
+### Queries
 
-### Async Operations
+| Name | Code | Class | Returns |
+|---|---|---|---|
+| `get SVG` | `VcImGtSV` | `GetSVGCommand` | `text` |
+| `get SVG file path` | `VcImGtFP` | `GetSVGFilePathCommand` | `text` |
+| `get file size` | `VcImGtSz` | `GetFileSizeCommand` | `text` |
+| `get SVG creator` | `VcImGtCr` | `GetSVGCreatorCommand` | `text` |
 
-Some commands like `convert clipboard` require external processes. These use:
-- `DispatchSemaphore` to block the AppleScript until completion
-- 30-second timeout to prevent indefinite hangs
-- Main thread dispatch to ensure UI consistency
+### Window Management
 
-## Usage Patterns
+| Name | Code | Class | Returns |
+|---|---|---|---|
+| `show main window` | `VcImShMW` | `ShowMainWindowCommand` | `boolean` |
+| `show popover` | `VcImShPo` | `ShowPopoverCommand` | `boolean` |
+| `new floating window` | `VcImNwFW` | `NewFloatingWindowCommand` | `boolean` |
 
-### From AppleScript
+### Help & Info
+
+| Name | Code | Class | Returns |
+|---|---|---|---|
+| `show about` | `VcImAbut` | `ShowAboutCommand` | `boolean` |
+| `show help` | `VcImHelp` | `ShowHelpCommand` | `boolean` |
+
+---
+
+## Threading
+
+`performDefaultImplementation()` is called on the main thread by the AppleScript machinery. Most commands call `AppState` directly — safe since they're already on the main thread.
+
+`convert clipboard` is the exception: `convertClipboardPDFToSVG()` dispatches Inkscape work to a background queue and callbacks on the main queue. Blocking main while waiting for the callback would deadlock. Solution:
+
+1. Call `suspendExecution()` to tell the AE machinery the result will arrive asynchronously.
+2. Signal a `DispatchSemaphore` from the Inkscape callback.
+3. Wait on the semaphore from a **background** thread so the main run loop stays free.
+4. Call `resumeExecution(withResult:)` back on the main queue once the semaphore fires.
+
+---
+
+## State Access
+
+Commands reach `AppState` through the `frontState()` helper (top of `ScriptingCommands.swift`), which returns the `AppState` of the key window, falling back to the primary window. There is no `AppState.shared` singleton.
+
+Properties on `AppDelegate` use `frontWindowState` (a private computed var with the same fallback logic).
+
+---
+
+## What Was Removed
+
+- **`get SVG dimensions`** (`VcImGtDm`) — removed entirely. Returning a named `record-type` from an `NSScriptCommand` requires building a raw `NSAppleEventDescriptor` by hand, and even then the AE machinery returned -1708 (event not handled) before `performDefaultImplementation` was ever reached. The `pixel width` / `pixel height` properties on the application object cover the practical use case.
+
+---
+
+## Known Good State
+
+Verified with `osascript` against a Debug build:
+
 ```applescript
 tell application "VectorImporter"
-    load SVG file "/path/to/file.svg"
-    convert
-    get SVG dimensions
+    load SVG file "/path/to/file.svg"  --> true
+    get SVG file path                  --> "/path/to/file.svg"
+    get file size                      --> "93 B"
+    pixel width                        --> "100"
+    pixel height                       --> "100"
+    convert                            --> true
 end tell
 ```
 
-### From Shell
-```bash
-osascript -e 'tell application "VectorImporter" to convert'
-```
-
-### From Python
-```python
-import subprocess
-script = 'tell application "VectorImporter" to get SVG'
-result = subprocess.run(['osascript', '-e', script], capture_output=True, text=True)
-```
-
-## Dictionary Compilation
-
-The AppleScript dictionary is automatically compiled when building the application in Xcode:
-
-1. Xcode processes `VectorImporter.sdef` during build
-2. Generates `VectorImporter.sdef.plist` in the app bundle
-3. System registers the dictionary when app launches
-4. Script Editor discovers commands via `File > Open Dictionary`
-
-## Testing the Implementation
-
-Users can verify scripting works by:
-
-1. **In Script Editor:**
-   - Open Script Editor
-   - `File > Open Dictionary > VectorImporter`
-   - See all available commands listed
-
-2. **Quick Test:**
-   ```applescript
-   tell application "VectorImporter"
-       activate
-       get SVG
-   end tell
-   ```
-
-3. **From Terminal:**
-   ```bash
-   osascript -e 'tell application "VectorImporter" to activate'
-   ```
-
-## Limitations and Considerations
-
-### Current Limitations
-- Very large SVG strings (>100MB) may hit AppleScript text limits
-- PDF conversion requires Inkscape to be installed
-- Some UI operations (file dialogs) require user interaction
-- Commands are synchronous from AppleScript's perspective
-
-### Future Enhancements
-- Could add record types for SVG metadata
-- Could implement progress callbacks for long operations
-- Could add file write/export commands
-- Could implement more granular state queries
-
-## Compatibility
-
-- **Minimum macOS:** 10.15 (Catalina) - requires AppleScript support
-- **Recommended:** macOS 11.0+ for best compatibility
-- **Xcode:** 12.0 or later for building with SDEF support
-- **Dependencies:** Inkscape optional for PDF conversion
-
-## Documentation
-
-Three documentation files were created:
-
-1. **APPLESCRIPT.md**
-   - Complete command reference (20+ pages)
-   - All parameters and return types documented
-   - Real-world workflow examples
-   - Troubleshooting guide
-
-2. **APPLESCRIPT_EXAMPLES.md**
-   - Quick-reference copy-and-paste examples
-   - 18 ready-to-use scripts
-   - Integration patterns with other apps
-   - Debugging tips
-
-3. **README.md** (updated)
-   - Quick overview of scripting capabilities
-   - Links to documentation
-   - Command categories listed
-
-## Development Notes
-
-### Adding New Commands
-
-To add a new command:
-
-1. Create a new command class in `ScriptingCommands.swift`:
-   ```swift
-   @objc(NewCommand)
-   class NewCommand: NSScriptCommand {
-       override func performDefaultImplementation() -> Any? {
-           // Implementation
-           return result
-       }
-   }
-   ```
-
-2. Add command definition to `VectorImporter.sdef`:
-   ```xml
-   <command name="new command" code="VcImXxxx" 
-            description="Description">
-       <cocoa class="NewCommand"/>
-       <result type="boolean"/>
-   </command>
-   ```
-
-3. Rebuild the application
-4. Test with Script Editor
-
-### Code Organization
-
-All command implementations are grouped by category with MARK comments:
-- Core SVG Operations
-- File Operations
-- Clipboard Operations
-- Information Queries
-- Window Management
-- Help and Info
-
-This makes the code easy to navigate and maintain.
-
-## Quality Assurance
-
-- ✅ All commands compile without errors or warnings
-- ✅ SDEF file validates against Apple's DTD
-- ✅ Commands properly map to Swift class implementations
-- ✅ Error handling implemented throughout
-- ✅ Documentation comprehensive and complete
-- ✅ Example scripts tested for syntax correctness
-- ✅ Backwards compatible with existing functionality
-
-## Summary
-
-VectorImporter now offers a comprehensive AppleScript interface that exposes nearly all of its functionality to automation. With 20+ commands, detailed documentation, and numerous examples, users can:
-
-- Build sophisticated automation workflows
-- Integrate VectorImporter with other applications
-- Automate batch SVG processing
-- Create custom tools and utilities
-- Extend the app's capabilities through scripting
-
-The implementation is clean, well-documented, and maintainable for future enhancements.
+Script Debugger Explorer tab shows `SVG`, `SVG file path`, `pixel width`, `pixel height`, `file size`, and `SVG creator` populated when a file is loaded.

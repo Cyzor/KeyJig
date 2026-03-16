@@ -30,6 +30,10 @@ extension NSApplication {
     @objc dynamic var scriptingSVGCreator: String {
         return (delegate as? AppDelegate)?.scriptingSVGCreator ?? ""
     }
+
+    @objc dynamic var scriptingDocumentName: String {
+        return (delegate as? AppDelegate)?.scriptingDocumentName ?? ""
+    }
 }
 
 // MARK: - Helpers
@@ -187,6 +191,17 @@ class GetSVGCommand: NSScriptCommand {
 class GetSVGFilePathCommand: NSScriptCommand {
     override func performDefaultImplementation() -> Any? {
         return frontState()?.svgURL ?? ""
+    }
+}
+
+/// Return the dimensions of the loaded SVG as an AppleScript record: {width:"…", height:"…"}.
+@objc(GetSVGDimensionsCommand)
+class GetSVGDimensionsCommand: NSScriptCommand {
+    override func performDefaultImplementation() -> Any? {
+        guard let svg = frontState()?.svgString, !svg.isEmpty,
+              let dims = extractSVGDimensions(svgString: svg)
+        else { return nil }
+        return ["width": dims.width, "height": dims.height]
     }
 }
 

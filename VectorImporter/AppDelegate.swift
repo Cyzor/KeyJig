@@ -259,6 +259,18 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         return extractSVGCreator(svgString: svg) ?? ""
     }
 
+    /// Returns the document name (filename without extension) for the frontmost window.
+    @objc dynamic var scriptingDocumentName: String {
+        guard let state = frontWindowState, !state.svgString.isEmpty else { return "" }
+        if !state.svgURL.isEmpty {
+            return URL(fileURLWithPath: state.svgURL).deletingPathExtension().lastPathComponent
+        }
+        if let bridgeURL = state.bridgeFileURL {
+            return bridgeURL.deletingPathExtension().lastPathComponent
+        }
+        return ""
+    }
+
     // MARK: Lifecycle
 
     func applicationDidFinishLaunching(_ aNotification: Notification) {
