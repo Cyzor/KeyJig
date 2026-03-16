@@ -3,61 +3,6 @@
 <dictionary title="VectorImporter Terminology">
 
 	<!--
-	     Standard Suite — minimal declaration that gives Script Debugger the
-	     name / frontmost / version properties it uses to populate the Explorer
-	     header.  We do NOT redeclare get / set / quit here because Foundation
-	     already registers those handlers at runtime; redeclaring them causes
-	     duplicate-handler conflicts that hang the app on the first Apple Event.
-
-	     The application class here has NO "inherits" attribute — it IS the
-	     base definition.  The VectorImporter Suite application class below
-	     also omits "inherits"; Cocoa Scripting merges same-code classes from
-	     different suites automatically, so there is no inheritance cycle.
-	-->
-
-	<suite
-        name="Standard Suite"
-        code="????"
-        description="Common classes and commands for all applications."
-    >
-		<class
-            name="application"
-            code="capp"
-            description="The application's top-level scripting object."
-        >
-			<cocoa class="NSApplication" />
-
-			<property
-                name="name"
-                code="pnam"
-                type="text"
-                access="r"
-                description="The name of the application."
-            />
-
-			<property
-                name="frontmost"
-                code="pisf"
-                type="boolean"
-                access="r"
-                description="Is this the active (frontmost) application?"
-            >
-				<cocoa key="isActive" />
-			</property>
-
-			<property
-                name="version"
-                code="vers"
-                type="text"
-                access="r"
-                description="The version string of the application."
-            />
-
-		</class>
-	</suite>
-
-
-	<!--
 	     VectorImporter Suite — all custom commands, the SVG dimensions
 	     record-type, and the application-class extensions that power the
 	     Script Debugger Explorer tab.
@@ -73,10 +18,10 @@
 
 
 		<!--
-		     Application class extension — merges with the Standard Suite
-		     definition above (same code "capp") to add the VectorImporter-
-		     specific properties visible in Script Debugger's Explorer tab.
-		     No "inherits" attribute; Cocoa Scripting merges by class code.
+		     Application class — Cocoa Scripting serves name / frontmost /
+		     version natively without any SDEF declaration.  Declaring them
+		     here conflicts with the framework's built-in handlers and causes
+		     errors, so we leave them out and only add our custom properties.
 		-->
 		<class
             name="application"
@@ -143,6 +88,16 @@
                 description="Creator metadata extracted from the currently loaded SVG."
             >
 				<cocoa key="scriptingSVGCreator" />
+			</property>
+
+			<property
+                name="document name"
+                code="SVGd"
+                type="text"
+                access="r"
+                description="The name of the currently loaded document without its file extension, or an empty string if nothing is loaded."
+            >
+				<cocoa key="scriptingDocumentName" />
 			</property>
 
 		</class>
@@ -260,6 +215,18 @@
 		</command>
 
 
+
+		<command
+            name="get SVG dimensions"
+            code="VcImGtDm"
+            description="Return the width and height of the loaded SVG as a record."
+        >
+			<cocoa class="GetSVGDimensionsCommand" />
+			<result
+                type="record"
+                description="A record with width and height text fields, e.g. {width:&quot;512&quot;, height:&quot;384&quot;}."
+            />
+		</command>
 
 		<command
             name="get file size"
