@@ -7,6 +7,12 @@ enum ConversionStatus: Equatable {
     case failed
 }
 
+enum InkscapeStatus: Equatable {
+    case checking
+    case installed(path: String)
+    case notInstalled
+}
+
 class AppState: ObservableObject {
     @Published var svgURL: String = ""
     @Published var svgString: String = ""
@@ -16,6 +22,26 @@ class AppState: ObservableObject {
     @Published var bridgeFileURL: URL? = nil
     /// Tracks background PDF→SVG conversion so the UI can show feedback.
     @Published var conversionStatus: ConversionStatus = .idle
+    /// Tracks Inkscape installation status for the settings panel.
+    @Published var inkscapeStatus: InkscapeStatus = .checking
+
+    init() {
+        checkInkscapeStatus()
+    }
+
+    private func checkInkscapeStatus() {
+        DispatchQueue.global(qos: .userInitiated).async {
+            if let url = inkscapeURL() {
+                DispatchQueue.main.async {
+                    self.inkscapeStatus = .installed(path: url.path)
+                }
+            } else {
+                DispatchQueue.main.async {
+                    self.inkscapeStatus = .notInstalled
+                }
+            }
+        }
+    }
 }
 
 // MARK: - Clipboard SVG detection
@@ -189,9 +215,16 @@ func pdfToClipboard(pdfData: Data?) -> Bool {
 
 // MARK: - Inkscape integration
 
+private var _cachedInkscapeURL: URL?
+private var _inkscapeURLChecked = false
+
 /// Returns the path to the first Inkscape executable found on this machine,
 /// or nil if Inkscape is not installed.  Result is cached after the first call.
 func inkscapeURL() -> URL? {
+    if _inkscapeURLChecked {
+        return _cachedInkscapeURL
+    }
+
     let candidates = [
         "/Applications/Inkscape.app/Contents/MacOS/inkscape",
         "/opt/homebrew/bin/inkscape",
@@ -199,9 +232,12 @@ func inkscapeURL() -> URL? {
     ]
     for path in candidates {
         if FileManager.default.isExecutableFile(atPath: path) {
-            return URL(fileURLWithPath: path)
+            _cachedInkscapeURL = URL(fileURLWithPath: path)
+            _inkscapeURLChecked = true
+            return _cachedInkscapeURL
         }
     }
+    _inkscapeURLChecked = true
     return nil
 }
 
