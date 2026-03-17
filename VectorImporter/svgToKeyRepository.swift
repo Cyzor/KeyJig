@@ -367,38 +367,85 @@ func extractSVGCreator(svgString: String) -> String? {
     return nil
 }
 
+// Normalise the <svg> root tag so CSS can scale it correctly:
+// • If no viewBox exists but width/height do, synthesise one.
+// • Strip inline width/height so the CSS 100% dimensions take effect.
+private func normaliseSVGRootTag(_ svgString: String) -> String {
+    guard let startRange = svgString.range(of: "<svg") else { return svgString }
+    let afterOpen = startRange.upperBound..<svgString.endIndex
+    guard let endRange = svgString.range(of: ">", range: afterOpen) else { return svgString }
+    let tagRange = startRange.lowerBound..<endRange.upperBound
+
+    // Extract attribute values with a tiny regex helper.
+    func attr(_ name: String, in tag: String) -> String? {
+        let pattern = "\(name)=[\"']([^\"']*)[\"']"
+        guard let r = tag.range(of: pattern, options: .regularExpression) else { return nil }
+        let raw = String(tag[r])                // e.g. width="120"
+        let inner = raw.dropFirst(name.count + 2).dropLast(1)  // strip name=" and trailing "
+        return String(inner)
+    }
+
+    let oldTag = String(svgString[tagRange])
+    let viewBox = attr("viewBox", in: oldTag)
+    let w = attr("width",   in: oldTag)
+    let h = attr("height",  in: oldTag)
+
+    var newTag = oldTag
+    // Synthesise viewBox from width/height if needed.
+    if viewBox == nil, let w = w, let h = h,
+       !w.hasSuffix("%"), !h.hasSuffix("%")
+    {
+        // Strip any CSS unit suffix (px, pt, mm, cm, em, …) so that the
+        // viewBox contains bare numbers.  "80px" → "80", "210mm" → "210".
+        // viewBox values must be unitless; a value like "0 0 80px 80px" is
+        // invalid and WebKit ignores it, leaving content unscaled.
+        let wNum = String(w.prefix(while: { $0.isNumber || $0 == "." || $0 == "-" }))
+        let hNum = String(h.prefix(while: { $0.isNumber || $0 == "." || $0 == "-" }))
+        if !wNum.isEmpty, !hNum.isEmpty, wNum != "0", hNum != "0" {
+            let vb = "viewBox=\"0 0 \(wNum) \(hNum)\""
+            newTag = newTag.replacingOccurrences(
+                of: "[\\s]+viewBox=[\"'][^\"']*[\"']", with: "", options: .regularExpression)
+            // Insert viewBox before the closing >
+            newTag = String(newTag.dropLast()) + " \(vb)>"
+        }
+    }
+    // Strip inline width and height so CSS can drive sizing.
+    newTag = newTag.replacingOccurrences(
+        of: "\\s+width=[\"'][^\"']*[\"']", with: "", options: .regularExpression)
+    newTag = newTag.replacingOccurrences(
+        of: "\\s+height=[\"'][^\"']*[\"']", with: "", options: .regularExpression)
+
+    if newTag == oldTag { return svgString }
+    return svgString.replacingCharacters(in: tagRange, with: newTag)
+}
+
 // Wrap SVG with responsive HTML/CSS to fill container
 func wrapSVGForResponsiveDisplay(svgString: String) -> String {
+    let normalisedSVG = normaliseSVGRootTag(svgString)
     return """
         <!DOCTYPE html>
         <html>
         <head>
             <meta charset="UTF-8">
             <style>
-                * {
-                    margin: 0;
-                    padding: 0;
-                    box-sizing: border-box;
-                }
-                html, body {
-                    width: 100%;
-                    height: 100%;
-                    display: flex;
-                    justify-content: center;
-                    align-items: center;
-                    background: transparent;
-                }
-                svg {
-                    width: 100%;
-                    height: 100%;
-                    max-width: 100%;
-                    max-height: 100%;
-                    object-fit: contain;
+                * { margin: 0; padding: 0; }
+                html, body { overflow: hidden; background: transparent; }
+                /* Target only the root SVG (direct child of body) so nested
+                   <svg> elements inside the document aren't affected.
+                   position:fixed + four zero offsets sizes relative to the
+                   WKWebView viewport, bypassing all document-flow height chains
+                   and vh/vw timing issues.  !important overrides any inline
+                   style="width/height" left by the originating application. */
+                body > svg {
+                    position: fixed !important;
+                    top: 0 !important; left: 0 !important;
+                    right: 0 !important; bottom: 0 !important;
+                    width: 100% !important; height: 100% !important;
                 }
             </style>
         </head>
         <body>
-            \(svgString)
+            \(normalisedSVG)
         </body>
         </html>
         """

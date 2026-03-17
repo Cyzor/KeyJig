@@ -1,5 +1,4 @@
 import AppKit
-import SVGWebView
 import SwiftUI
 import WebKit
 
@@ -285,6 +284,65 @@ struct SVGInteractionViewWrapper: NSViewRepresentable {
     }
 }
 
+// MARK: - Responsive SVG renderer
+
+/// A WKWebView-backed renderer that scales the SVG to fill its frame while
+/// preserving aspect ratio.  Replaces the ZeeZide SVGWebView package, whose
+/// minimal HTML wrapper lacks the CSS reset needed for height: 100% to work.
+struct ResponsiveSVGWebView: NSViewRepresentable {
+
+    let svg: String
+
+    func makeCoordinator() -> Coordinator { Coordinator() }
+
+    func makeNSView(context: Context) -> WKWebView {
+        let prefs = WKPreferences()
+        let config = WKWebViewConfiguration()
+        config.preferences = prefs
+        if #available(macOS 10.5, *) {
+            let pagePrefs = WKWebpagePreferences()
+            pagePrefs.preferredContentMode = .desktop
+            if #available(macOS 11, *) {
+                pagePrefs.allowsContentJavaScript = false
+            }
+            config.defaultWebpagePreferences = pagePrefs
+        }
+        config.allowsAirPlayForMediaPlayback = false
+
+        let webView = WKWebView(frame: .zero, configuration: config)
+        webView.setValue(false, forKey: "drawsBackground")
+
+        let html = wrapSVGForResponsiveDisplay(svgString: svg)
+        context.coordinator.lastSVG = svg
+        webView.loadHTMLString(html, baseURL: nil)
+        resetViewport(webView)
+        return webView
+    }
+
+    func updateNSView(_ webView: WKWebView, context: Context) {
+        guard svg != context.coordinator.lastSVG else { return }
+        context.coordinator.lastSVG = svg
+        let html = wrapSVGForResponsiveDisplay(svgString: svg)
+        webView.loadHTMLString(html, baseURL: nil)
+        resetViewport(webView)
+    }
+
+    /// Forces WebKit to recalculate vh/vw from the view's current bounds.
+    /// Without this, stale layout-viewport dimensions from the previous load
+    /// cause 100vh/100vw to resolve to the wrong size on subsequent reloads.
+    private func resetViewport(_ webView: WKWebView) {
+        DispatchQueue.main.async {
+            let frame = webView.frame
+            webView.frame = .zero
+            webView.frame = frame
+        }
+    }
+
+    class Coordinator {
+        var lastSVG: String = ""
+    }
+}
+
 // MARK: - Metadata overlay
 
 struct MetadataOverlay: View {
@@ -455,7 +513,7 @@ struct ContentView: View {
         ZStack {
             Color(NSColor.windowBackgroundColor)
 
-            SVGWebView(svg: appState.svgString)
+            ResponsiveSVGWebView(svg: appState.svgString)
 
             // Single interaction layer — handles outbound drag, inbound drop,
             // and right-click menu with no Z-order conflict.
