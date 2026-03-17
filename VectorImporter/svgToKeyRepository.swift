@@ -9,7 +9,7 @@ enum ConversionStatus: Equatable {
 
 enum InkscapeStatus: Equatable {
     case checking
-    case installed(path: String)
+    case installed(paths: [String])  // All found installations
     case notInstalled
 }
 
@@ -22,7 +22,7 @@ class AppState: ObservableObject {
     @Published var bridgeFileURL: URL? = nil
     /// Tracks background PDF→SVG conversion so the UI can show feedback.
     @Published var conversionStatus: ConversionStatus = .idle
-    /// Tracks Inkscape installation status for the settings panel.
+    /// Tracks Inkscape installation status and all available paths.
     @Published var inkscapeStatus: InkscapeStatus = .checking
 
     init() {
@@ -31,16 +31,24 @@ class AppState: ObservableObject {
 
     private func checkInkscapeStatus() {
         DispatchQueue.global(qos: .userInitiated).async {
-            if let url = inkscapeURL() {
-                DispatchQueue.main.async {
-                    self.inkscapeStatus = .installed(path: url.path)
-                }
-            } else {
-                DispatchQueue.main.async {
+            let paths = self.allInkscapePaths()
+            DispatchQueue.main.async {
+                if paths.isEmpty {
                     self.inkscapeStatus = .notInstalled
+                } else {
+                    self.inkscapeStatus = .installed(paths: paths)
                 }
             }
         }
+    }
+
+    private func allInkscapePaths() -> [String] {
+        let candidates = [
+            "/Applications/Inkscape.app/Contents/MacOS/inkscape",
+            "/opt/homebrew/bin/inkscape",
+            "/usr/local/bin/inkscape",
+        ]
+        return candidates.filter { FileManager.default.isExecutableFile(atPath: $0) }
     }
 }
 
@@ -239,6 +247,18 @@ func inkscapeURL() -> URL? {
     }
     _inkscapeURLChecked = true
     return nil
+}
+
+/// Returns all Inkscape executables found on this machine.
+func allInkscapeURLs() -> [URL] {
+    let candidates = [
+        "/Applications/Inkscape.app/Contents/MacOS/inkscape",
+        "/opt/homebrew/bin/inkscape",
+        "/usr/local/bin/inkscape",
+    ]
+    return candidates.compactMap { path in
+        FileManager.default.isExecutableFile(atPath: path) ? URL(fileURLWithPath: path) : nil
+    }
 }
 
 /// Converts the given input file to SVG using Inkscape and returns the SVG

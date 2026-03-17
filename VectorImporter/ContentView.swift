@@ -726,6 +726,7 @@ func browseFile(into appState: AppState) -> String {
 
 struct SettingsView: View {
     @ObservedObject var appState: AppState
+    @State private var showingInkscapeDetails = false
 
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
@@ -740,7 +741,6 @@ struct SettingsView: View {
                     .font(.headline)
 
                 HStack(spacing: 12) {
-                    // Status indicator
                     switch appState.inkscapeStatus {
                     case .checking:
                         if #available(macOS 11.0, *) {
@@ -749,8 +749,10 @@ struct SettingsView: View {
                         } else {
                             Text("…")
                         }
+                        Text("Checking…")
+                            .font(.body)
 
-                    case .installed(let path):
+                    case .installed(let paths):
                         if #available(macOS 11.0, *) {
                             Image(systemName: "checkmark.circle.fill")
                                 .foregroundColor(.green)
@@ -765,16 +767,15 @@ struct SettingsView: View {
                             Text("Inkscape")
                                 .font(.body)
                                 .fontWeight(.semibold)
-                            Text("Installed at \(path)")
+                            Text("Installed — \(paths.count) location\(paths.count == 1 ? "" : "s")")
                                 .font(.caption)
                                 .foregroundColor(.secondary)
-                                .lineLimit(2)
                         }
 
                         Spacer()
 
-                        Button("Reveal") {
-                            NSWorkspace.shared.selectFile(path, inFileViewerRootedAtPath: "")
+                        Button("Details") {
+                            showingInkscapeDetails = true
                         }
                         .font(.caption)
 
@@ -793,7 +794,7 @@ struct SettingsView: View {
                             Text("Inkscape")
                                 .font(.body)
                                 .fontWeight(.semibold)
-                            Text("Not found — PDF/AI conversion disabled")
+                            Text("Not found")
                                 .font(.caption)
                                 .foregroundColor(.secondary)
                         }
@@ -839,6 +840,79 @@ struct SettingsView: View {
         }
         .padding(24)
         .frame(minWidth: 400, minHeight: 250)
+        .sheet(isPresented: $showingInkscapeDetails) {
+            InkscapeDetailsView(appState: appState, isPresented: $showingInkscapeDetails)
+        }
+    }
+}
+
+// MARK: - Inkscape Details Sheet
+
+struct InkscapeDetailsView: View {
+    @ObservedObject var appState: AppState
+    @Binding var isPresented: Bool
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            HStack {
+                Text("Inkscape Installation")
+                    .font(.system(size: 16, weight: .semibold))
+                Spacer()
+                Button("Done") {
+                    isPresented = false
+                }
+                .font(.caption)
+            }
+
+            if case .installed(let paths) = appState.inkscapeStatus {
+                VStack(alignment: .leading, spacing: 12) {
+                    ForEach(paths, id: \.self) { path in
+                        HStack(alignment: .top, spacing: 12) {
+                            VStack(alignment: .leading, spacing: 4) {
+                                let textView = Text(path)
+                                    .font(.system(.caption, design: .monospaced))
+                                    .foregroundColor(.secondary)
+                                    .lineLimit(3)
+
+                                if #available(macOS 12.0, *) {
+                                    textView.textSelection(.enabled)
+                                } else {
+                                    textView
+                                }
+
+                                HStack(spacing: 8) {
+                                    Button(action: {
+                                        NSPasteboard.general.clearContents()
+                                        NSPasteboard.general.setString(path, forType: .string)
+                                    }) {
+                                        Text("Copy")
+                                            .font(.system(size: 11))
+                                    }
+
+                                    Button(action: {
+                                        NSWorkspace.shared.selectFile(path, inFileViewerRootedAtPath: "")
+                                    }) {
+                                        Text("Reveal")
+                                            .font(.system(size: 11))
+                                    }
+                                }
+                            }
+                            Spacer()
+                        }
+                        .padding(10)
+                        .background(Color(.controlBackgroundColor))
+                        .cornerRadius(4)
+                    }
+                }
+            } else {
+                Text("No Inkscape installation found.")
+                    .foregroundColor(.secondary)
+            }
+
+            Spacer()
+        }
+        .padding(20)
+        .frame(minWidth: 500, minHeight: 250)
     }
 }
 
