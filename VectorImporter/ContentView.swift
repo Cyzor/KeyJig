@@ -121,14 +121,14 @@ class SVGInteractionView: NSView {
         // loop back through the destination protocol; we don't want to accept
         // our own payload as a new drop).
         guard sender.draggingSource as? SVGInteractionView !== self else { return [] }
-        guard svgString(from: sender.draggingPasteboard) != nil else { return [] }
+        guard canHandleDropData(sender.draggingPasteboard) else { return [] }
         isDropHighlighted = true
         return .copy
     }
 
     override func draggingUpdated(_ sender: NSDraggingInfo) -> NSDragOperation {
         guard sender.draggingSource as? SVGInteractionView !== self else { return [] }
-        guard svgString(from: sender.draggingPasteboard) != nil else { return [] }
+        guard canHandleDropData(sender.draggingPasteboard) else { return [] }
         return .copy
     }
 
@@ -138,7 +138,7 @@ class SVGInteractionView: NSView {
 
     override func prepareForDragOperation(_ sender: NSDraggingInfo) -> Bool {
         guard sender.draggingSource as? SVGInteractionView !== self else { return false }
-        return svgString(from: sender.draggingPasteboard) != nil
+        return canHandleDropData(sender.draggingPasteboard)
     }
 
     override func performDragOperation(_ sender: NSDraggingInfo) -> Bool {
@@ -247,6 +247,65 @@ class SVGInteractionView: NSView {
         }
 
         return nil
+    }
+
+    /// Fast check: can we handle this drag without actually converting?
+    /// Returns true if the pasteboard contains acceptable content (SVG, file URLs, etc.)
+    /// WITHOUT triggering expensive Inkscape conversions for PDF/AI files.
+    private func canHandleDropData(_ pasteboard: NSPasteboard) -> Bool {
+        // 1. Explicit SVG data type
+        let svgType = NSPasteboard.PasteboardType("public.svg-image")
+        if let data = pasteboard.data(forType: svgType),
+            let s = String(data: data, encoding: .utf8),
+            s.contains("<svg")
+        {
+            return true
+        }
+
+        // 2. File URLs — check type without converting
+        if let urls = pasteboard.readObjects(
+            forClasses: [NSURL.self],
+            options: [.urlReadingFileURLsOnly: true]) as? [URL]
+        {
+            for url in urls {
+                switch url.pathExtension.lowercased() {
+                case "svg", "pdf", "ai":
+                    // For SVG, we can verify content; for PDF/AI, just trust the extension
+                    if url.pathExtension.lowercased() == "svg" {
+                        if let s = try? String(contentsOf: url, encoding: .utf8),
+                            s.contains("<svg")
+                        {
+                            return true
+                        }
+                    } else {
+                        // PDF/AI files are convertible, return true without actually converting
+                        return true
+                    }
+                default:
+                    break
+                }
+            }
+        }
+
+        // 3. PDF data on pasteboard (need Inkscape to handle)
+        if inkscapeURL() != nil {
+            let pdfTypes: [NSPasteboard.PasteboardType] = [
+                NSPasteboard.PasteboardType("com.adobe.pdf"),
+                NSPasteboard.PasteboardType("Apple PDF pasteboard type"),
+            ]
+            for type in pdfTypes {
+                if let data = pasteboard.data(forType: type), !data.isEmpty {
+                    return true  // We can handle it (Inkscape is available)
+                }
+            }
+        }
+
+        // 4. Plain SVG string
+        if let s = pasteboard.string(forType: .string), s.contains("<svg") {
+            return true
+        }
+
+        return false
     }
 }
 
