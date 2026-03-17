@@ -765,9 +765,10 @@ struct SettingsView: View {
                             Text("Inkscape")
                                 .font(.body)
                                 .fontWeight(.semibold)
-                            Text("Installed at \(URL(fileURLWithPath: path).lastPathComponent)")
+                            Text("Installed at \(path)")
                                 .font(.caption)
                                 .foregroundColor(.secondary)
+                                .lineLimit(2)
                         }
 
                         Spacer()
