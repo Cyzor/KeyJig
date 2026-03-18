@@ -109,8 +109,6 @@ struct SettingsView: View {
                 .cornerRadius(6)
             }
 
-            Spacer()
-
             VStack(alignment: .leading, spacing: 6) {
                 Text("This utility relies on the open-source graphics application Inkscape for some conversions.")
                     .font(.caption)
@@ -139,7 +137,7 @@ struct SettingsView: View {
             }
         }
         .padding(24)
-        .frame(minWidth: 400, minHeight: 320)
+        .frame(minWidth: 400)
         .sheet(isPresented: $showingInkscapeDetails) {
             InkscapeDetailsView(appState: appState, isPresented: $showingInkscapeDetails)
         }

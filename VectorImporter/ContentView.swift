@@ -358,7 +358,7 @@ struct ResponsiveSVGWebView: NSViewRepresentable {
         let prefs = WKPreferences()
         let config = WKWebViewConfiguration()
         config.preferences = prefs
-        if #available(macOS 10.5, *) {
+        if #available(macOS 10.15, *) {
             let pagePrefs = WKWebpagePreferences()
             pagePrefs.preferredContentMode = .desktop
             if #available(macOS 11, *) {
@@ -453,6 +453,20 @@ struct ContentView: View {
     init(appState: AppState = AppState()) {
         self.appState = appState
     }
+
+    /// Returns the app's build date derived from the executable's link-time
+    /// modification timestamp — updates automatically on every build.
+    private static let buildDate: String = {
+        let fallback = "Unknown"
+        guard let url = Bundle.main.executableURL,
+              let attrs = try? FileManager.default.attributesOfItem(atPath: url.path),
+              let date = attrs[.modificationDate] as? Date
+        else { return fallback }
+        let fmt = DateFormatter()
+        fmt.dateStyle = .short
+        fmt.timeStyle = .none
+        return fmt.string(from: date)
+    }()
 
     var statusMessage: String {
         switch appState.conversionStatus {
@@ -550,19 +564,18 @@ struct ContentView: View {
                 }
                 .disabled(appState.svgString.isEmpty || isConverting)
             }
-            .padding(.horizontal)
+            .padding(.horizontal, 16)
+            .padding(.bottom, 10)
 
-            Spacer(minLength: 0)
+            Divider()
 
             // ── Footer ────────────────────────────────────────────────────
-            HStack {
-                Text("2026-03-17")
-                    .font(.caption)
-                    .foregroundColor(.secondary)
-                Spacer()
-            }
-            .padding()
-            .background(Color(NSColor.controlBackgroundColor).opacity(0.5))
+            Text("App Build Date: \(Self.buildDate)")
+                .font(.caption)
+                .foregroundColor(.secondary)
+                .frame(maxWidth: .infinity, alignment: .center)
+                .padding()
+                .background(Color(NSColor.controlBackgroundColor).opacity(0.5))
         }
     }
 
