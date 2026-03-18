@@ -17,7 +17,7 @@ class MainWindowController: NSWindowController, NSWindowDelegate {
         self.appState = appState
 
         let window = NSWindow(
-            contentRect: NSRect(x: 0, y: 0, width: 400, height: 520),
+            contentRect: NSRect(x: 0, y: 0, width: 400, height: 640),
             styleMask: [.titled, .closable, .miniaturizable, .resizable],
             backing: .buffered,
             defer: false
@@ -25,7 +25,7 @@ class MainWindowController: NSWindowController, NSWindowDelegate {
         window.isReleasedWhenClosed = false
         window.level = .normal
         window.title = "Vector Importer"
-        window.minSize = NSSize(width: 320, height: 380)
+        window.minSize = NSSize(width: 320, height: 520)
         window.maxSize = NSSize(width: 900, height: 1200)
 
         super.init(window: window)
@@ -594,7 +594,13 @@ class SettingsWindowController: NSWindowController, NSWindowDelegate {
 
         window.title = "Settings"
         window.isReleasedWhenClosed = false
-        window.setFrameUsingName("SettingsWindow")
+
+        // Center the window on the main screen, or restore saved position
+        let didRestore = window.setFrameUsingName("SettingsWindow")
+        if !didRestore {
+            window.center()
+        }
+        window.setFrameAutosaveName("SettingsWindow")
 
         let settingsView = SettingsView(appState: appState)
         window.contentViewController = NSHostingController(rootView: settingsView)
