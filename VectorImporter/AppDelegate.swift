@@ -17,7 +17,7 @@ class MainWindowController: NSWindowController, NSWindowDelegate {
         self.appState = appState
 
         let window = NSWindow(
-            contentRect: NSRect(x: 0, y: 0, width: 400, height: 520),
+            contentRect: NSRect(x: 0, y: 0, width: 400, height: 640),
             styleMask: [.titled, .closable, .miniaturizable, .resizable],
             backing: .buffered,
             defer: false
@@ -25,7 +25,7 @@ class MainWindowController: NSWindowController, NSWindowDelegate {
         window.isReleasedWhenClosed = false
         window.level = .normal
         window.title = "Vector Importer"
-        window.minSize = NSSize(width: 320, height: 380)
+        window.minSize = NSSize(width: 320, height: 520)
         window.maxSize = NSSize(width: 900, height: 1200)
 
         super.init(window: window)
@@ -124,6 +124,11 @@ class AppMenu {
             keyEquivalent: "")
         appMenu.addItem(NSMenuItem.separator())
         appMenu.addItem(
+            withTitle: "Preferences…",
+            action: #selector(AppDelegate.openPreferences),
+            keyEquivalent: ",")
+        appMenu.addItem(NSMenuItem.separator())
+        appMenu.addItem(
             withTitle: "Hide VectorImporter",
             action: #selector(NSApplication.hide(_:)),
             keyEquivalent: "h")
@@ -220,6 +225,9 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     /// The menubar popover and its own independent AppState.
     var popover: NSPopover?
     var popoverAppState: AppState = AppState()
+
+    /// Settings window controller (created lazily when user opens preferences).
+    var settingsWindowController: SettingsWindowController?
 
     // MARK: Scriptable properties for Explorer visibility
 
@@ -513,6 +521,15 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         alert.runModal()
     }
 
+    @objc func openPreferences() {
+        if settingsWindowController == nil {
+            // Use the primary window's AppState, or create a default one
+            let appState = primaryWindowController?.appState ?? AppState()
+            settingsWindowController = SettingsWindowController(appState: appState)
+        }
+        settingsWindowController?.showWindow()
+    }
+
     // MARK: NSApplicationDelegate
 
     func applicationShouldHandleReopen(
@@ -558,4 +575,46 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         return menu
     }
 
+}
+
+// MARK: - Settings Window Controller
+
+class SettingsWindowController: NSWindowController, NSWindowDelegate {
+    let appState: AppState
+
+    init(appState: AppState) {
+        self.appState = appState
+
+        let window = NSWindow(
+            contentRect: NSRect(x: 0, y: 0, width: 450, height: 300),
+            styleMask: [.titled, .closable],
+            backing: .buffered,
+            defer: false
+        )
+
+        window.title = "Settings"
+        window.isReleasedWhenClosed = false
+
+        // Center the window on the main screen, or restore saved position
+        let didRestore = window.setFrameUsingName("SettingsWindow")
+        if !didRestore {
+            window.center()
+        }
+        window.setFrameAutosaveName("SettingsWindow")
+
+        let settingsView = SettingsView(appState: appState)
+        window.contentViewController = NSHostingController(rootView: settingsView)
+
+        super.init(window: window)
+        window.delegate = self
+    }
+
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+
+    func showWindow() {
+        window?.makeKeyAndOrderFront(nil)
+        NSApp.activate(ignoringOtherApps: true)
+    }
 }

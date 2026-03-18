@@ -1,5 +1,4 @@
 import AppKit
-import SVGWebView
 import SwiftUI
 import WebKit
 
@@ -122,14 +121,14 @@ class SVGInteractionView: NSView {
         // loop back through the destination protocol; we don't want to accept
         // our own payload as a new drop).
         guard sender.draggingSource as? SVGInteractionView !== self else { return [] }
-        guard svgString(from: sender.draggingPasteboard) != nil else { return [] }
+        guard canHandleDropData(sender.draggingPasteboard) else { return [] }
         isDropHighlighted = true
         return .copy
     }
 
     override func draggingUpdated(_ sender: NSDraggingInfo) -> NSDragOperation {
         guard sender.draggingSource as? SVGInteractionView !== self else { return [] }
-        guard svgString(from: sender.draggingPasteboard) != nil else { return [] }
+        guard canHandleDropData(sender.draggingPasteboard) else { return [] }
         return .copy
     }
 
@@ -139,7 +138,7 @@ class SVGInteractionView: NSView {
 
     override func prepareForDragOperation(_ sender: NSDraggingInfo) -> Bool {
         guard sender.draggingSource as? SVGInteractionView !== self else { return false }
-        return svgString(from: sender.draggingPasteboard) != nil
+        return canHandleDropData(sender.draggingPasteboard)
     }
 
     override func performDragOperation(_ sender: NSDraggingInfo) -> Bool {
@@ -249,6 +248,65 @@ class SVGInteractionView: NSView {
 
         return nil
     }
+
+    /// Fast check: can we handle this drag without actually converting?
+    /// Returns true if the pasteboard contains acceptable content (SVG, file URLs, etc.)
+    /// WITHOUT triggering expensive Inkscape conversions for PDF/AI files.
+    private func canHandleDropData(_ pasteboard: NSPasteboard) -> Bool {
+        // 1. Explicit SVG data type
+        let svgType = NSPasteboard.PasteboardType("public.svg-image")
+        if let data = pasteboard.data(forType: svgType),
+            let s = String(data: data, encoding: .utf8),
+            s.contains("<svg")
+        {
+            return true
+        }
+
+        // 2. File URLs — check type without converting
+        if let urls = pasteboard.readObjects(
+            forClasses: [NSURL.self],
+            options: [.urlReadingFileURLsOnly: true]) as? [URL]
+        {
+            for url in urls {
+                switch url.pathExtension.lowercased() {
+                case "svg", "pdf", "ai":
+                    // For SVG, we can verify content; for PDF/AI, just trust the extension
+                    if url.pathExtension.lowercased() == "svg" {
+                        if let s = try? String(contentsOf: url, encoding: .utf8),
+                            s.contains("<svg")
+                        {
+                            return true
+                        }
+                    } else {
+                        // PDF/AI files are convertible, return true without actually converting
+                        return true
+                    }
+                default:
+                    break
+                }
+            }
+        }
+
+        // 3. PDF data on pasteboard (need Inkscape to handle)
+        if inkscapeURL() != nil {
+            let pdfTypes: [NSPasteboard.PasteboardType] = [
+                NSPasteboard.PasteboardType("com.adobe.pdf"),
+                NSPasteboard.PasteboardType("Apple PDF pasteboard type"),
+            ]
+            for type in pdfTypes {
+                if let data = pasteboard.data(forType: type), !data.isEmpty {
+                    return true  // We can handle it (Inkscape is available)
+                }
+            }
+        }
+
+        // 4. Plain SVG string
+        if let s = pasteboard.string(forType: .string), s.contains("<svg") {
+            return true
+        }
+
+        return false
+    }
 }
 
 // Make SVGInteractionView a proper drag source
@@ -282,6 +340,65 @@ struct SVGInteractionViewWrapper: NSViewRepresentable {
         nsView.onSVGDropped = onSVGDropped
         nsView.onCopyForKeynote = onCopyForKeynote
         nsView.onClear = onClear
+    }
+}
+
+// MARK: - Responsive SVG renderer
+
+/// A WKWebView-backed renderer that scales the SVG to fill its frame while
+/// preserving aspect ratio.  Replaces the ZeeZide SVGWebView package, whose
+/// minimal HTML wrapper lacks the CSS reset needed for height: 100% to work.
+struct ResponsiveSVGWebView: NSViewRepresentable {
+
+    let svg: String
+
+    func makeCoordinator() -> Coordinator { Coordinator() }
+
+    func makeNSView(context: Context) -> WKWebView {
+        let prefs = WKPreferences()
+        let config = WKWebViewConfiguration()
+        config.preferences = prefs
+        if #available(macOS 10.5, *) {
+            let pagePrefs = WKWebpagePreferences()
+            pagePrefs.preferredContentMode = .desktop
+            if #available(macOS 11, *) {
+                pagePrefs.allowsContentJavaScript = false
+            }
+            config.defaultWebpagePreferences = pagePrefs
+        }
+        config.allowsAirPlayForMediaPlayback = false
+
+        let webView = WKWebView(frame: .zero, configuration: config)
+        webView.setValue(false, forKey: "drawsBackground")
+
+        let html = wrapSVGForResponsiveDisplay(svgString: svg)
+        context.coordinator.lastSVG = svg
+        webView.loadHTMLString(html, baseURL: nil)
+        resetViewport(webView)
+        return webView
+    }
+
+    func updateNSView(_ webView: WKWebView, context: Context) {
+        guard svg != context.coordinator.lastSVG else { return }
+        context.coordinator.lastSVG = svg
+        let html = wrapSVGForResponsiveDisplay(svgString: svg)
+        webView.loadHTMLString(html, baseURL: nil)
+        resetViewport(webView)
+    }
+
+    /// Forces WebKit to recalculate vh/vw from the view's current bounds.
+    /// Without this, stale layout-viewport dimensions from the previous load
+    /// cause 100vh/100vw to resolve to the wrong size on subsequent reloads.
+    private func resetViewport(_ webView: WKWebView) {
+        DispatchQueue.main.async {
+            let frame = webView.frame
+            webView.frame = .zero
+            webView.frame = frame
+        }
+    }
+
+    class Coordinator {
+        var lastSVG: String = ""
     }
 }
 
@@ -350,7 +467,7 @@ struct ContentView: View {
         if !appState.svgString.isEmpty {
             return "Ready — drag the preview into Keynote, or Copy to Clipboard"
         }
-        return "Open a file, paste from clipboard, or drop an SVG here"
+        return ""
     }
 
     var body: some View {
@@ -373,28 +490,30 @@ struct ContentView: View {
             .frame(minHeight: 100, maxHeight: .infinity)
 
             // ── Status ────────────────────────────────────────────────────
-            HStack(spacing: 6) {
-                if appState.conversionStatus == .converting {
-                    if #available(macOS 11.0, *) {
-                        ProgressView()
-                            .progressViewStyle(.circular)
-                            .scaleEffect(0.6)
-                            .frame(width: 14, height: 14)
-                    } else {
-                        // Fallback: animated ellipsis is handled in statusMessage
-                        EmptyView()
+            if !statusMessage.isEmpty {
+                HStack(spacing: 6) {
+                    if appState.conversionStatus == .converting {
+                        if #available(macOS 11.0, *) {
+                            ProgressView()
+                                .progressViewStyle(.circular)
+                                .scaleEffect(0.6)
+                                .frame(width: 14, height: 14)
+                        } else {
+                            // Fallback: animated ellipsis is handled in statusMessage
+                            EmptyView()
+                        }
                     }
+                    Text(statusMessage)
+                        .font(.subheadline)
+                        .multilineTextAlignment(.center)
+                        .foregroundColor(
+                            appState.conversionStatus == .failed ? .red : .secondary)
                 }
-                Text(statusMessage)
-                    .font(.subheadline)
-                    .multilineTextAlignment(.center)
-                    .foregroundColor(
-                        appState.conversionStatus == .failed ? .red : .secondary)
+                .padding(.horizontal)
+                .padding(.top, 8)
+                .padding(.bottom, 4)
+                .frame(height: 50, alignment: .top)
             }
-            .padding(.horizontal)
-            .padding(.top, 8)
-            .padding(.bottom, 4)
-            .frame(height: 50, alignment: .top)
 
             Divider().padding(.vertical, 8)
 
@@ -437,7 +556,7 @@ struct ContentView: View {
 
             // ── Footer ────────────────────────────────────────────────────
             HStack {
-                Text("VectorImporter")
+                Text("2026-03-17")
                     .font(.caption)
                     .foregroundColor(.secondary)
                 Spacer()
@@ -455,7 +574,7 @@ struct ContentView: View {
         ZStack {
             Color(NSColor.windowBackgroundColor)
 
-            SVGWebView(svg: appState.svgString)
+            ResponsiveSVGWebView(svg: appState.svgString)
 
             // Single interaction layer — handles outbound drag, inbound drop,
             // and right-click menu with no Z-order conflict.
@@ -611,3 +730,4 @@ func browseFile(into appState: AppState) -> String {
     ContentView(appState: AppState())
         .frame(width: 480, height: 680)
 }
+
