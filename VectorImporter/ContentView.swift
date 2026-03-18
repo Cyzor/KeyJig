@@ -467,7 +467,7 @@ struct ContentView: View {
         if !appState.svgString.isEmpty {
             return "Ready — drag the preview into Keynote, or Copy to Clipboard"
         }
-        return "Open a file, paste from clipboard, or drop an SVG here"
+        return ""
     }
 
     var body: some View {
@@ -490,28 +490,30 @@ struct ContentView: View {
             .frame(minHeight: 100, maxHeight: .infinity)
 
             // ── Status ────────────────────────────────────────────────────
-            HStack(spacing: 6) {
-                if appState.conversionStatus == .converting {
-                    if #available(macOS 11.0, *) {
-                        ProgressView()
-                            .progressViewStyle(.circular)
-                            .scaleEffect(0.6)
-                            .frame(width: 14, height: 14)
-                    } else {
-                        // Fallback: animated ellipsis is handled in statusMessage
-                        EmptyView()
+            if !statusMessage.isEmpty {
+                HStack(spacing: 6) {
+                    if appState.conversionStatus == .converting {
+                        if #available(macOS 11.0, *) {
+                            ProgressView()
+                                .progressViewStyle(.circular)
+                                .scaleEffect(0.6)
+                                .frame(width: 14, height: 14)
+                        } else {
+                            // Fallback: animated ellipsis is handled in statusMessage
+                            EmptyView()
+                        }
                     }
+                    Text(statusMessage)
+                        .font(.subheadline)
+                        .multilineTextAlignment(.center)
+                        .foregroundColor(
+                            appState.conversionStatus == .failed ? .red : .secondary)
                 }
-                Text(statusMessage)
-                    .font(.subheadline)
-                    .multilineTextAlignment(.center)
-                    .foregroundColor(
-                        appState.conversionStatus == .failed ? .red : .secondary)
+                .padding(.horizontal)
+                .padding(.top, 8)
+                .padding(.bottom, 4)
+                .frame(height: 50, alignment: .top)
             }
-            .padding(.horizontal)
-            .padding(.top, 8)
-            .padding(.bottom, 4)
-            .frame(height: 50, alignment: .top)
 
             Divider().padding(.vertical, 8)
 
@@ -554,7 +556,7 @@ struct ContentView: View {
 
             // ── Footer ────────────────────────────────────────────────────
             HStack {
-                Text("VectorImporter")
+                Text("2026-03-17")
                     .font(.caption)
                     .foregroundColor(.secondary)
                 Spacer()
@@ -722,203 +724,10 @@ func browseFile(into appState: AppState) -> String {
     return ""
 }
 
-// MARK: - Settings View
-
-struct SettingsView: View {
-    @ObservedObject var appState: AppState
-    @State private var showingInkscapeDetails = false
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            Text("Settings")
-                .font(.system(size: 18, weight: .semibold))
-
-            Divider()
-
-            // Inkscape Section
-            VStack(alignment: .leading, spacing: 8) {
-                Text("External Dependencies")
-                    .font(.headline)
-
-                HStack(spacing: 12) {
-                    switch appState.inkscapeStatus {
-                    case .checking:
-                        if #available(macOS 11.0, *) {
-                            ProgressView()
-                                .scaleEffect(0.8)
-                        } else {
-                            Text("…")
-                        }
-                        Text("Checking…")
-                            .font(.body)
-
-                    case .installed(let paths):
-                        if #available(macOS 11.0, *) {
-                            Image(systemName: "checkmark.circle.fill")
-                                .foregroundColor(.green)
-                                .font(.title3)
-                        } else {
-                            Text("✓")
-                                .foregroundColor(.green)
-                                .font(.headline)
-                        }
-
-                        VStack(alignment: .leading, spacing: 2) {
-                            Text("Inkscape")
-                                .font(.body)
-                                .fontWeight(.semibold)
-                            Text("Installed — \(paths.count) location\(paths.count == 1 ? "" : "s")")
-                                .font(.caption)
-                                .foregroundColor(.secondary)
-                        }
-
-                        Spacer()
-
-                        Button("Details") {
-                            showingInkscapeDetails = true
-                        }
-                        .font(.caption)
-
-                    case .notInstalled:
-                        if #available(macOS 11.0, *) {
-                            Image(systemName: "exclamationmark.triangle.fill")
-                                .foregroundColor(.orange)
-                                .font(.title3)
-                        } else {
-                            Text("⚠")
-                                .foregroundColor(.orange)
-                                .font(.headline)
-                        }
-
-                        VStack(alignment: .leading, spacing: 2) {
-                            Text("Inkscape")
-                                .font(.body)
-                                .fontWeight(.semibold)
-                            Text("Not found")
-                                .font(.caption)
-                                .foregroundColor(.secondary)
-                        }
-
-                        Spacer()
-
-                        if #available(macOS 11.0, *) {
-                            Link(destination: URL(string: "https://inkscape.org/release/")!) {
-                                Text("Download")
-                                    .font(.caption)
-                                    .padding(.horizontal, 12)
-                                    .padding(.vertical, 6)
-                                    .background(Color.blue)
-                                    .foregroundColor(.white)
-                                    .cornerRadius(4)
-                            }
-                        } else {
-                            Button(action: {
-                                NSWorkspace.shared.open(URL(string: "https://inkscape.org/release/")!)
-                            }) {
-                                Text("Download")
-                                    .font(.caption)
-                                    .padding(.horizontal, 12)
-                                    .padding(.vertical, 6)
-                                    .background(Color.blue)
-                                    .foregroundColor(.white)
-                                    .cornerRadius(4)
-                            }
-                        }
-                    }
-                }
-                .padding(12)
-                .background(Color(.controlBackgroundColor))
-                .cornerRadius(6)
-            }
-
-            Spacer()
-
-            Text("VectorImporter requires Inkscape to convert PDF and AI files to SVG. SVG files don't require Inkscape.")
-                .font(.caption)
-                .foregroundColor(.secondary)
-                .lineLimit(3)
-        }
-        .padding(24)
-        .frame(minWidth: 400, minHeight: 250)
-        .sheet(isPresented: $showingInkscapeDetails) {
-            InkscapeDetailsView(appState: appState, isPresented: $showingInkscapeDetails)
-        }
-    }
-}
-
-// MARK: - Inkscape Details Sheet
-
-struct InkscapeDetailsView: View {
-    @ObservedObject var appState: AppState
-    @Binding var isPresented: Bool
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            HStack {
-                Text("Inkscape Installation")
-                    .font(.system(size: 16, weight: .semibold))
-                Spacer()
-                Button("Done") {
-                    isPresented = false
-                }
-                .font(.caption)
-            }
-
-            if case .installed(let paths) = appState.inkscapeStatus {
-                VStack(alignment: .leading, spacing: 12) {
-                    ForEach(paths, id: \.self) { path in
-                        HStack(alignment: .top, spacing: 12) {
-                            VStack(alignment: .leading, spacing: 4) {
-                                let textView = Text(path)
-                                    .font(.system(.caption, design: .monospaced))
-                                    .foregroundColor(.secondary)
-                                    .lineLimit(3)
-
-                                if #available(macOS 12.0, *) {
-                                    textView.textSelection(.enabled)
-                                } else {
-                                    textView
-                                }
-
-                                HStack(spacing: 8) {
-                                    Button(action: {
-                                        NSPasteboard.general.clearContents()
-                                        NSPasteboard.general.setString(path, forType: .string)
-                                    }) {
-                                        Text("Copy")
-                                            .font(.system(size: 11))
-                                    }
-
-                                    Button(action: {
-                                        NSWorkspace.shared.selectFile(path, inFileViewerRootedAtPath: "")
-                                    }) {
-                                        Text("Reveal")
-                                            .font(.system(size: 11))
-                                    }
-                                }
-                            }
-                            Spacer()
-                        }
-                        .padding(10)
-                        .background(Color(.controlBackgroundColor))
-                        .cornerRadius(4)
-                    }
-                }
-            } else {
-                Text("No Inkscape installation found.")
-                    .foregroundColor(.secondary)
-            }
-
-            Spacer()
-        }
-        .padding(20)
-        .frame(minWidth: 500, minHeight: 250)
-    }
-}
-
 // MARK: - Preview
 
 #Preview {
     ContentView(appState: AppState())
         .frame(width: 480, height: 680)
 }
+
