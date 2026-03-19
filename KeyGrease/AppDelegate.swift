@@ -24,7 +24,7 @@ class MainWindowController: NSWindowController, NSWindowDelegate {
         )
         window.isReleasedWhenClosed = false
         window.level = .normal
-        window.title = "Vector Importer"
+        window.title = "Vector Converter"
         window.minSize = NSSize(width: 320, height: 520)
         window.maxSize = NSSize(width: 900, height: 1200)
 
@@ -41,9 +41,9 @@ class MainWindowController: NSWindowController, NSWindowDelegate {
             // Setting the autosave name AFTER super.init means AppKit can
             // actually find and restore the previously saved frame.
             // If no saved frame exists yet, centre the window.
-            let didRestore = window.setFrameUsingName("VectorImporterMainWindow")
+            let didRestore = window.setFrameUsingName("KeyGreaseMainWindow")
             if !didRestore { window.center() }
-            window.setFrameAutosaveName("VectorImporterMainWindow")
+            window.setFrameAutosaveName("KeyGreaseMainWindow")
         } else {
             // Secondary windows cascade; they don't clobber the primary's saved frame.
             window.center()
@@ -73,7 +73,7 @@ class MainWindowController: NSWindowController, NSWindowDelegate {
         guard !appState.svgString.isEmpty else {
             // Well is empty — remove proxy icon.
             window?.representedURL = nil
-            window?.title = "Vector Importer"
+            window?.title = "Vector Converter"
             return
         }
 
@@ -98,7 +98,7 @@ class MainWindowController: NSWindowController, NSWindowDelegate {
 
         // SVG came from the clipboard — no file to represent yet.
         window?.representedURL = nil
-        window?.title = "Vector Importer"
+        window?.title = "Vector Converter"
     }
 
     // MARK: NSWindowDelegate
@@ -116,10 +116,10 @@ class AppMenu {
 
         // ── Apple / App menu ──────────────────────────────────────────────
         let appMenuItem = mainMenu.addItem(
-            withTitle: "VectorImporter", action: nil, keyEquivalent: "")
-        let appMenu = NSMenu(title: "VectorImporter")
+            withTitle: "KeyGrease", action: nil, keyEquivalent: "")
+        let appMenu = NSMenu(title: "KeyGrease")
         appMenu.addItem(
-            withTitle: "About VectorImporter",
+            withTitle: "About KeyGrease",
             action: #selector(AppDelegate.showAbout),
             keyEquivalent: "")
         appMenu.addItem(NSMenuItem.separator())
@@ -129,7 +129,7 @@ class AppMenu {
             keyEquivalent: ",")
         appMenu.addItem(NSMenuItem.separator())
         appMenu.addItem(
-            withTitle: "Hide VectorImporter",
+            withTitle: "Hide KeyGrease",
             action: #selector(NSApplication.hide(_:)),
             keyEquivalent: "h")
         appMenu.addItem(
@@ -142,7 +142,7 @@ class AppMenu {
             keyEquivalent: "")
         appMenu.addItem(NSMenuItem.separator())
         appMenu.addItem(
-            withTitle: "Quit VectorImporter",
+            withTitle: "Quit KeyGrease",
             action: #selector(NSApplication.terminate(_:)),
             keyEquivalent: "q")
         appMenuItem.submenu = appMenu
@@ -192,12 +192,32 @@ class AppMenu {
             keyEquivalent: "")
         editMenuItem.submenu = editMenu
 
+        // ── Window menu ───────────────────────────────────────────────────
+        let windowMenuItem = mainMenu.addItem(
+            withTitle: "Window", action: nil, keyEquivalent: "")
+        let windowMenu = NSMenu(title: "Window")
+        windowMenu.addItem(
+            withTitle: "Minimize",
+            action: #selector(NSWindow.miniaturize(_:)),
+            keyEquivalent: "m")
+        windowMenu.addItem(
+            withTitle: "Zoom",
+            action: #selector(NSWindow.zoom(_:)),
+            keyEquivalent: "")
+        windowMenu.addItem(NSMenuItem.separator())
+        windowMenu.addItem(
+            withTitle: "Bring All to Front",
+            action: #selector(NSApplication.arrangeInFront(_:)),
+            keyEquivalent: "")
+        windowMenuItem.submenu = windowMenu
+        NSApplication.shared.windowsMenu = windowMenu
+
         // ── Help menu ─────────────────────────────────────────────────────
         let helpMenuItem = mainMenu.addItem(
             withTitle: "Help", action: nil, keyEquivalent: "")
         let helpMenu = NSMenu(title: "Help")
         helpMenu.addItem(
-            withTitle: "VectorImporter Help",
+            withTitle: "KeyGrease Help",
             action: #selector(AppDelegate.showHelp),
             keyEquivalent: "?")
         helpMenuItem.submenu = helpMenu
@@ -245,14 +265,14 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     @objc dynamic var scriptingSVGWidth: String {
         guard let svg = frontWindowState?.svgString, !svg.isEmpty else { return "" }
         guard let dims = extractSVGDimensions(svgString: svg) else { return "" }
-        return dims.width
+        return String(Int(dims.width.rounded()))
     }
 
     /// Returns the height of the SVG in the frontmost window as text.
     @objc dynamic var scriptingSVGHeight: String {
         guard let svg = frontWindowState?.svgString, !svg.isEmpty else { return "" }
         guard let dims = extractSVGDimensions(svgString: svg) else { return "" }
-        return dims.height
+        return String(Int(dims.height.rounded()))
     }
 
     /// Returns the file size of the SVG in the frontmost window as a formatted string.
@@ -456,7 +476,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                 state.svgURL = url.path
                 state.svgString = content
             } catch {
-                NSLog("VectorImporter: error reading file: \(error)")
+                NSLog("KeyGrease: error reading file: \(error)")
             }
             return
         }
@@ -486,7 +506,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
     @objc func showAbout() {
         let alert = NSAlert()
-        alert.messageText = "Vector Importer"
+        alert.messageText = "KeyGrease Vector Converter"
         alert.informativeText = """
             A utility for converting vector graphics to Keynote-compatible formats.
 
@@ -506,10 +526,10 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         let alert = NSAlert()
         alert.messageText = "Help"
         alert.informativeText = """
-            Vector Importer helps you convert and import vector graphics into Keynote.
+            KeyGrease helps to convert vector graphics for Apple Keynote.
 
             • Copy artwork in Illustrator / Affinity Designer / Inkscape (⌘C).
-            • VectorImporter detects the SVG on your clipboard automatically.
+            • KeyGrease detects the SVG on your clipboard automatically.
             • Press "Copy to Clipboard" to re-encode it for Keynote.
             • Switch to Keynote and paste (⌘V).
 

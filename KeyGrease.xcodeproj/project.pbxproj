@@ -7,9 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		05F195182F65DE4C008DEF94 /* VectorImporter.sdef in Resources */ = {isa = PBXBuildFile; fileRef = 05F195172F65DE4C008DEF94 /* VectorImporter.sdef */; };
+		05F195182F65DE4C008DEF94 /* KeyGrease.sdef in Resources */ = {isa = PBXBuildFile; fileRef = 05F195172F65DE4C008DEF94 /* KeyGrease.sdef */; };
 		05F195192F65DE4C008DEF94 /* ScriptingCommands.swift in Sources */ = {isa = PBXBuildFile; fileRef = 05F1951A2F65DE4C008DEF94 /* ScriptingCommands.swift */; };
-		BB942CF682F473477D8EF06C /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0CCA99F0817B45088BB121 /* SettingsView.swift */; };
 		459A279123AA910B003D50EC /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 459A279023AA910B003D50EC /* AppDelegate.swift */; };
 		459A279323AA910B003D50EC /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 459A279223AA910B003D50EC /* ContentView.swift */; };
 		459A279523AA910B003D50EC /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 459A279423AA910B003D50EC /* Assets.xcassets */; };
@@ -17,22 +16,23 @@
 		459A279B23AA910B003D50EC /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 459A279923AA910B003D50EC /* Main.storyboard */; };
 		AB4A692426A45A5A00B3EF9A /* SVGWebView in Frameworks */ = {isa = PBXBuildFile; productRef = AB4A692326A45A5A00B3EF9A /* SVGWebView */; };
 		AB4A692626A4678500B3EF9A /* svgToKeyRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB4A692526A4678500B3EF9A /* svgToKeyRepository.swift */; };
+		BB942CF682F473477D8EF06C /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0CCA99F0817B45088BB121 /* SettingsView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		057851852F48F0D900ED1254 /* SwiftUIMenuBar.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = SwiftUIMenuBar.entitlements; sourceTree = "<group>"; };
-		05F195172F65DE4C008DEF94 /* VectorImporter.sdef */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = VectorImporter.sdef; sourceTree = "<group>"; };
+		05F195172F65DE4C008DEF94 /* KeyGrease.sdef */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = KeyGrease.sdef; sourceTree = "<group>"; };
 		05F1951A2F65DE4C008DEF94 /* ScriptingCommands.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScriptingCommands.swift; sourceTree = "<group>"; };
-		AA0CCA99F0817B45088BB121 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
-		459A278D23AA910B003D50EC /* VectorImporter.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = VectorImporter.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		459A278D23AA910B003D50EC /* KeyGrease.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = KeyGrease.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		459A279023AA910B003D50EC /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		459A279223AA910B003D50EC /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		459A279423AA910B003D50EC /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		459A279723AA910B003D50EC /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
 		459A279A23AA910B003D50EC /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
 		459A279C23AA910B003D50EC /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		AA0CCA99F0817B45088BB121 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		AB4A692526A4678500B3EF9A /* svgToKeyRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = svgToKeyRepository.swift; sourceTree = "<group>"; };
-		AB8978B326A4239F003D201E /* VectorImporter-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "VectorImporter-Bridging-Header.h"; sourceTree = "<group>"; };
+		AB8978B326A4239F003D201E /* KeyGrease-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "KeyGrease-Bridging-Header.h"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -50,7 +50,7 @@
 		459A278423AA910A003D50EC = {
 			isa = PBXGroup;
 			children = (
-				459A278F23AA910B003D50EC /* VectorImporter */,
+				459A278F23AA910B003D50EC /* KeyGrease */,
 				459A278E23AA910B003D50EC /* Products */,
 				AB8978BB26A42A26003D201E /* Frameworks */,
 			);
@@ -59,15 +59,15 @@
 		459A278E23AA910B003D50EC /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				459A278D23AA910B003D50EC /* VectorImporter.app */,
+				459A278D23AA910B003D50EC /* KeyGrease.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
 		};
-		459A278F23AA910B003D50EC /* VectorImporter */ = {
+		459A278F23AA910B003D50EC /* KeyGrease */ = {
 			isa = PBXGroup;
 			children = (
-				05F195172F65DE4C008DEF94 /* VectorImporter.sdef */,
+				05F195172F65DE4C008DEF94 /* KeyGrease.sdef */,
 				459A279023AA910B003D50EC /* AppDelegate.swift */,
 				459A279223AA910B003D50EC /* ContentView.swift */,
 				05F1951A2F65DE4C008DEF94 /* ScriptingCommands.swift */,
@@ -76,11 +76,11 @@
 				459A279923AA910B003D50EC /* Main.storyboard */,
 				459A279C23AA910B003D50EC /* Info.plist */,
 				459A279623AA910B003D50EC /* Preview Content */,
-				AB8978B326A4239F003D201E /* VectorImporter-Bridging-Header.h */,
+				AB8978B326A4239F003D201E /* KeyGrease-Bridging-Header.h */,
 				AB4A692526A4678500B3EF9A /* svgToKeyRepository.swift */,
 				057851852F48F0D900ED1254 /* SwiftUIMenuBar.entitlements */,
 			);
-			path = VectorImporter;
+			path = KeyGrease;
 			sourceTree = "<group>";
 		};
 		459A279623AA910B003D50EC /* Preview Content */ = {
@@ -101,9 +101,9 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		459A278C23AA910B003D50EC /* VectorImporter */ = {
+		459A278C23AA910B003D50EC /* KeyGrease */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 459A27A023AA910B003D50EC /* Build configuration list for PBXNativeTarget "VectorImporter" */;
+			buildConfigurationList = 459A27A023AA910B003D50EC /* Build configuration list for PBXNativeTarget "KeyGrease" */;
 			buildPhases = (
 				459A278923AA910B003D50EC /* Sources */,
 				459A278A23AA910B003D50EC /* Frameworks */,
@@ -113,12 +113,12 @@
 			);
 			dependencies = (
 			);
-			name = VectorImporter;
+			name = KeyGrease;
 			packageProductDependencies = (
 				AB4A692326A45A5A00B3EF9A /* SVGWebView */,
 			);
 			productName = SwiftUIMenuBar;
-			productReference = 459A278D23AA910B003D50EC /* VectorImporter.app */;
+			productReference = 459A278D23AA910B003D50EC /* KeyGrease.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -137,7 +137,7 @@
 					};
 				};
 			};
-			buildConfigurationList = 459A278823AA910A003D50EC /* Build configuration list for PBXProject "VectorImporter" */;
+			buildConfigurationList = 459A278823AA910A003D50EC /* Build configuration list for PBXProject "KeyGrease" */;
 			compatibilityVersion = "Xcode 12.0";
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
@@ -153,7 +153,7 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				459A278C23AA910B003D50EC /* VectorImporter */,
+				459A278C23AA910B003D50EC /* KeyGrease */,
 			);
 		};
 /* End PBXProject section */
@@ -163,7 +163,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				05F195182F65DE4C008DEF94 /* VectorImporter.sdef in Resources */,
+				05F195182F65DE4C008DEF94 /* KeyGrease.sdef in Resources */,
 				459A279B23AA910B003D50EC /* Main.storyboard in Resources */,
 				459A279823AA910B003D50EC /* Preview Assets.xcassets in Resources */,
 				459A279523AA910B003D50EC /* Assets.xcassets in Resources */,
@@ -323,11 +323,11 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_CXX_LIBRARY = "libc++";
 				CLANG_ENABLE_MODULES = YES;
-				CODE_SIGN_ENTITLEMENTS = VectorImporter/SwiftUIMenuBar.entitlements;
+				CODE_SIGN_ENTITLEMENTS = KeyGrease/SwiftUIMenuBar.entitlements;
 				CODE_SIGN_IDENTITY = "-";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
-				DEVELOPMENT_ASSET_PATHS = "\"VectorImporter/Preview Content\"";
+				DEVELOPMENT_ASSET_PATHS = "\"KeyGrease/Preview Content\"";
 				DEVELOPMENT_TEAM = "";
 				ENABLE_HARDENED_RUNTIME = NO;
 				ENABLE_PREVIEWS = YES;
@@ -336,7 +336,8 @@
 					/usr/local/include,
 					/opt/homebrew/include,
 				);
-				INFOPLIST_FILE = VectorImporter/Info.plist;
+				INFOPLIST_FILE = KeyGrease/Info.plist;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
@@ -349,10 +350,10 @@
 				);
 				MACOSX_DEPLOYMENT_TARGET = 10.15;
 				OTHER_LDFLAGS = "";
-				PRODUCT_BUNDLE_IDENTIFIER = jonath4n.VectorImporter;
+				PRODUCT_BUNDLE_IDENTIFIER = dev.cyzor.keygrease;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
-				SWIFT_OBJC_BRIDGING_HEADER = "VectorImporter/VectorImporter-Bridging-Header.h";
+				SWIFT_OBJC_BRIDGING_HEADER = "KeyGrease/KeyGrease-Bridging-Header.h";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
 			};
@@ -365,11 +366,11 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_CXX_LIBRARY = "libc++";
 				CLANG_ENABLE_MODULES = YES;
-				CODE_SIGN_ENTITLEMENTS = VectorImporter/SwiftUIMenuBar.entitlements;
+				CODE_SIGN_ENTITLEMENTS = KeyGrease/SwiftUIMenuBar.entitlements;
 				CODE_SIGN_IDENTITY = "-";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
-				DEVELOPMENT_ASSET_PATHS = "\"VectorImporter/Preview Content\"";
+				DEVELOPMENT_ASSET_PATHS = "\"KeyGrease/Preview Content\"";
 				DEVELOPMENT_TEAM = "";
 				ENABLE_HARDENED_RUNTIME = NO;
 				ENABLE_PREVIEWS = YES;
@@ -378,7 +379,8 @@
 					/usr/local/include,
 					/opt/homebrew/include,
 				);
-				INFOPLIST_FILE = VectorImporter/Info.plist;
+				INFOPLIST_FILE = KeyGrease/Info.plist;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
@@ -392,10 +394,10 @@
 				MACOSX_DEPLOYMENT_TARGET = 10.15;
 				ONLY_ACTIVE_ARCH = YES;
 				OTHER_LDFLAGS = "";
-				PRODUCT_BUNDLE_IDENTIFIER = jonath4n.VectorImporter;
+				PRODUCT_BUNDLE_IDENTIFIER = dev.cyzor.keygrease;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
-				SWIFT_OBJC_BRIDGING_HEADER = "VectorImporter/VectorImporter-Bridging-Header.h";
+				SWIFT_OBJC_BRIDGING_HEADER = "KeyGrease/KeyGrease-Bridging-Header.h";
 				SWIFT_VERSION = 5.0;
 			};
 			name = Release;
@@ -403,7 +405,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		459A278823AA910A003D50EC /* Build configuration list for PBXProject "VectorImporter" */ = {
+		459A278823AA910A003D50EC /* Build configuration list for PBXProject "KeyGrease" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				459A279E23AA910B003D50EC /* Debug */,
@@ -412,7 +414,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		459A27A023AA910B003D50EC /* Build configuration list for PBXNativeTarget "VectorImporter" */ = {
+		459A27A023AA910B003D50EC /* Build configuration list for PBXNativeTarget "KeyGrease" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				459A27A123AA910B003D50EC /* Debug */,

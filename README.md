@@ -1,25 +1,25 @@
-# VectorImporter
+# KeyGrease
 
 **A lightweight bridge for getting editable vector graphics into Apple Keynote.**
 
 Originally developed as **SVG2Keynote** by [Jonathan Lampérth](https://www.linkedin.com/in/jonathan-lamperth-7059b418a) and [Christian Holz](https://www.christianholz.net) at the [Sensing, Interaction & Perception Lab](https://siplab.org), ETH Zürich.
 
 
-VectorImporter converts graphics from applications such as Adobe Illustrator, Affinity Designer, and Inkscape into native, editable Bezier paths in Apple Keynote.
+KeyGrease converts graphics from applications such as Adobe Illustrator, Affinity Designer, and Inkscape into native, editable Bezier paths in Apple Keynote.
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 ---
 
-## Why use VectorImporter?
+## Why use KeyGrease?
 
 Apple Keynote can read SVG files, but it is often inaccessible through standard Copy/Paste from tools like Adobe Illustrator or Affinity Designer (which usually fall back to static PDF images).
 
-**VectorImporter** acts as a clipboard "bridge." It intercepts vector data and feeds it to Keynote in a format that triggers its high-fidelity native importer. This allows you to immediately **"Make Editable"** and have full control over every node and path.
+**KeyGrease** acts as a clipboard "bridge." It intercepts vector data and feeds it to Keynote in a format that triggers its high-fidelity native importer. This allows you to immediately **"Make Editable"** and have full control over every node and path.
 
 ### The Workflow:
 1. **Copy:** Select your vector artwork in Illustrator, Affinity Designer, or any SVG-supporting tool and press `⌘C`.
-2. **Bridge:** Click **"Bridge Clipboard to Keynote"** in VectorImporter.
+2. **Bridge:** Click **"Bridge Clipboard to Keynote"** in KeyGrease.
 3. **Paste:** Go to Keynote and press `⌘V`.
 4. **Break:** Choose **Format > Shapes and Lines > Break Apart**.  Or right-click the pasted object and choose **Break Apart**.
 5. **Edit:** (Optional) Choose **Format > Shapes and Lines > Make Editable**.  Or right-click the pasted object and choose **Make Editable**.
@@ -39,8 +39,8 @@ Apple Keynote can read SVG files, but it is often inaccessible through standard 
    ```bash
    git clone https://github.com/cyzor/keynote-vector-importer.git
    ```
-2. Open `VectorImporter.xcodeproj` in Xcode.
-3. Select the **VectorImporter** scheme and click **Build** (`⌘B`) or **Run** (`⌘R`).
+2. Open `KeyGrease.xcodeproj` in Xcode.
+3. Select the **KeyGrease** scheme and click **Build** (`⌘B`) or **Run** (`⌘R`).
 
 ---
 
@@ -56,12 +56,12 @@ Apple Keynote can read SVG files, but it is often inaccessible through standard 
 
 ## AppleScript Automation
 
-VectorImporter is fully scriptable via AppleScript, allowing you to automate SVG conversions, file operations, and window management. 
+KeyGrease is fully scriptable via AppleScript, allowing you to automate SVG conversions, file operations, and window management. 
 
 ### Quick Example
 
 ```applescript
-tell application "VectorImporter"
+tell application "KeyGrease"
     load SVG file "/Users/john/Documents/design.svg"
     convert
     get SVG dimensions
@@ -84,7 +84,7 @@ For complete documentation, syntax examples, and advanced workflows, see [**appl
 To see all available commands in Script Editor:
 1. Open **Script Editor** (in Applications > Utilities)
 2. Go to **File > Open Dictionary**
-3. Select **VectorImporter**
+3. Select **KeyGrease**
 
 ---
 
@@ -100,7 +100,7 @@ To see all available commands in Script Editor:
 
 The original project utilized a custom C++ library and Google Protobuf to manually construct Keynote's internal `.iwa` format. While powerful, this was prone to breaking whenever Apple updated Keynote's internal structures or when Protobuf versions changed.
 
-The current version of **VectorImporter** leverages Keynote's native SVG support added in version 10.0+. By providing a temporary file URL as a clipboard promise, we bypass the need for custom binary construction while achieving the same high-fidelity, editable results.
+The current version of **KeyGrease** leverages Keynote's native SVG support added in version 10.0+. By providing a temporary file URL as a clipboard promise, we bypass the need for custom binary construction while achieving the same high-fidelity, editable results.
 
 ---
 

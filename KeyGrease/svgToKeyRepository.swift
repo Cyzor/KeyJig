@@ -289,12 +289,12 @@ func convertToSVGWithInkscape(inputURL: URL) -> String? {
         try task.run()
         task.waitUntilExit()
     } catch {
-        NSLog("VectorImporter: Inkscape launch failed: \(error)")
+        NSLog("KeyGrease: Inkscape launch failed: \(error)")
         return nil
     }
 
     guard task.terminationStatus == 0 else {
-        NSLog("VectorImporter: Inkscape exited with status \(task.terminationStatus)")
+        NSLog("KeyGrease: Inkscape exited with status \(task.terminationStatus)")
         return nil
     }
 
@@ -322,7 +322,7 @@ func convertClipboardPDFToSVG(completion: @escaping (String?) -> Void) {
         do {
             try pdfData.write(to: inputURL)
         } catch {
-            NSLog("VectorImporter: failed to write temp PDF: \(error)")
+            NSLog("KeyGrease: failed to write temp PDF: \(error)")
             DispatchQueue.main.async { completion(nil) }
             return
         }
@@ -342,7 +342,7 @@ func convertFileToSVGWithInkscape(url: URL) -> String? {
 }
 
 // Extract SVG dimensions from SVG string
-func extractSVGDimensions(svgString: String) -> (width: String, height: String)? {
+func extractSVGDimensions(svgString: String) -> (width: Double, height: Double)? {
     // Look for viewBox attribute first (more reliable)
     if let viewBoxRange = svgString.range(
         of: "viewBox=[\"']([^\"']+)[\"']", options: .regularExpression)
@@ -350,26 +350,26 @@ func extractSVGDimensions(svgString: String) -> (width: String, height: String)?
         let viewBoxValue = String(svgString[viewBoxRange])
         let cleanValue = String(viewBoxValue.dropFirst(9).dropLast(1))
         let parts = cleanValue.split(separator: " ")
-        if parts.count >= 4 {
-            return (String(parts[2]), String(parts[3]))
+        if parts.count >= 4,
+           let w = Double(parts[2]), let h = Double(parts[3])
+        {
+            return (w, h)
         }
     }
 
     // Fallback: look for width and height attributes
-    var width: String?
-    var height: String?
+    var width: Double?
+    var height: Double?
 
     if let widthRange = svgString.range(
         of: "width=[\"']([^\"']+)[\"']", options: .regularExpression)
     {
-        let widthValue = String(svgString[widthRange])
-        width = String(widthValue.dropFirst(7).dropLast(1))
+        width = Double(String(svgString[widthRange]).dropFirst(7).dropLast(1))
     }
     if let heightRange = svgString.range(
         of: "height=[\"']([^\"']+)[\"']", options: .regularExpression)
     {
-        let heightValue = String(svgString[heightRange])
-        height = String(heightValue.dropFirst(8).dropLast(1))
+        height = Double(String(svgString[heightRange]).dropFirst(8).dropLast(1))
     }
 
     if let w = width, let h = height {

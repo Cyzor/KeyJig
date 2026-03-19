@@ -369,7 +369,12 @@ struct ResponsiveSVGWebView: NSViewRepresentable {
         config.allowsAirPlayForMediaPlayback = false
 
         let webView = WKWebView(frame: .zero, configuration: config)
-        webView.setValue(false, forKey: "drawsBackground")
+        // Prevent WebKit's native layer from painting a white background behind
+        // the transparent HTML. Private KVC — guarded so a future removal
+        // degrades to a white preview rather than a crash.
+        if webView.responds(to: Selector(("setDrawsBackground:"))) {
+            webView.setValue(false, forKey: "drawsBackground")
+        }
 
         let html = wrapSVGForResponsiveDisplay(svgString: svg)
         context.coordinator.lastSVG = svg
@@ -410,7 +415,7 @@ struct MetadataOverlay: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 4) {
             if let (width, height) = extractSVGDimensions(svgString: svgString) {
-                MetadataRow(label: "Dimensions", value: "\(width) × \(height)")
+                MetadataRow(label: "Dimensions", value: "\(Int(width.rounded())) × \(Int(height.rounded()))")
             }
             MetadataRow(label: "Size", value: getFileSizeString(svgString: svgString))
             if let creator = extractSVGCreator(svgString: svgString) {
@@ -468,6 +473,9 @@ struct ContentView: View {
         return fmt.string(from: date)
     }()
 
+    private static let breakApartInstruction =
+        "Once placed in Keynote, select the object and choose Format ‣ Shapes and Lines ‣ Break Apart."
+
     var statusMessage: String {
         switch appState.conversionStatus {
         case .converting:
@@ -477,15 +485,20 @@ struct ContentView: View {
         case .idle:
             break
         }
-        if !localStatus.isEmpty { return localStatus }
-        if !appState.svgString.isEmpty {
-            return "Ready — drag the preview into Keynote, or Copy to Clipboard"
+        let hasContent = !appState.svgString.isEmpty
+        let base: String
+        if !localStatus.isEmpty {
+            base = localStatus
+        } else if hasContent {
+            base = "Ready — drag the preview into Keynote, or Copy to Clipboard."
+        } else {
+            return ""
         }
-        return ""
+        return hasContent ? base + "\n\n" + Self.breakApartInstruction : base
     }
 
     var body: some View {
-        VStack(spacing: 0) {
+        VStack(spacing: 4) {
 
             // ── Preview / drop well ───────────────────────────────────────
             Group {
@@ -501,7 +514,7 @@ struct ContentView: View {
                     .stroke(Color.secondary.opacity(0.2), lineWidth: 1)
             )
             .padding([.horizontal, .top])
-            .frame(minHeight: 100, maxHeight: .infinity)
+            .frame(minHeight: 200, maxHeight: .infinity)
 
             // ── Status ────────────────────────────────────────────────────
             if !statusMessage.isEmpty {
@@ -525,8 +538,8 @@ struct ContentView: View {
                 }
                 .padding(.horizontal)
                 .padding(.top, 8)
-                .padding(.bottom, 4)
-                .frame(height: 50, alignment: .top)
+                .padding(.bottom, 8)
+                .frame(minHeight: 50, alignment: .top)
             }
 
             Divider().padding(.vertical, 8)
@@ -540,7 +553,7 @@ struct ContentView: View {
                     // conversion was kicked off — conversionStatus drives the
                     // message in that case, so we don't overwrite it here.
                     if picked != "(converting)" && !picked.isEmpty {
-                        localStatus = "Loaded!"
+                        localStatus = ""
                         appState.conversionStatus = .idle
                     }
                 } label: {
@@ -554,7 +567,7 @@ struct ContentView: View {
                         appState.svgString = svg
                         appState.conversionStatus = .idle
                         if svgToClipboard(svgData: svg, appState: appState) != nil {
-                            localStatus = "Ready to paste into Keynote!"
+                            localStatus = ""
                         }
                     } else {
                         localStatus = "No SVG found on clipboard."
@@ -565,7 +578,7 @@ struct ContentView: View {
                 .disabled(appState.svgString.isEmpty || isConverting)
             }
             .padding(.horizontal, 16)
-            .padding(.bottom, 10)
+            .padding(.bottom, 8)
 
             Divider()
 
@@ -575,7 +588,7 @@ struct ContentView: View {
                 .foregroundColor(.secondary)
                 .frame(maxWidth: .infinity, alignment: .center)
                 .padding()
-                .background(Color(NSColor.controlBackgroundColor).opacity(0.5))
+                //.background(Color(NSColor.controlBackgroundColor).opacity(0.5))
         }
     }
 
@@ -599,14 +612,14 @@ struct ContentView: View {
                         try svg.write(to: url, atomically: true, encoding: .utf8)
                         appState?.bridgeFileURL = url
                     } catch {
-                        NSLog("VectorImporter: error writing temp SVG: \(error)")
+                        NSLog("KeyGrease: error writing temp SVG: \(error)")
                         return nil
                     }
                     return url
                 },
                 onSVGDropped: { svg in
                     appState.svgString = svg
-                    localStatus = "Loaded!"
+                    localStatus = ""
                 },
                 onCopyForKeynote: {
                     if svgToClipboard(svgData: appState.svgString, appState: appState) != nil {
@@ -651,7 +664,7 @@ struct ContentView: View {
             SVGInteractionViewWrapper(
                 onSVGDropped: { svg in
                     appState.svgString = svg
-                    localStatus = "Loaded!"
+                    localStatus = ""
                 }
             )
 
@@ -669,8 +682,7 @@ struct ContentView: View {
                     .foregroundColor(.secondary)
 
                 Text(
-                    "Drop an SVG file here, open one with the button below,\n"
-                        + "or copy artwork to your clipboard and click Copy to Clipboard"
+                    "Drop an SVG file here, open one with the button below, or copy artwork to your clipboard and click *Copy to Clipboard*."
                 )
                 .font(.caption)
                 .foregroundColor(.secondary)

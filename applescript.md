@@ -1,6 +1,6 @@
 # AppleScript Reference
 
-VectorImporter is fully scriptable via AppleScript. Use Script Editor, Automator, shell scripts, or any other automation tool to drive SVG workflows without touching the UI.
+KeyGrease is fully scriptable via AppleScript. Use Script Editor, Automator, shell scripts, or any other automation tool to drive SVG workflows without touching the UI.
 
 ---
 
@@ -39,15 +39,15 @@ VectorImporter is fully scriptable via AppleScript. Use Script Editor, Automator
 ### One-liners
 
 ```applescript
-tell application "VectorImporter" to activate
-tell application "VectorImporter" to convert
-tell application "VectorImporter" to clear
-tell application "VectorImporter" to load SVG file "/path/to/file.svg"
-tell application "VectorImporter" to get SVG
-tell application "VectorImporter" to get SVG dimensions
-tell application "VectorImporter" to check clipboard
-tell application "VectorImporter" to check for convertible
-tell application "VectorImporter" to new floating window
+tell application "KeyGrease" to activate
+tell application "KeyGrease" to convert
+tell application "KeyGrease" to clear
+tell application "KeyGrease" to load SVG file "/path/to/file.svg"
+tell application "KeyGrease" to get SVG
+tell application "KeyGrease" to get SVG dimensions
+tell application "KeyGrease" to check clipboard
+tell application "KeyGrease" to check for convertible
+tell application "KeyGrease" to new floating window
 ```
 
 ---
@@ -67,7 +67,7 @@ tell application "VectorImporter" to new floating window
 **`load SVG file path`** — Loads an SVG from disk.
 
 ```applescript
-tell application "VectorImporter"
+tell application "KeyGrease"
     load SVG file "/Users/yourname/Documents/logo.svg"
 end tell
 ```
@@ -95,7 +95,7 @@ end tell
 **`get SVG dimensions`** — Returns a record with `width` and `height` string properties (e.g. `"512"`, `"384"`).
 
 ```applescript
-tell application "VectorImporter"
+tell application "KeyGrease"
     set dims to get SVG dimensions
     display dialog (width of dims) & " × " & (height of dims)
 end tell
@@ -118,7 +118,7 @@ end tell
 ### Load a file, convert, and report dimensions
 
 ```applescript
-tell application "VectorImporter"
+tell application "KeyGrease"
     activate
     load SVG file "/Users/yourname/Documents/diagram.svg"
     delay 0.5
@@ -138,7 +138,7 @@ end tell
 ### Detect and convert clipboard content
 
 ```applescript
-tell application "VectorImporter"
+tell application "KeyGrease"
     activate
     set svg to check clipboard
 
@@ -167,7 +167,7 @@ set svgFiles to {¬
     "/Users/yourname/Documents/icon2.svg", ¬
     "/Users/yourname/Documents/icon3.svg"}
 
-tell application "VectorImporter"
+tell application "KeyGrease"
     activate
     repeat with f in svgFiles
         load SVG file f
@@ -189,7 +189,7 @@ tell application "Finder"
     set svgFiles to (every file in folder folderPath whose name ends with ".svg") as list
 end tell
 
-tell application "VectorImporter"
+tell application "KeyGrease"
     activate
     set n to 0
     repeat with f in svgFiles
@@ -206,7 +206,7 @@ end tell
 ### Export the loaded SVG to a file
 
 ```applescript
-tell application "VectorImporter"
+tell application "KeyGrease"
     set svgText to get SVG
     if svgText is "" then
         display alert "No SVG is currently loaded."
@@ -223,12 +223,12 @@ end tell
 
 ### Automator Quick Action (Finder integration)
 
-Save as an Automator Quick Action to add VectorImporter to the Finder right-click menu:
+Save as an Automator Quick Action to add KeyGrease to the Finder right-click menu:
 
 ```applescript
 on run {input, parameters}
     set selectedFile to item 1 of input
-    tell application "VectorImporter"
+    tell application "KeyGrease"
         activate
         load SVG file (POSIX path of selectedFile)
         delay 1
@@ -245,7 +245,7 @@ on adding folder items to thisFolder after receiving addedItems
     repeat with anItem in addedItems
         set fp to POSIX path of anItem
         if fp ends with ".svg" then
-            tell application "VectorImporter"
+            tell application "KeyGrease"
                 load SVG file fp
                 delay 1
                 convert
@@ -262,7 +262,7 @@ end adding folder items to
 Always wrap file operations in `try/on error` blocks:
 
 ```applescript
-tell application "VectorImporter"
+tell application "KeyGrease"
     try
         load SVG file "/path/to/file.svg"
         convert
@@ -282,13 +282,13 @@ end tell
 
 ```bash
 # Single command
-osascript -e 'tell application "VectorImporter" to convert'
+osascript -e 'tell application "KeyGrease" to convert'
 
 # Script file
 osascript /path/to/script.scpt
 
 # With a shell variable
-osascript -e "tell application \"VectorImporter\" to load SVG file \"$HOME/Documents/test.svg\""
+osascript -e "tell application \"KeyGrease\" to load SVG file \"$HOME/Documents/test.svg\""
 ```
 
 **Python**
@@ -297,7 +297,7 @@ osascript -e "tell application \"VectorImporter\" to load SVG file \"$HOME/Docum
 import subprocess
 
 script = '''
-tell application "VectorImporter"
+tell application "KeyGrease"
     load SVG file "/Users/yourname/Documents/test.svg"
     convert
 end tell
@@ -321,5 +321,5 @@ subprocess.run(["osascript", "-e", script], check=True)
 
 1. Open **Script Editor** (`/Applications/Utilities/`)
 2. **File > Open Dictionary**
-3. Select **VectorImporter**
-4. Browse the **VectorImporter Suite** for all commands with inline descriptions
+3. Select **KeyGrease**
+4. Browse the **KeyGrease Suite** for all commands with inline descriptions

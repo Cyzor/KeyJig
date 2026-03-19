@@ -30,9 +30,9 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "459A278C23AA910B003D50EC"
-            BuildableName = "VectorImporter.app"
-            BlueprintName = "VectorImporter"
-            ReferencedContainer = "container:VectorImporter.xcodeproj">
+            BuildableName = "KeyGrease.app"
+            BlueprintName = "KeyGrease"
+            ReferencedContainer = "container:KeyGrease.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
    </LaunchAction>

@@ -1,17 +1,17 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE dictionary SYSTEM "file://localhost/System/Library/DTDs/sdef.dtd">
-<dictionary title="VectorImporter Terminology">
+<dictionary title="KeyGrease Terminology">
 
 	<!--
-	     VectorImporter Suite — all custom commands, the SVG dimensions
+	     KeyGrease Suite — all custom commands, the SVG dimensions
 	     record-type, and the application-class extensions that power the
 	     Script Debugger Explorer tab.
 	-->
 
 	<suite
-        name="VectorImporter Suite"
+        name="KeyGrease Suite"
         code="VcIm"
-        description="Commands and types for automating VectorImporter."
+        description="Commands and types for automating KeyGrease."
     >
 
 
@@ -26,7 +26,7 @@
 		<class
             name="application"
             code="capp"
-            description="VectorImporter's top-level scripting object."
+            description="KeyGrease's top-level scripting object."
         >
 			<cocoa class="NSApplication" />
 
