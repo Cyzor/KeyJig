@@ -1,12 +1,12 @@
 # AppleScript Reference
 
-KeyGrease is fully scriptable via AppleScript. Use Script Editor, Automator, shell scripts, or any other automation tool to drive SVG workflows without touching the UI.
+KeyJig is fully scriptable via AppleScript. Use Script Editor, Automator, shell scripts, or any other automation tool to drive SVG workflows without touching the UI.
 
 ---
 
 ## Requirements
 
-- macOS 10.15 or later
+- macOS 11.3 or later
 - **Inkscape** (optional) — required only for `convert clipboard` when the clipboard holds PDF/AI data
   - Install via [inkscape.org](https://inkscape.org/) or `brew install inkscape`
 
@@ -27,7 +27,7 @@ KeyGrease is fully scriptable via AppleScript. Use Script Editor, Automator, she
 | `convert clipboard` | Convert clipboard PDF/vector to SVG via Inkscape | text |
 | `get SVG` | Return the currently loaded SVG as text | text |
 | `get SVG file path` | Return the loaded file's path, or `""` | text |
-| `get SVG dimensions` | Return a record with `width` and `height` | record |
+
 | `get file size` | Return human-readable file size (e.g. `"42.1 KB"`) | text |
 | `get SVG creator` | Return creator metadata from the SVG, or `""` | text |
 | `show main window` | Show the main application window | boolean |
@@ -39,15 +39,16 @@ KeyGrease is fully scriptable via AppleScript. Use Script Editor, Automator, she
 ### One-liners
 
 ```applescript
-tell application "KeyGrease" to activate
-tell application "KeyGrease" to convert
-tell application "KeyGrease" to clear
-tell application "KeyGrease" to load SVG file "/path/to/file.svg"
-tell application "KeyGrease" to get SVG
-tell application "KeyGrease" to get SVG dimensions
-tell application "KeyGrease" to check clipboard
-tell application "KeyGrease" to check for convertible
-tell application "KeyGrease" to new floating window
+tell application "KeyJig" to activate
+tell application "KeyJig" to convert
+tell application "KeyJig" to clear
+tell application "KeyJig" to load SVG file "/path/to/file.svg"
+tell application "KeyJig" to get SVG
+tell application "KeyJig" to get pixel width
+tell application "KeyJig" to get pixel height
+tell application "KeyJig" to check clipboard
+tell application "KeyJig" to check for convertible
+tell application "KeyJig" to new floating window
 ```
 
 ---
@@ -67,7 +68,7 @@ tell application "KeyGrease" to new floating window
 **`load SVG file path`** — Loads an SVG from disk.
 
 ```applescript
-tell application "KeyGrease"
+tell application "KeyJig"
     load SVG file "/Users/yourname/Documents/logo.svg"
 end tell
 ```
@@ -92,15 +93,6 @@ end tell
 
 **`get SVG file path`** — Returns the file system path of the loaded SVG, or `""` if the SVG was loaded from the clipboard.
 
-**`get SVG dimensions`** — Returns a record with `width` and `height` string properties (e.g. `"512"`, `"384"`).
-
-```applescript
-tell application "KeyGrease"
-    set dims to get SVG dimensions
-    display dialog (width of dims) & " × " & (height of dims)
-end tell
-```
-
 **`get file size`** — Returns a formatted string such as `"23.4 KB"`.
 
 **`get SVG creator`** — Extracts the creator application name from the SVG metadata, or `""` if not present.
@@ -115,19 +107,20 @@ end tell
 
 ## Practical Examples
 
-### Load a file, convert, and report dimensions
+### Load a file, convert, and report info
 
 ```applescript
-tell application "KeyGrease"
+tell application "KeyJig"
     activate
     load SVG file "/Users/yourname/Documents/diagram.svg"
     delay 0.5
 
-    set dims to get SVG dimensions
+    set w to pixel width
+    set h to pixel height
     set sz to get file size
     set cr to get SVG creator
 
-    display alert "Dimensions: " & (width of dims) & " × " & (height of dims) & return & ¬
+    display alert "Dimensions: " & w & " × " & h & return & ¬
                   "Size: " & sz & return & ¬
                   "Creator: " & cr
 
@@ -138,7 +131,7 @@ end tell
 ### Detect and convert clipboard content
 
 ```applescript
-tell application "KeyGrease"
+tell application "KeyJig"
     activate
     set svg to check clipboard
 
@@ -167,7 +160,7 @@ set svgFiles to {¬
     "/Users/yourname/Documents/icon2.svg", ¬
     "/Users/yourname/Documents/icon3.svg"}
 
-tell application "KeyGrease"
+tell application "KeyJig"
     activate
     repeat with f in svgFiles
         load SVG file f
@@ -189,7 +182,7 @@ tell application "Finder"
     set svgFiles to (every file in folder folderPath whose name ends with ".svg") as list
 end tell
 
-tell application "KeyGrease"
+tell application "KeyJig"
     activate
     set n to 0
     repeat with f in svgFiles
@@ -206,7 +199,7 @@ end tell
 ### Export the loaded SVG to a file
 
 ```applescript
-tell application "KeyGrease"
+tell application "KeyJig"
     set svgText to get SVG
     if svgText is "" then
         display alert "No SVG is currently loaded."
@@ -223,12 +216,12 @@ end tell
 
 ### Automator Quick Action (Finder integration)
 
-Save as an Automator Quick Action to add KeyGrease to the Finder right-click menu:
+Save as an Automator Quick Action to add KeyJig to the Finder right-click menu:
 
 ```applescript
 on run {input, parameters}
     set selectedFile to item 1 of input
-    tell application "KeyGrease"
+    tell application "KeyJig"
         activate
         load SVG file (POSIX path of selectedFile)
         delay 1
@@ -245,7 +238,7 @@ on adding folder items to thisFolder after receiving addedItems
     repeat with anItem in addedItems
         set fp to POSIX path of anItem
         if fp ends with ".svg" then
-            tell application "KeyGrease"
+            tell application "KeyJig"
                 load SVG file fp
                 delay 1
                 convert
@@ -262,7 +255,7 @@ end adding folder items to
 Always wrap file operations in `try/on error` blocks:
 
 ```applescript
-tell application "KeyGrease"
+tell application "KeyJig"
     try
         load SVG file "/path/to/file.svg"
         convert
@@ -282,13 +275,13 @@ end tell
 
 ```bash
 # Single command
-osascript -e 'tell application "KeyGrease" to convert'
+osascript -e 'tell application "KeyJig" to convert'
 
 # Script file
 osascript /path/to/script.scpt
 
 # With a shell variable
-osascript -e "tell application \"KeyGrease\" to load SVG file \"$HOME/Documents/test.svg\""
+osascript -e "tell application \"KeyJig\" to load SVG file \"$HOME/Documents/test.svg\""
 ```
 
 **Python**
@@ -297,7 +290,7 @@ osascript -e "tell application \"KeyGrease\" to load SVG file \"$HOME/Documents/
 import subprocess
 
 script = '''
-tell application "KeyGrease"
+tell application "KeyJig"
     load SVG file "/Users/yourname/Documents/test.svg"
     convert
 end tell
@@ -321,5 +314,5 @@ subprocess.run(["osascript", "-e", script], check=True)
 
 1. Open **Script Editor** (`/Applications/Utilities/`)
 2. **File > Open Dictionary**
-3. Select **KeyGrease**
-4. Browse the **KeyGrease Suite** for all commands with inline descriptions
+3. Select **KeyJig**
+4. Browse the **KeyJig Suite** for all commands with inline descriptions

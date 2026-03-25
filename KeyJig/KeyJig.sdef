@@ -1,17 +1,17 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE dictionary SYSTEM "file://localhost/System/Library/DTDs/sdef.dtd">
-<dictionary title="KeyGrease Terminology">
+<dictionary title="KeyJig Terminology">
 
 	<!--
-	     KeyGrease Suite — all custom commands, the SVG dimensions
+	     KeyJig Suite — all custom commands, the SVG dimensions
 	     record-type, and the application-class extensions that power the
 	     Script Debugger Explorer tab.
 	-->
 
 	<suite
-        name="KeyGrease Suite"
+        name="KeyJig Suite"
         code="VcIm"
-        description="Commands and types for automating KeyGrease."
+        description="Commands and types for automating KeyJig."
     >
 
 
@@ -26,7 +26,7 @@
 		<class
             name="application"
             code="capp"
-            description="KeyGrease's top-level scripting object."
+            description="KeyJig's top-level scripting object."
         >
 			<cocoa class="NSApplication" />
 

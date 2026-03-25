@@ -8,6 +8,24 @@ import WebKit
 ///   • mouseDown  → outbound drag to Keynote (drag source)
 ///   • draggingEntered/performDragOperation → inbound SVG drop (drag destination)
 ///   • menu(for:) → right-click context menu
+// MARK: - Tooltip Text Constants
+
+struct Tooltips {
+    static let openFile =
+        "Load an SVG file from your computer. You can also drag and drop SVG files directly onto the preview area."
+
+    static let copyToClipboard =
+        "Copy the loaded SVG to your clipboard for pasting into Keynote with ⌘V, then use 'Break Apart' and 'Make Editable'."
+
+    static let readyStatus = "The SVG is ready. Drag it into Keynote or click 'Copy to Clipboard'."
+
+    static let previewAreaLoaded =
+        "Drag this SVG directly into Keynote or any app that accepts SVG files. Your clipboard is not modified during dragging."
+
+    static let previewAreaEmpty =
+        "Drop an SVG file here, open one with the button below, or copy artwork and click 'Copy to Clipboard'."
+}
+
 class SVGInteractionView: NSView {
 
     // MARK: Callbacks
@@ -336,6 +354,7 @@ struct SVGInteractionViewWrapper: NSViewRepresentable {
     }
 
     func updateNSView(_ nsView: SVGInteractionView, context: Context) {
+        nsView.toolTip = Tooltips.previewAreaLoaded
         nsView.onDragStart = onDragStart
         nsView.onSVGDropped = onSVGDropped
         nsView.onCopyForKeynote = onCopyForKeynote
@@ -415,7 +434,9 @@ struct MetadataOverlay: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 4) {
             if let (width, height) = extractSVGDimensions(svgString: svgString) {
-                MetadataRow(label: "Dimensions", value: "\(Int(width.rounded())) × \(Int(height.rounded()))")
+                MetadataRow(
+                    label: "Dimensions", value: "\(Int(width.rounded())) × \(Int(height.rounded()))"
+                )
             }
             MetadataRow(label: "Size", value: getFileSizeString(svgString: svgString))
             if let creator = extractSVGCreator(svgString: svgString) {
@@ -464,8 +485,8 @@ struct ContentView: View {
     private static let buildDate: String = {
         let fallback = "Unknown"
         guard let url = Bundle.main.executableURL,
-              let attrs = try? FileManager.default.attributesOfItem(atPath: url.path),
-              let date = attrs[.modificationDate] as? Date
+            let attrs = try? FileManager.default.attributesOfItem(atPath: url.path),
+            let date = attrs[.modificationDate] as? Date
         else { return fallback }
         let fmt = DateFormatter()
         fmt.dateStyle = .short
@@ -540,6 +561,7 @@ struct ContentView: View {
                 .padding(.top, 8)
                 .padding(.bottom, 8)
                 .frame(minHeight: 50, alignment: .top)
+                .help(appState.svgString.isEmpty ? "" : Tooltips.readyStatus)
             }
 
             Divider().padding(.vertical, 8)
@@ -559,6 +581,7 @@ struct ContentView: View {
                 } label: {
                     Text("Open SVG File…").frame(maxWidth: .infinity)
                 }
+                .help(Tooltips.openFile)
                 .disabled(isConverting)
 
                 Button {
@@ -575,6 +598,7 @@ struct ContentView: View {
                 } label: {
                     Text("Copy to Clipboard").frame(maxWidth: .infinity)
                 }
+                .help(Tooltips.copyToClipboard)
                 .disabled(appState.svgString.isEmpty || isConverting)
             }
             .padding(.horizontal, 16)
@@ -588,7 +612,7 @@ struct ContentView: View {
                 .foregroundColor(.secondary)
                 .frame(maxWidth: .infinity, alignment: .center)
                 .padding()
-                //.background(Color(NSColor.controlBackgroundColor).opacity(0.5))
+            //.background(Color(NSColor.controlBackgroundColor).opacity(0.5))
         }
     }
 
@@ -612,7 +636,7 @@ struct ContentView: View {
                         try svg.write(to: url, atomically: true, encoding: .utf8)
                         appState?.bridgeFileURL = url
                     } catch {
-                        NSLog("KeyGrease: error writing temp SVG: \(error)")
+                        NSLog("KeyJig: error writing temp SVG: \(error)")
                         return nil
                     }
                     return url
@@ -646,6 +670,7 @@ struct ContentView: View {
             }
             .allowsHitTesting(false)
         }
+        .help(Tooltips.previewAreaLoaded)
         .onReceive(appState.$svgString) { newValue in
             // When content arrives externally (clipboard detection, drop),
             // clear any stale local status so the computed statusMessage shows.
@@ -691,6 +716,7 @@ struct ContentView: View {
             }
             .allowsHitTesting(false)
         }
+        .help(Tooltips.previewAreaEmpty)
     }
 }
 
@@ -755,4 +781,3 @@ func browseFile(into appState: AppState) -> String {
     ContentView(appState: AppState())
         .frame(width: 480, height: 680)
 }
-

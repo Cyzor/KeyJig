@@ -289,12 +289,12 @@ func convertToSVGWithInkscape(inputURL: URL) -> String? {
         try task.run()
         task.waitUntilExit()
     } catch {
-        NSLog("KeyGrease: Inkscape launch failed: \(error)")
+        NSLog("KeyJig: Inkscape launch failed: \(error)")
         return nil
     }
 
     guard task.terminationStatus == 0 else {
-        NSLog("KeyGrease: Inkscape exited with status \(task.terminationStatus)")
+        NSLog("KeyJig: Inkscape exited with status \(task.terminationStatus)")
         return nil
     }
 
@@ -322,7 +322,7 @@ func convertClipboardPDFToSVG(completion: @escaping (String?) -> Void) {
         do {
             try pdfData.write(to: inputURL)
         } catch {
-            NSLog("KeyGrease: failed to write temp PDF: \(error)")
+            NSLog("KeyJig: failed to write temp PDF: \(error)")
             DispatchQueue.main.async { completion(nil) }
             return
         }

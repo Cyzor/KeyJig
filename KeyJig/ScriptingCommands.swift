@@ -96,7 +96,7 @@ class LoadSVGFileCommand: NSScriptCommand {
             }
             return NSNumber(value: false)
         } catch {
-            self.scriptErrorNumber = -43  // fnfErr: file not found
+            self.scriptErrorNumber = Int(-43)  // fnfErr: file not found / general file error
             self.scriptErrorString = "Could not read file: \(error.localizedDescription)"
             return NSNumber(value: false)
         }
@@ -199,7 +199,7 @@ class GetSVGFilePathCommand: NSScriptCommand {
 class GetSVGDimensionsCommand: NSScriptCommand {
     override func performDefaultImplementation() -> Any? {
         guard let svg = frontState()?.svgString, !svg.isEmpty,
-              let dims = extractSVGDimensions(svgString: svg)
+            let dims = extractSVGDimensions(svgString: svg)
         else { return nil }
         return ["width": dims.width, "height": dims.height]
     }

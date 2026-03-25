@@ -41,9 +41,9 @@ class MainWindowController: NSWindowController, NSWindowDelegate {
             // Setting the autosave name AFTER super.init means AppKit can
             // actually find and restore the previously saved frame.
             // If no saved frame exists yet, centre the window.
-            let didRestore = window.setFrameUsingName("KeyGreaseMainWindow")
+            let didRestore = window.setFrameUsingName("KeyJigMainWindow")
             if !didRestore { window.center() }
-            window.setFrameAutosaveName("KeyGreaseMainWindow")
+            window.setFrameAutosaveName("KeyJigMainWindow")
         } else {
             // Secondary windows cascade; they don't clobber the primary's saved frame.
             window.center()
@@ -116,10 +116,10 @@ class AppMenu {
 
         // ── Apple / App menu ──────────────────────────────────────────────
         let appMenuItem = mainMenu.addItem(
-            withTitle: "KeyGrease", action: nil, keyEquivalent: "")
-        let appMenu = NSMenu(title: "KeyGrease")
+            withTitle: "KeyJig", action: nil, keyEquivalent: "")
+        let appMenu = NSMenu(title: "KeyJig")
         appMenu.addItem(
-            withTitle: "About KeyGrease",
+            withTitle: "About KeyJig",
             action: #selector(AppDelegate.showAbout),
             keyEquivalent: "")
         appMenu.addItem(NSMenuItem.separator())
@@ -129,7 +129,7 @@ class AppMenu {
             keyEquivalent: ",")
         appMenu.addItem(NSMenuItem.separator())
         appMenu.addItem(
-            withTitle: "Hide KeyGrease",
+            withTitle: "Hide KeyJig",
             action: #selector(NSApplication.hide(_:)),
             keyEquivalent: "h")
         appMenu.addItem(
@@ -142,7 +142,7 @@ class AppMenu {
             keyEquivalent: "")
         appMenu.addItem(NSMenuItem.separator())
         appMenu.addItem(
-            withTitle: "Quit KeyGrease",
+            withTitle: "Quit KeyJig",
             action: #selector(NSApplication.terminate(_:)),
             keyEquivalent: "q")
         appMenuItem.submenu = appMenu
@@ -217,7 +217,7 @@ class AppMenu {
             withTitle: "Help", action: nil, keyEquivalent: "")
         let helpMenu = NSMenu(title: "Help")
         helpMenu.addItem(
-            withTitle: "KeyGrease Help",
+            withTitle: "KeyJig Help",
             action: #selector(AppDelegate.showHelp),
             keyEquivalent: "?")
         helpMenuItem.submenu = helpMenu
@@ -476,7 +476,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                 state.svgURL = url.path
                 state.svgString = content
             } catch {
-                NSLog("KeyGrease: error reading file: \(error)")
+                NSLog("KeyJig: error reading file: \(error)")
             }
             return
         }
@@ -506,7 +506,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
     @objc func showAbout() {
         let alert = NSAlert()
-        alert.messageText = "KeyGrease Vector Converter"
+        alert.messageText = "KeyJig Vector Converter"
         alert.informativeText = """
             A utility for converting vector graphics to Keynote-compatible formats.
 
@@ -526,10 +526,10 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         let alert = NSAlert()
         alert.messageText = "Help"
         alert.informativeText = """
-            KeyGrease helps to convert vector graphics for Apple Keynote.
+            KeyJig helps to convert vector graphics for Apple Keynote.
 
             • Copy artwork in Illustrator / Affinity Designer / Inkscape (⌘C).
-            • KeyGrease detects the SVG on your clipboard automatically.
+            • KeyJig detects the SVG on your clipboard automatically.
             • Press "Copy to Clipboard" to re-encode it for Keynote.
             • Switch to Keynote and paste (⌘V).
 

@@ -30,9 +30,9 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "459A278C23AA910B003D50EC"
-            BuildableName = "KeyGrease.app"
-            BlueprintName = "KeyGrease"
-            ReferencedContainer = "container:KeyGrease.xcodeproj">
+            BuildableName = "KeyJig.app"
+            BlueprintName = "KeyJig"
+            ReferencedContainer = "container:KeyJig.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
    </LaunchAction>

@@ -1,26 +1,26 @@
-# User Guide
+# KeyJig User Guide
 
 ## Overview
 
-Vector Importer is a macOS menu bar utility that makes it easy to bring SVG vector graphics into Keynote. It handles format conversion and clipboard management so you can go from your design tool to your presentation in just a few steps.
+KeyJig is a macOS menu bar utility that makes it easy to bring SVG vector graphics into Keynote. It handles format conversion and clipboard management so you can go from your design tool to your presentation in just a few steps.
 
 ---
 
 ## Installation
 
 1. Build the app in Xcode and run it.
-2. The Vector Importer icon appears in your menu bar.
+2. The KeyJig icon appears in your menu bar.
 3. Optionally install [Inkscape](https://inkscape.org/) to enable the PDF fallback feature.
 
 ---
 
-## Using Vector Importer
+## Using KeyJig
 
 The app has two modes. Both offer the same core features — choose whichever fits your workflow.
 
 ### Menu Bar Popover
 
-Click the Vector Importer icon in the menu bar to open a compact popover. Click the icon again, or click anywhere outside the popover, to dismiss it.
+Click the KeyJig icon in the menu bar to open a compact popover. Click the icon again, or click anywhere outside the popover, to dismiss it.
 
 Best for quick, one-off imports while you're focused in another app.
 
@@ -35,7 +35,7 @@ Open a persistent, resizable window that stays on screen while you work.
 
 **Floating window size range:** 320×380 px (minimum) to 900×1200 px (maximum). The SVG preview scales automatically as you resize.
 
-Best for working with multiple SVGs, comparing files side by side, or keeping Vector Importer visible on a secondary display.
+Best for working with multiple SVGs, comparing files side by side, or keeping KeyJig visible on a secondary display.
 
 ---
 
@@ -45,13 +45,11 @@ Best for working with multiple SVGs, comparing files side by side, or keeping Ve
 
 Click **Open SVG File…** (or use **File > Open SVG… / Cmd+O**) to browse for a file. The SVG loads into the preview area immediately.
 
-### Bridge Clipboard to Keynote
+### Copy to Clipboard
 
-If you've copied a vector graphic from a design tool (Illustrator, Affinity Designer, Figma, Sketch, etc.), click **Bridge Clipboard to Keynote**. This converts the clipboard content to SVG format and places it back on your clipboard, ready to paste into Keynote with **Cmd+V**.
+Once an SVG is loaded in the preview, click **Copy to Clipboard**. The SVG is placed on your clipboard in a format Keynote recognizes — switch to Keynote and paste with **Cmd+V**.
 
-### Copy Preview
-
-Once an SVG is loaded, click **Copy Preview** to copy it to the clipboard. Switch to Keynote and paste with **Cmd+V**.
+If you've just copied vector artwork from Illustrator, Affinity Designer, Figma, or another design tool, switch to KeyJig and the SVG will appear in the preview automatically (see [Automatic Clipboard Detection](#automatic-clipboard-detection)). Then click **Copy to Clipboard**.
 
 ### PDF Fallback
 
@@ -61,10 +59,10 @@ If an SVG doesn't render correctly in Keynote, click **PDF Fallback** to convert
 
 ## Automatic Clipboard Detection
 
-Vector Importer watches your clipboard and automatically loads any SVG it finds — no button press needed. Detection happens when:
+KeyJig watches your clipboard and automatically loads any SVG it finds — no button press needed. Detection happens when:
 
 - The app launches
-- You switch back to Vector Importer from another app
+- You switch back to KeyJig from another app
 - The popover or a floating window opens
 
 The detection is silent and non-destructive: your clipboard content is never modified. If SVG content is found, it simply appears in the preview, ready to drag or copy.
@@ -93,20 +91,20 @@ You can also drag the preview into any other app that accepts SVG or file drops 
 | **Cmd+Shift+N** | Open a new floating window |
 | **Cmd+O** | Open SVG file |
 | **Cmd+W** | Close current window |
-| **Cmd+Q** | Quit Vector Importer |
+| **Cmd+Q** | Quit KeyJig |
 
 ---
 
 ## Troubleshooting
 
 **PDF Fallback shows "Inkscape not found"**
-Install Inkscape from [inkscape.org](https://inkscape.org/), then restart Vector Importer.
+Install Inkscape from [inkscape.org](https://inkscape.org/), then restart KeyJig.
 
 **SVG doesn't look right in Keynote**
 Try the PDF Fallback option. If the issue persists, simplify the SVG in your design tool — complex effects and filters are sometimes unsupported by Keynote.
 
 **Auto-detection didn't pick up my SVG**
-Not all apps export SVG to the clipboard in a recognized format. Use **Bridge Clipboard to Keynote** for an explicit conversion, or use **Open SVG File…** to load directly from disk.
+Not all apps export SVG to the clipboard in a recognized format. Use **Open SVG File…** to load directly from disk instead.
 
 **Preview doesn't appear after dragging a file in**
 Confirm the file is a valid SVG by opening it in a browser. If it appears broken there too, the file itself may be malformed.
@@ -119,4 +117,4 @@ Make sure the window is fully within your screen bounds when you close it. Avoid
 
 ---
 
-*Requires macOS 10.15 or later. Inkscape is optional and only needed for the PDF Fallback feature.*
+*Requires macOS 11.3 or later. Inkscape is optional and only needed for the PDF Fallback feature.*

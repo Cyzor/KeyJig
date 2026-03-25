@@ -1,4 +1,4 @@
-# KeyGrease — AppleScript Implementation Notes
+# KeyJig — AppleScript Implementation Notes
 
 Implementation reference for the AppleScript scripting layer. Covers architecture decisions, known pitfalls, and the final working state.
 
@@ -8,10 +8,10 @@ Implementation reference for the AppleScript scripting layer. Covers architectur
 
 | File | Role |
 |---|---|
-| `KeyGrease/KeyGrease.sdef` | Scripting definition — commands, properties, event codes |
-| `KeyGrease/ScriptingCommands.swift` | `NSScriptCommand` subclasses, one per command |
-| `KeyGrease/AppDelegate.swift` | `@objc dynamic` properties for Explorer visibility |
-| `KeyGrease/KeyGrease.xcodeproj/project.pbxproj` | `ScriptingCommands.swift` must be listed in both the file-reference group and the compile-sources build phase |
+| `KeyJig/KeyJig.sdef` | Scripting definition — commands, properties, event codes |
+| `KeyJig/ScriptingCommands.swift` | `NSScriptCommand` subclasses, one per command |
+| `KeyJig/AppDelegate.swift` | `@objc dynamic` properties for Explorer visibility |
+| `KeyJig/KeyJig.xcodeproj/project.pbxproj` | `ScriptingCommands.swift` must be listed in both the file-reference group and the compile-sources build phase |
 
 ---
 
@@ -29,9 +29,9 @@ Declares the base `application` class (`capp` / `NSApplication`) with three prop
 
 Do **not** redeclare `get`, `set`, or `quit` here. Foundation registers those handlers at runtime; duplicating them in the SDEF causes duplicate-handler conflicts that produce the same -1712 timeout hang.
 
-### KeyGrease Suite (`VcIm`)
+### KeyJig Suite (`VcIm`)
 
-A second `application` class block (same `capp` code) adds the KeyGrease-specific properties. Cocoa Scripting merges same-code classes across suites automatically — no `inherits` needed or wanted.
+A second `application` class block (same `capp` code) adds the KeyJig-specific properties. Cocoa Scripting merges same-code classes across suites automatically — no `inherits` needed or wanted.
 
 All 16 commands live here as siblings of the class, not nested inside it.
 
@@ -140,7 +140,7 @@ Properties on `AppDelegate` use `frontWindowState` (a private computed var with 
 Verified with `osascript` against a Debug build:
 
 ```applescript
-tell application "KeyGrease"
+tell application "KeyJig"
     load SVG file "/path/to/file.svg"  --> true
     get SVG file path                  --> "/path/to/file.svg"
     get file size                      --> "93 B"
