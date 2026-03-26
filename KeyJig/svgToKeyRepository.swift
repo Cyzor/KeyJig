@@ -379,19 +379,12 @@ func extractSVGDimensions(svgString: String) -> (width: Double, height: Double)?
     return nil
 }
 
-// Get file size in human-readable format
+// Get file size in human-readable, locale-aware format
 func getFileSizeString(svgString: String) -> String {
-    let bytes = svgString.utf8.count
-
-    if bytes < 1024 {
-        return "\(bytes) B"
-    } else if bytes < 1024 * 1024 {
-        let kb = Double(bytes) / 1024.0
-        return String(format: "%.1f KB", kb)
-    } else {
-        let mb = Double(bytes) / (1024.0 * 1024.0)
-        return String(format: "%.1f MB", mb)
-    }
+    let formatter = ByteCountFormatter()
+    formatter.allowedUnits = [.useBytes, .useKB, .useMB]
+    formatter.countStyle = .file
+    return formatter.string(fromByteCount: Int64(svgString.utf8.count))
 }
 
 // Extract creator/application from SVG metadata

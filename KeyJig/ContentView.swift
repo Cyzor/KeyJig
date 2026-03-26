@@ -11,19 +11,25 @@ import WebKit
 // MARK: - Tooltip Text Constants
 
 struct Tooltips {
-    static let openFile =
-        "Load an SVG file from your computer. You can also drag and drop SVG files directly onto the preview area."
+    static let openFile = NSLocalizedString(
+        "tooltip.open_file",
+        comment: "Tooltip for the Open SVG File button")
 
-    static let copyToClipboard =
-        "Copy the loaded SVG to your clipboard for pasting into Keynote with ⌘V, then use 'Break Apart' and 'Make Editable'."
+    static let copyToClipboard = NSLocalizedString(
+        "tooltip.copy_to_clipboard",
+        comment: "Tooltip for the Copy to Clipboard button")
 
-    static let readyStatus = "The SVG is ready. Drag it into Keynote or click 'Copy to Clipboard'."
+    static let readyStatus = NSLocalizedString(
+        "tooltip.status_ready",
+        comment: "Tooltip shown on the status area when an SVG is ready")
 
-    static let previewAreaLoaded =
-        "Drag this SVG directly into Keynote or any app that accepts SVG files. Your clipboard is not modified during dragging."
+    static let previewAreaLoaded = NSLocalizedString(
+        "tooltip.preview_loaded",
+        comment: "Tooltip for the SVG preview area when an SVG is loaded")
 
-    static let previewAreaEmpty =
-        "Drop an SVG file here, open one with the button below, or copy artwork and click 'Copy to Clipboard'."
+    static let previewAreaEmpty = NSLocalizedString(
+        "tooltip.preview_empty",
+        comment: "Tooltip for the SVG preview drop well when empty")
 }
 
 class SVGInteractionView: NSView {
@@ -121,8 +127,12 @@ class SVGInteractionView: NSView {
             .foregroundColor: NSColor.labelColor,
             .paragraphStyle: style,
         ]
-        NSAttributedString(string: "Drag into Keynote", attributes: attrs)
-            .draw(in: NSRect(x: 0, y: 15, width: 180, height: 30))
+        NSAttributedString(
+            string: NSLocalizedString(
+                "preview.drag_label",
+                comment: "Text on the drag image thumbnail shown when dragging the SVG preview"),
+            attributes: attrs
+        ).draw(in: NSRect(x: 0, y: 15, width: 180, height: 30))
         dragImage.unlockFocus()
 
         let draggingItem = NSDraggingItem(pasteboardWriter: fileURL as NSURL)
@@ -178,14 +188,18 @@ class SVGInteractionView: NSView {
         guard onCopyForKeynote != nil || onClear != nil else { return nil }
         let menu = NSMenu()
         let copyItem = menu.addItem(
-            withTitle: "Convert and Copy for Keynote",
+            withTitle: NSLocalizedString(
+                "context_menu.copy_for_keynote",
+                comment: "Context menu: convert and copy SVG to clipboard for Keynote"),
             action: #selector(handleCopyForKeynote),
             keyEquivalent: "")
         copyItem.target = self
         copyItem.isEnabled = onCopyForKeynote != nil
         menu.addItem(NSMenuItem.separator())
         let clearItem = menu.addItem(
-            withTitle: "Clear",
+            withTitle: NSLocalizedString(
+                "context_menu.clear",
+                comment: "Context menu: clear the loaded SVG"),
             action: #selector(handleClear),
             keyEquivalent: "")
         clearItem.target = self
@@ -435,12 +449,23 @@ struct MetadataOverlay: View {
         VStack(alignment: .leading, spacing: 4) {
             if let (width, height) = extractSVGDimensions(svgString: svgString) {
                 MetadataRow(
-                    label: "Dimensions", value: "\(Int(width.rounded())) × \(Int(height.rounded()))"
+                    label: NSLocalizedString(
+                        "metadata.dimensions",
+                        comment: "Metadata overlay label for SVG width × height"),
+                    value: "\(Int(width.rounded())) × \(Int(height.rounded()))"
                 )
             }
-            MetadataRow(label: "Size", value: getFileSizeString(svgString: svgString))
+            MetadataRow(
+                label: NSLocalizedString(
+                    "metadata.size",
+                    comment: "Metadata overlay label for SVG file size"),
+                value: getFileSizeString(svgString: svgString))
             if let creator = extractSVGCreator(svgString: svgString) {
-                MetadataRow(label: "Source", value: creator)
+                MetadataRow(
+                    label: NSLocalizedString(
+                        "metadata.source",
+                        comment: "Metadata overlay label for the SVG creator application"),
+                    value: creator)
             }
         }
         .font(.system(size: 10, design: .monospaced))
@@ -494,15 +519,20 @@ struct ContentView: View {
         return fmt.string(from: date)
     }()
 
-    private static let breakApartInstruction =
-        "Once placed in Keynote, select the object and choose Format ‣ Shapes and Lines ‣ Break Apart."
+    private static let breakApartInstruction = NSLocalizedString(
+        "instruction.break_apart",
+        comment: "Instruction shown below the status area directing user to use Keynote's Break Apart")
 
     var statusMessage: String {
         switch appState.conversionStatus {
         case .converting:
-            return "Converting via Inkscape…"
+            return NSLocalizedString(
+                "status.converting",
+                comment: "Status: Inkscape conversion is in progress")
         case .failed:
-            return "Conversion failed — no SVG or convertible data found."
+            return NSLocalizedString(
+                "status.failed",
+                comment: "Status: conversion found no usable data")
         case .idle:
             break
         }
@@ -511,7 +541,9 @@ struct ContentView: View {
         if !localStatus.isEmpty {
             base = localStatus
         } else if hasContent {
-            base = "Ready — drag the preview into Keynote, or Copy to Clipboard."
+            base = NSLocalizedString(
+                "status.ready",
+                comment: "Status: SVG is loaded and ready to use")
         } else {
             return ""
         }
@@ -579,7 +611,10 @@ struct ContentView: View {
                         appState.conversionStatus = .idle
                     }
                 } label: {
-                    Text("Open SVG File…").frame(maxWidth: .infinity)
+                    Text(NSLocalizedString(
+                        "button.open_svg_file",
+                        comment: "Button: opens the file picker to load an SVG"))
+                    .frame(maxWidth: .infinity)
                 }
                 .help(Tooltips.openFile)
                 .disabled(isConverting)
@@ -593,10 +628,15 @@ struct ContentView: View {
                             localStatus = ""
                         }
                     } else {
-                        localStatus = "No SVG found on clipboard."
+                        localStatus = NSLocalizedString(
+                            "status.no_svg_on_clipboard",
+                            comment: "Error message when no SVG is found on the clipboard")
                     }
                 } label: {
-                    Text("Copy to Clipboard").frame(maxWidth: .infinity)
+                    Text(NSLocalizedString(
+                        "button.copy_to_clipboard",
+                        comment: "Button: copies the loaded SVG to the clipboard in Keynote format"))
+                    .frame(maxWidth: .infinity)
                 }
                 .help(Tooltips.copyToClipboard)
                 .disabled(appState.svgString.isEmpty || isConverting)
@@ -607,12 +647,14 @@ struct ContentView: View {
             Divider()
 
             // ── Footer ────────────────────────────────────────────────────
-            Text("App Build Date: \(Self.buildDate)")
+            Text(String(format: NSLocalizedString(
+                "footer.build_date",
+                comment: "Footer label showing the app build date; %@ is the date string"),
+                Self.buildDate))
                 .font(.caption)
                 .foregroundColor(.secondary)
                 .frame(maxWidth: .infinity, alignment: .center)
                 .padding()
-            //.background(Color(NSColor.controlBackgroundColor).opacity(0.5))
         }
     }
 
@@ -647,7 +689,9 @@ struct ContentView: View {
                 },
                 onCopyForKeynote: {
                     if svgToClipboard(svgData: appState.svgString, appState: appState) != nil {
-                        localStatus = "Copied to clipboard!"
+                        localStatus = NSLocalizedString(
+                            "status.copied",
+                            comment: "Confirmation shown after copying to clipboard via context menu")
                     }
                 },
                 onClear: {
@@ -702,13 +746,15 @@ struct ContentView: View {
                     .frame(width: 80, height: 80)
                     .foregroundColor(.secondary)
 
-                Text("No SVG Loaded")
+                Text(NSLocalizedString(
+                    "empty_state.title",
+                    comment: "Empty state heading when no SVG is loaded"))
                     .font(.headline)
                     .foregroundColor(.secondary)
 
-                Text(
-                    "Drop an SVG file here, open one with the button below, or copy artwork to your clipboard and click *Copy to Clipboard*."
-                )
+                Text(NSLocalizedString(
+                    "empty_state.body",
+                    comment: "Empty state instructions when no SVG is loaded"))
                 .font(.caption)
                 .foregroundColor(.secondary)
                 .multilineTextAlignment(.center)
@@ -725,7 +771,9 @@ struct ContentView: View {
 @discardableResult
 func browseFile(into appState: AppState) -> String {
     let dialog = NSOpenPanel()
-    dialog.title = "Choose a vector file"
+    dialog.title = NSLocalizedString(
+        "file_dialog.title",
+        comment: "Title of the file open panel")
     dialog.showsHiddenFiles = false
     dialog.canChooseDirectories = false
     dialog.allowsMultipleSelection = false

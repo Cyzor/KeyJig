@@ -20,6 +20,13 @@
 	<string>1.0</string>
 	<key>CFBundleVersion</key>
 	<string>1</string>
+	<key>CFBundleLocalizations</key>
+	<array>
+		<string>en</string>
+		<string>de</string>
+		<string>es</string>
+		<string>ja</string>
+	</array>
 	<key>LSMinimumSystemVersion</key>
 	<string>$(MACOSX_DEPLOYMENT_TARGET)</string>
 	<key>LSUIElement</key>
@@ -28,13 +35,87 @@
 	<true/>
 	<key>NSHumanReadableCopyright</key>
 	<string>Copyright © 2021–2026 Jonathan Lampérth. All rights reserved.</string>
-	<key>NSMainStoryboardFile</key>
-	<string>Main</string>
+		<key>NSMainStoryboardFile</key>
+		<string>Main</string>
 	<key>NSSupportsAutomaticTermination</key>
 	<true/>
 	<key>NSSupportsSuddenTermination</key>
 	<true/>
 	<key>OSAScriptingDefinition</key>
 	<string>KeyJig.sdef</string>
+	<key>CFBundleDocumentTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleTypeName</key>
+			<string>Scalable Vector Graphics</string>
+			<key>CFBundleTypeRole</key>
+			<string>Viewer</string>
+			<key>LSItemContentTypes</key>
+			<array>
+				<string>public.svg-image</string>
+			</array>
+			<key>CFBundleTypeExtensions</key>
+			<array>
+				<string>svg</string>
+			</array>
+			<key>LSHandlerRank</key>
+			<string>Alternate</string>
+		</dict>
+		<dict>
+			<key>CFBundleTypeName</key>
+			<string>PDF Document</string>
+			<key>CFBundleTypeRole</key>
+			<string>Viewer</string>
+			<key>LSItemContentTypes</key>
+			<array>
+				<string>com.adobe.pdf</string>
+			</array>
+			<key>CFBundleTypeExtensions</key>
+			<array>
+				<string>pdf</string>
+			</array>
+			<key>LSHandlerRank</key>
+			<string>Alternate</string>
+		</dict>
+		<dict>
+			<key>CFBundleTypeName</key>
+			<string>Adobe Illustrator Document</string>
+			<key>CFBundleTypeRole</key>
+			<string>Viewer</string>
+			<key>LSItemContentTypes</key>
+			<array>
+				<string>com.adobe.illustrator.ai-image</string>
+			</array>
+			<key>CFBundleTypeExtensions</key>
+			<array>
+				<string>ai</string>
+			</array>
+			<key>LSHandlerRank</key>
+			<string>Alternate</string>
+		</dict>
+	</array>
+	<key>UTImportedTypeDeclarations</key>
+	<array>
+		<dict>
+			<key>UTTypeIdentifier</key>
+			<string>com.adobe.illustrator.ai-image</string>
+			<key>UTTypeDescription</key>
+			<string>Adobe Illustrator Document</string>
+			<key>UTTypeConformsTo</key>
+			<array>
+				<string>com.adobe.pdf</string>
+				<string>public.data</string>
+			</array>
+			<key>UTTypeTagSpecification</key>
+			<dict>
+				<key>public.filename-extension</key>
+				<array>
+					<string>ai</string>
+				</array>
+				<key>public.mime-type</key>
+				<string>application/postscript</string>
+			</dict>
+		</dict>
+	</array>
 </dict>
 </plist>

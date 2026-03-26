@@ -1,0 +1,114 @@
+/* KeyJig — English (en) */
+
+/* ── Tooltips ───────────────────────────────────────────────────────── */
+"tooltip.open_file" = "Load an SVG file from your computer. You can also drag and drop SVG files directly onto the preview area.";
+"tooltip.copy_to_clipboard" = "Copy the loaded SVG to your clipboard for pasting into Keynote with ⌘V, then use 'Break Apart' and 'Make Editable'.";
+"tooltip.status_ready" = "The SVG is ready. Drag it into Keynote or click 'Copy to Clipboard'.";
+"tooltip.preview_loaded" = "Drag this SVG directly into Keynote or any app that accepts SVG files. Your clipboard is not modified during dragging.";
+"tooltip.preview_empty" = "Drop an SVG file here, open one with the button below, or copy artwork and click 'Copy to Clipboard'.";
+"tooltip.settings.details" = "View the installation paths where Inkscape was found on your system.";
+"tooltip.settings.download" = "Download and install Inkscape from the official website to enable PDF fallback conversion.";
+"tooltip.settings.copy_path" = "Copy the Inkscape installation path to clipboard";
+"tooltip.settings.reveal" = "Show the Inkscape application in Finder";
+"tooltip.settings.done" = "Close the Inkscape installation details sheet";
+
+/* ── Preview area ───────────────────────────────────────────────────── */
+"preview.drag_label" = "Drag into Keynote";
+"context_menu.copy_for_keynote" = "Convert and Copy for Keynote";
+"context_menu.clear" = "Clear";
+
+/* ── Metadata overlay ───────────────────────────────────────────────── */
+"metadata.dimensions" = "Dimensions";
+"metadata.size" = "Size";
+"metadata.source" = "Source";
+
+/* ── Status messages ────────────────────────────────────────────────── */
+"status.converting" = "Converting via Inkscape…";
+"status.failed" = "Conversion failed — no SVG or convertible data found.";
+"status.ready" = "Ready — drag the preview into Keynote, or Copy to Clipboard.";
+"status.no_svg_on_clipboard" = "No SVG found on clipboard.";
+"status.copied" = "Copied to clipboard!";
+"instruction.break_apart" = "Once placed in Keynote, select the object and choose Format ‣ Shapes and Lines ‣ Break Apart.";
+
+/* ── Buttons ────────────────────────────────────────────────────────── */
+"button.open_svg_file" = "Open SVG File…";
+"button.copy_to_clipboard" = "Copy to Clipboard";
+
+/* ── Footer ─────────────────────────────────────────────────────────── */
+"footer.build_date" = "App Build Date: %@";
+
+/* ── Empty state ────────────────────────────────────────────────────── */
+"empty_state.title" = "No SVG Loaded";
+"empty_state.body" = "Drop an SVG file here, open one with the button below, or copy artwork to your clipboard and click *Copy to Clipboard*.";
+
+/* ── File dialog ────────────────────────────────────────────────────── */
+"file_dialog.title" = "Choose a vector file";
+
+/* ── Window ─────────────────────────────────────────────────────────── */
+"window.title.default" = "KeyJig";
+
+/* ── App menu ───────────────────────────────────────────────────────── */
+"menu.app.about" = "About KeyJig";
+"menu.app.preferences" = "Preferences…";
+"menu.app.hide" = "Hide KeyJig";
+"menu.app.hide_others" = "Hide Others";
+"menu.app.show_all" = "Show All";
+"menu.app.quit" = "Quit KeyJig";
+
+/* ── File menu ──────────────────────────────────────────────────────── */
+"menu.file" = "File";
+"menu.file.show_panel" = "Show Menubar Panel";
+"menu.file.show_window" = "Show Window";
+"menu.file.new_viewer" = "New Viewer";
+"menu.file.open_svg" = "Open SVG File…";
+"menu.file.close" = "Close";
+
+/* ── Edit menu ──────────────────────────────────────────────────────── */
+"menu.edit" = "Edit";
+"menu.edit.undo" = "Undo";
+"menu.edit.redo" = "Redo";
+"menu.edit.cut" = "Cut";
+"menu.edit.copy" = "Copy";
+"menu.edit.paste" = "Paste";
+"menu.edit.clear" = "Clear";
+
+/* ── Window menu ────────────────────────────────────────────────────── */
+"menu.window" = "Window";
+"menu.window.minimize" = "Minimize";
+"menu.window.zoom" = "Zoom";
+"menu.window.bring_all_to_front" = "Bring All to Front";
+
+/* ── Help menu ──────────────────────────────────────────────────────── */
+"menu.help" = "Help";
+"menu.help.keyjig_help" = "KeyJig Help";
+
+/* ── Dock menu ──────────────────────────────────────────────────────── */
+"dock.show_window" = "Show Window";
+"dock.new_viewer" = "New Viewer";
+
+/* ── About dialog ───────────────────────────────────────────────────── */
+"dialog.about.title" = "KeyJig";
+"dialog.about.info" = "A utility for converting vector graphics to Keynote-compatible formats.\n\nVersion %@\n\nCopyright © 2021–2026 Jonathan Lampérth\n\nThe Noun Project licensed under CC-BY-3.0 US:\nhttps://thenounproject.com/legal/terms-of-use/#icon-licenses";
+"dialog.about.button" = "Noted";
+
+/* ── Help dialog ────────────────────────────────────────────────────── */
+"dialog.help.title" = "Help";
+"dialog.help.info" = "KeyJig helps to convert vector graphics for Apple Keynote.\n\n• Copy artwork in Illustrator / Affinity Designer / Inkscape (⌘C).\n• KeyJig detects the SVG on your clipboard automatically.\n• Press \"Copy to Clipboard\" to re-encode it for Keynote.\n• Switch to Keynote and paste (⌘V).\n\nYou can also drag an SVG file onto the preview well, or use\nFile > Open SVG File… to browse for one.";
+"dialog.help.button" = "OK";
+
+/* ── Settings ───────────────────────────────────────────────────────── */
+"settings.window.title" = "Settings";
+"settings.section.integration" = "Integration";
+"settings.external_deps" = "External Dependencies";
+"settings.inkscape.checking" = "Checking…";
+"settings.inkscape.name" = "Inkscape";
+"settings.inkscape.details" = "Details";
+"settings.inkscape.not_found" = "Not found";
+"settings.inkscape.download" = "Download";
+"settings.inkscape.description" = "This utility relies on the open-source graphics application Inkscape for some conversions.";
+"settings.inkscape.details_label" = "Details:";
+"settings.inkscape.installation_title" = "Inkscape Installation";
+"settings.inkscape.done" = "Done";
+"settings.inkscape.no_installation" = "No Inkscape installation found.";
+"settings.inkscape.copy" = "Copy";
+"settings.inkscape.reveal" = "Reveal";

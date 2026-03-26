@@ -24,7 +24,9 @@ class MainWindowController: NSWindowController, NSWindowDelegate {
         )
         window.isReleasedWhenClosed = false
         window.level = .normal
-        window.title = "KeyJig Vector Converter"
+        window.title = NSLocalizedString(
+            "window.title.default",
+            comment: "Default window title when no file is loaded")
         window.minSize = NSSize(width: 320, height: 520)
         window.maxSize = NSSize(width: 900, height: 1200)
 
@@ -73,7 +75,9 @@ class MainWindowController: NSWindowController, NSWindowDelegate {
         guard !appState.svgString.isEmpty else {
             // Well is empty — remove proxy icon.
             window?.representedURL = nil
-            window?.title = "KeyJig Vector Converter"
+            window?.title = NSLocalizedString(
+                "window.title.default",
+                comment: "Default window title when no file is loaded")
             return
         }
 
@@ -98,7 +102,9 @@ class MainWindowController: NSWindowController, NSWindowDelegate {
 
         // SVG came from the clipboard — no file to represent yet.
         window?.representedURL = nil
-        window?.title = "KeyJig Vector Converter"
+        window?.title = NSLocalizedString(
+            "window.title.default",
+            comment: "Default window title when no file is loaded")
     }
 
     // MARK: NSWindowDelegate
@@ -119,94 +125,138 @@ class AppMenu {
             withTitle: "KeyJig", action: nil, keyEquivalent: "")
         let appMenu = NSMenu(title: "KeyJig")
         appMenu.addItem(
-            withTitle: "About KeyJig",
+            withTitle: NSLocalizedString(
+                "menu.app.about",
+                comment: "App menu: About KeyJig item"),
             action: #selector(AppDelegate.showAbout),
             keyEquivalent: "")
         appMenu.addItem(NSMenuItem.separator())
         appMenu.addItem(
-            withTitle: "Preferences…",
+            withTitle: NSLocalizedString(
+                "menu.app.preferences",
+                comment: "App menu: Preferences item"),
             action: #selector(AppDelegate.openPreferences),
             keyEquivalent: ",")
         appMenu.addItem(NSMenuItem.separator())
         appMenu.addItem(
-            withTitle: "Hide KeyJig",
+            withTitle: NSLocalizedString(
+                "menu.app.hide",
+                comment: "App menu: Hide KeyJig item"),
             action: #selector(NSApplication.hide(_:)),
             keyEquivalent: "h")
         appMenu.addItem(
-            withTitle: "Hide Others",
+            withTitle: NSLocalizedString(
+                "menu.app.hide_others",
+                comment: "App menu: Hide Others item"),
             action: #selector(NSApplication.hideOtherApplications(_:)),
             keyEquivalent: "")
         appMenu.addItem(
-            withTitle: "Show All",
+            withTitle: NSLocalizedString(
+                "menu.app.show_all",
+                comment: "App menu: Show All item"),
             action: #selector(NSApplication.unhideAllApplications(_:)),
             keyEquivalent: "")
         appMenu.addItem(NSMenuItem.separator())
         appMenu.addItem(
-            withTitle: "Quit KeyJig",
+            withTitle: NSLocalizedString(
+                "menu.app.quit",
+                comment: "App menu: Quit KeyJig item"),
             action: #selector(NSApplication.terminate(_:)),
             keyEquivalent: "q")
         appMenuItem.submenu = appMenu
 
         // ── File menu ─────────────────────────────────────────────────────
         let fileMenuItem = mainMenu.addItem(
-            withTitle: "File", action: nil, keyEquivalent: "")
-        let fileMenu = NSMenu(title: "File")
+            withTitle: NSLocalizedString("menu.file", comment: "File menu title"),
+            action: nil, keyEquivalent: "")
+        let fileMenu = NSMenu(title: NSLocalizedString("menu.file", comment: "File menu title"))
         fileMenu.addItem(
-            withTitle: "Show Menubar Panel",
+            withTitle: NSLocalizedString(
+                "menu.file.show_panel",
+                comment: "File menu: Show Menubar Panel item"),
             action: #selector(AppDelegate.togglePopover),
             keyEquivalent: "n")
         fileMenu.addItem(
-            withTitle: "Show Window",
+            withTitle: NSLocalizedString(
+                "menu.file.show_window",
+                comment: "File menu: Show Window item"),
             action: #selector(AppDelegate.showMainWindow),
             keyEquivalent: "")
         fileMenu.addItem(
-            withTitle: "New Viewer",
+            withTitle: NSLocalizedString(
+                "menu.file.new_viewer",
+                comment: "File menu: New Viewer item"),
             action: #selector(AppDelegate.newFloatingWindow),
             keyEquivalent: "N"
         ).keyEquivalentModifierMask = [.command, .shift]
         fileMenu.addItem(
-            withTitle: "Open SVG File…",
+            withTitle: NSLocalizedString(
+                "menu.file.open_svg",
+                comment: "File menu: Open SVG File item"),
             action: #selector(AppDelegate.openSVGFile),
             keyEquivalent: "o")
         fileMenu.addItem(NSMenuItem.separator())
         fileMenu.addItem(
-            withTitle: "Close",
+            withTitle: NSLocalizedString(
+                "menu.file.close",
+                comment: "File menu: Close item"),
             action: #selector(NSWindow.performClose(_:)),
             keyEquivalent: "w")
         fileMenuItem.submenu = fileMenu
 
         // ── Edit menu ─────────────────────────────────────────────────────
         let editMenuItem = mainMenu.addItem(
-            withTitle: "Edit", action: nil, keyEquivalent: "")
-        let editMenu = NSMenu(title: "Edit")
-        editMenu.addItem(withTitle: "Undo", action: nil, keyEquivalent: "z")
-        editMenu.addItem(withTitle: "Redo", action: nil, keyEquivalent: "Z")
-        editMenu.addItem(NSMenuItem.separator())
-        editMenu.addItem(withTitle: "Cut", action: nil, keyEquivalent: "x")
-        editMenu.addItem(withTitle: "Copy", action: nil, keyEquivalent: "c")
-        editMenu.addItem(withTitle: "Paste", action: nil, keyEquivalent: "v")
+            withTitle: NSLocalizedString("menu.edit", comment: "Edit menu title"),
+            action: nil, keyEquivalent: "")
+        let editMenu = NSMenu(title: NSLocalizedString("menu.edit", comment: "Edit menu title"))
+        editMenu.addItem(
+            withTitle: NSLocalizedString("menu.edit.undo", comment: "Edit menu: Undo"),
+            action: nil, keyEquivalent: "z")
+        editMenu.addItem(
+            withTitle: NSLocalizedString("menu.edit.redo", comment: "Edit menu: Redo"),
+            action: nil, keyEquivalent: "Z")
         editMenu.addItem(NSMenuItem.separator())
         editMenu.addItem(
-            withTitle: "Clear",
+            withTitle: NSLocalizedString("menu.edit.cut", comment: "Edit menu: Cut"),
+            action: nil, keyEquivalent: "x")
+        editMenu.addItem(
+            withTitle: NSLocalizedString("menu.edit.copy", comment: "Edit menu: Copy"),
+            action: nil, keyEquivalent: "c")
+        editMenu.addItem(
+            withTitle: NSLocalizedString("menu.edit.paste", comment: "Edit menu: Paste"),
+            action: nil, keyEquivalent: "v")
+        editMenu.addItem(NSMenuItem.separator())
+        editMenu.addItem(
+            withTitle: NSLocalizedString(
+                "menu.edit.clear",
+                comment: "Edit menu: Clear item (clears the loaded SVG)"),
             action: #selector(AppDelegate.clearSVG),
             keyEquivalent: "")
         editMenuItem.submenu = editMenu
 
         // ── Window menu ───────────────────────────────────────────────────
         let windowMenuItem = mainMenu.addItem(
-            withTitle: "Window", action: nil, keyEquivalent: "")
-        let windowMenu = NSMenu(title: "Window")
+            withTitle: NSLocalizedString("menu.window", comment: "Window menu title"),
+            action: nil, keyEquivalent: "")
+        let windowMenu = NSMenu(
+            title: NSLocalizedString("menu.window", comment: "Window menu title"))
         windowMenu.addItem(
-            withTitle: "Minimize",
+            withTitle: NSLocalizedString(
+                "menu.window.minimize",
+                comment: "Window menu: Minimize item"),
             action: #selector(NSWindow.miniaturize(_:)),
             keyEquivalent: "m")
         windowMenu.addItem(
-            withTitle: "Zoom",
+            withTitle: NSLocalizedString(
+                "menu.window.zoom",
+                comment: "Window menu: Zoom item"),
             action: #selector(NSWindow.zoom(_:)),
             keyEquivalent: "")
         windowMenu.addItem(NSMenuItem.separator())
         windowMenu.addItem(
-            withTitle: "Bring All to Front",
+            withTitle: NSLocalizedString(
+                "menu.window.bring_all_to_front",
+                comment: "Window menu: Bring All to Front item"),
             action: #selector(NSApplication.arrangeInFront(_:)),
             keyEquivalent: "")
         windowMenuItem.submenu = windowMenu
@@ -214,10 +264,13 @@ class AppMenu {
 
         // ── Help menu ─────────────────────────────────────────────────────
         let helpMenuItem = mainMenu.addItem(
-            withTitle: "Help", action: nil, keyEquivalent: "")
-        let helpMenu = NSMenu(title: "Help")
+            withTitle: NSLocalizedString("menu.help", comment: "Help menu title"),
+            action: nil, keyEquivalent: "")
+        let helpMenu = NSMenu(title: NSLocalizedString("menu.help", comment: "Help menu title"))
         helpMenu.addItem(
-            withTitle: "KeyJig Help",
+            withTitle: NSLocalizedString(
+                "menu.help.keyjig_help",
+                comment: "Help menu: KeyJig Help item"),
             action: #selector(AppDelegate.showHelp),
             keyEquivalent: "?")
         helpMenuItem.submenu = helpMenu
@@ -447,41 +500,19 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         floatingWindows.append(wc)
     }
 
-    /// Opens a vector file into whichever window is currently key.
-    /// Falls back to the primary window if no key window can be found.
-    /// Accepts SVG directly; converts PDF and AI via Inkscape when available.
-    @objc func openSVGFile() {
-        let dialog = NSOpenPanel()
-        dialog.title = "Choose a vector file"
-        dialog.showsHiddenFiles = false
-        dialog.canChooseDirectories = false
-        dialog.allowsMultipleSelection = false
-
-        var types = ["svg"]
-        if inkscapeURL() != nil {
-            types += ["pdf", "ai"]
-        }
-        dialog.allowedFileTypes = types
-
-        guard dialog.runModal() == .OK, let url = dialog.url else { return }
-
-        let target = frontWindowState
-        guard let state = target else { return }
-
-        let ext = url.pathExtension.lowercased()
-
-        if ext == "svg" {
+    /// Loads a vector file (SVG, PDF, or AI) into the given AppState.
+    /// SVG is read synchronously; PDF/AI are converted via Inkscape on a background queue.
+    private func loadFile(at url: URL, into state: AppState) {
+        switch url.pathExtension.lowercased() {
+        case "svg":
             do {
                 let content = try String(contentsOf: url, encoding: .utf8)
                 state.svgURL = url.path
                 state.svgString = content
             } catch {
-                NSLog("KeyJig: error reading file: \(error)")
+                NSLog("KeyJig: error reading SVG: \(error)")
             }
-            return
-        }
-
-        if ext == "pdf" || ext == "ai" {
+        case "pdf", "ai":
             state.conversionStatus = .converting
             DispatchQueue.global(qos: .userInitiated).async {
                 let svg = convertFileToSVGWithInkscape(url: url)
@@ -495,7 +526,32 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                     }
                 }
             }
+        default:
+            NSLog("KeyJig: unsupported file type: \(url.pathExtension)")
         }
+    }
+
+    /// Opens a vector file into whichever window is currently key.
+    /// Falls back to the primary window if no key window can be found.
+    /// Accepts SVG directly; converts PDF and AI via Inkscape when available.
+    @objc func openSVGFile() {
+        let dialog = NSOpenPanel()
+        dialog.title = NSLocalizedString(
+            "file_dialog.title",
+            comment: "Title of the file open panel")
+        dialog.showsHiddenFiles = false
+        dialog.canChooseDirectories = false
+        dialog.allowsMultipleSelection = false
+
+        var types = ["svg"]
+        if inkscapeURL() != nil {
+            types += ["pdf", "ai"]
+        }
+        dialog.allowedFileTypes = types
+
+        guard dialog.runModal() == .OK, let url = dialog.url else { return }
+        guard let state = frontWindowState else { return }
+        loadFile(at: url, into: state)
     }
 
     /// Clears the content of whichever window is currently key.
@@ -505,39 +561,35 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     @objc func showAbout() {
+        let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.0"
         let alert = NSAlert()
-        alert.messageText = "KeyJig Vector Converter"
-        alert.informativeText = """
-            A utility for converting vector graphics to Keynote-compatible formats.
-
-            Version 1.1
-
-            Copyright © 2021 Jonathan Lampérth
-
-            The Noun Project licensed under CC-BY-3.0 US:
-            https://thenounproject.com/legal/terms-of-use/#icon-licenses
-            """
+        alert.messageText = NSLocalizedString(
+            "dialog.about.title",
+            comment: "About dialog message text (app name)")
+        alert.informativeText = String(
+            format: NSLocalizedString(
+                "dialog.about.info",
+                comment: "About dialog informative text; %@ is replaced with the version number"),
+            version)
         alert.alertStyle = .informational
-        alert.addButton(withTitle: "Noted")
+        alert.addButton(withTitle: NSLocalizedString(
+            "dialog.about.button",
+            comment: "About dialog dismiss button"))
         alert.runModal()
     }
 
     @objc func showHelp() {
         let alert = NSAlert()
-        alert.messageText = "Help"
-        alert.informativeText = """
-            KeyJig helps to convert vector graphics for Apple Keynote.
-
-            • Copy artwork in Illustrator / Affinity Designer / Inkscape (⌘C).
-            • KeyJig detects the SVG on your clipboard automatically.
-            • Press "Copy to Clipboard" to re-encode it for Keynote.
-            • Switch to Keynote and paste (⌘V).
-
-            You can also drag an SVG file onto the preview well, or use
-            File > Open SVG File… to browse for one.
-            """
+        alert.messageText = NSLocalizedString(
+            "dialog.help.title",
+            comment: "Help dialog title")
+        alert.informativeText = NSLocalizedString(
+            "dialog.help.info",
+            comment: "Help dialog body text explaining the app workflow")
         alert.alertStyle = .informational
-        alert.addButton(withTitle: "OK")
+        alert.addButton(withTitle: NSLocalizedString(
+            "dialog.help.button",
+            comment: "Help dialog dismiss button"))
         alert.runModal()
     }
 
@@ -551,6 +603,20 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     // MARK: NSApplicationDelegate
+
+    func application(_ sender: NSApplication, openFile filename: String) -> Bool {
+        let url = URL(fileURLWithPath: filename)
+        let ext = url.pathExtension.lowercased()
+        // Reject PDF/AI silently if Inkscape is absent — returning false lets the
+        // system surface its own "can't open" feedback to the user.
+        guard ext == "svg" || ((ext == "pdf" || ext == "ai") && inkscapeURL() != nil) else {
+            return false
+        }
+        showMainWindow()
+        guard let state = frontWindowState else { return false }
+        loadFile(at: url, into: state)
+        return true
+    }
 
     func applicationShouldHandleReopen(
         _ sender: NSApplication, hasVisibleWindows flag: Bool
@@ -585,11 +651,15 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     @objc func applicationDockMenu(_ sender: NSApplication) -> NSMenu? {
         let menu = NSMenu()
         menu.addItem(
-            withTitle: "Show Window",
+            withTitle: NSLocalizedString(
+                "dock.show_window",
+                comment: "Dock context menu: Show Window item"),
             action: #selector(showMainWindow),
             keyEquivalent: "")
         menu.addItem(
-            withTitle: "New Viewer",
+            withTitle: NSLocalizedString(
+                "dock.new_viewer",
+                comment: "Dock context menu: New Viewer item"),
             action: #selector(newFloatingWindow),
             keyEquivalent: "")
         return menu
@@ -612,7 +682,9 @@ class SettingsWindowController: NSWindowController, NSWindowDelegate {
             defer: false
         )
 
-        window.title = "Settings"
+        window.title = NSLocalizedString(
+            "settings.window.title",
+            comment: "Settings window title")
         window.isReleasedWhenClosed = false
 
         // Center the window on the main screen, or restore saved position

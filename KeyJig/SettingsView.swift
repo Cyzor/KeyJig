@@ -3,11 +3,13 @@ import SwiftUI
 // MARK: - Tooltip Text Constants for Settings
 
 struct SettingsTooltips {
-    static let inkscapeDetails =
-        "View the installation paths where Inkscape was found on your system."
+    static let inkscapeDetails = NSLocalizedString(
+        "tooltip.settings.details",
+        comment: "Tooltip for the Details button in the Inkscape row")
 
-    static let downloadInkscape =
-        "Download and install Inkscape from the official website to enable PDF fallback conversion."
+    static let downloadInkscape = NSLocalizedString(
+        "tooltip.settings.download",
+        comment: "Tooltip for the Download button when Inkscape is not installed")
 }
 
 // MARK: - Settings View
@@ -18,14 +20,18 @@ struct SettingsView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
-            Text("Integration")
+            Text(NSLocalizedString(
+                "settings.section.integration",
+                comment: "Settings section heading"))
                 .font(.system(size: 18, weight: .semibold))
 
             Divider()
 
             // Inkscape Section
             VStack(alignment: .leading, spacing: 8) {
-                Text("External Dependencies")
+                Text(NSLocalizedString(
+                    "settings.external_deps",
+                    comment: "Settings sub-heading for external tool dependencies"))
                     .font(.headline)
 
                 HStack(spacing: 12) {
@@ -37,7 +43,9 @@ struct SettingsView: View {
                         } else {
                             Text("…")
                         }
-                        Text("Checking…")
+                        Text(NSLocalizedString(
+                            "settings.inkscape.checking",
+                            comment: "Status shown while checking for Inkscape"))
                             .font(.body)
 
                     case .installed(let paths):
@@ -52,19 +60,25 @@ struct SettingsView: View {
                         }
 
                         VStack(alignment: .leading, spacing: 2) {
-                            Text("Inkscape")
+                            Text(NSLocalizedString(
+                                "settings.inkscape.name",
+                                comment: "Inkscape application name label"))
                                 .font(.body)
                                 .fontWeight(.semibold)
-                            Text(
-                                "Installed — \(paths.count) location\(paths.count == 1 ? "" : "s")"
-                            )
+                            Text(String.localizedStringWithFormat(
+                                NSLocalizedString(
+                                    "settings.inkscape.locations",
+                                    comment: "Installed Inkscape location count, e.g. 'Installed — 2 locations'"),
+                                paths.count))
                             .font(.caption)
                             .foregroundColor(.secondary)
                         }
 
                         Spacer()
 
-                        Button("Details") {
+                        Button(NSLocalizedString(
+                            "settings.inkscape.details",
+                            comment: "Button that opens the Inkscape installation details sheet")) {
                             showingInkscapeDetails = true
                         }
                         .font(.caption)
@@ -82,10 +96,14 @@ struct SettingsView: View {
                         }
 
                         VStack(alignment: .leading, spacing: 2) {
-                            Text("Inkscape")
+                            Text(NSLocalizedString(
+                                "settings.inkscape.name",
+                                comment: "Inkscape application name label"))
                                 .font(.body)
                                 .fontWeight(.semibold)
-                            Text("Not found")
+                            Text(NSLocalizedString(
+                                "settings.inkscape.not_found",
+                                comment: "Status shown when Inkscape is not installed"))
                                 .font(.caption)
                                 .foregroundColor(.secondary)
                         }
@@ -94,7 +112,9 @@ struct SettingsView: View {
 
                         if #available(macOS 11.0, *) {
                             Link(destination: URL(string: "https://inkscape.org/release/")!) {
-                                Text("Download")
+                                Text(NSLocalizedString(
+                                    "settings.inkscape.download",
+                                    comment: "Button label to download Inkscape"))
                                     .font(.caption)
                                     .padding(.horizontal, 12)
                                     .padding(.vertical, 6)
@@ -108,7 +128,9 @@ struct SettingsView: View {
                                 NSWorkspace.shared.open(
                                     URL(string: "https://inkscape.org/release/")!)
                             }) {
-                                Text("Download")
+                                Text(NSLocalizedString(
+                                    "settings.inkscape.download",
+                                    comment: "Button label to download Inkscape"))
                                     .font(.caption)
                                     .padding(.horizontal, 12)
                                     .padding(.vertical, 6)
@@ -126,14 +148,16 @@ struct SettingsView: View {
             }
 
             VStack(alignment: .leading, spacing: 6) {
-                Text(
-                    "This utility relies on the open-source graphics application Inkscape for some conversions."
-                )
+                Text(NSLocalizedString(
+                    "settings.inkscape.description",
+                    comment: "Explanatory text about Inkscape's role in the app"))
                 .font(.caption)
                 .foregroundColor(.secondary)
                 .lineLimit(nil)
 
-                Text("Details:")
+                Text(NSLocalizedString(
+                    "settings.inkscape.details_label",
+                    comment: "Label preceding the Inkscape website link"))
                     .font(.caption)
                     .foregroundColor(.secondary)
                     .fontWeight(.semibold)
@@ -173,14 +197,20 @@ struct InkscapeDetailsView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
             HStack {
-                Text("Inkscape Installation")
+                Text(NSLocalizedString(
+                    "settings.inkscape.installation_title",
+                    comment: "Title of the Inkscape installation details sheet"))
                     .font(.system(size: 16, weight: .semibold))
                 Spacer()
-                Button("Done") {
+                Button(NSLocalizedString(
+                    "settings.inkscape.done",
+                    comment: "Button to close the Inkscape details sheet")) {
                     isPresented = false
                 }
                 .font(.caption)
-                .help("Close the Inkscape installation details sheet")
+                .help(NSLocalizedString(
+                    "tooltip.settings.done",
+                    comment: "Tooltip for the Done button in the Inkscape details sheet"))
             }
 
             if case .installed(let paths) = appState.inkscapeStatus {
@@ -204,19 +234,27 @@ struct InkscapeDetailsView: View {
                                         NSPasteboard.general.clearContents()
                                         NSPasteboard.general.setString(path, forType: .string)
                                     }) {
-                                        Text("Copy")
+                                        Text(NSLocalizedString(
+                                            "settings.inkscape.copy",
+                                            comment: "Button to copy an Inkscape path to clipboard"))
                                             .font(.system(size: 11))
                                     }
-                                    .help("Copy the Inkscape installation path to clipboard")
+                                    .help(NSLocalizedString(
+                                        "tooltip.settings.copy_path",
+                                        comment: "Tooltip for the Copy path button"))
 
                                     Button(action: {
                                         NSWorkspace.shared.selectFile(
                                             path, inFileViewerRootedAtPath: "")
                                     }) {
-                                        Text("Reveal")
+                                        Text(NSLocalizedString(
+                                            "settings.inkscape.reveal",
+                                            comment: "Button to reveal an Inkscape installation in Finder"))
                                             .font(.system(size: 11))
                                     }
-                                    .help("Show the Inkscape application in Finder")
+                                    .help(NSLocalizedString(
+                                        "tooltip.settings.reveal",
+                                        comment: "Tooltip for the Reveal in Finder button"))
                                 }
                             }
                             Spacer()
@@ -227,7 +265,9 @@ struct InkscapeDetailsView: View {
                     }
                 }
             } else {
-                Text("No Inkscape installation found.")
+                Text(NSLocalizedString(
+                    "settings.inkscape.no_installation",
+                    comment: "Message shown in the details sheet when no Inkscape is found"))
                     .foregroundColor(.secondary)
             }
 

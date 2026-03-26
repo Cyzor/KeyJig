@@ -14,6 +14,8 @@
 		459A279523AA910B003D50EC /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 459A279423AA910B003D50EC /* Assets.xcassets */; };
 		459A279823AA910B003D50EC /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 459A279723AA910B003D50EC /* Preview Assets.xcassets */; };
 		459A279B23AA910B003D50EC /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 459A279923AA910B003D50EC /* Main.storyboard */; };
+		AA10010000000000000000B0 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = AA10010000000000000000A0 /* Localizable.strings */; };
+		AA10010000000000000000C0 /* Localizable.stringsdict in Resources */ = {isa = PBXBuildFile; fileRef = AA10010000000000000000B1 /* Localizable.stringsdict */; };
 		AB4A692426A45A5A00B3EF9A /* SVGWebView in Frameworks */ = {isa = PBXBuildFile; productRef = AB4A692326A45A5A00B3EF9A /* SVGWebView */; };
 		AB4A692626A4678500B3EF9A /* svgToKeyRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB4A692526A4678500B3EF9A /* svgToKeyRepository.swift */; };
 		BB942CF682F473477D8EF06C /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0CCA99F0817B45088BB121 /* SettingsView.swift */; };
@@ -31,6 +33,14 @@
 		459A279A23AA910B003D50EC /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
 		459A279C23AA910B003D50EC /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		AA0CCA99F0817B45088BB121 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
+		AA100100000000000000001 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = KeyJig/en.lproj/Localizable.strings; sourceTree = "<group>"; };
+		AA100100000000000000002 /* de */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = de; path = KeyJig/de.lproj/Localizable.strings; sourceTree = "<group>"; };
+		AA100100000000000000003 /* es */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = es; path = KeyJig/es.lproj/Localizable.strings; sourceTree = "<group>"; };
+		AA100100000000000000004 /* ja */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ja; path = KeyJig/ja.lproj/Localizable.strings; sourceTree = "<group>"; };
+		AA100100000000000000005 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.stringsdict; name = en; path = KeyJig/en.lproj/Localizable.stringsdict; sourceTree = "<group>"; };
+		AA100100000000000000006 /* de */ = {isa = PBXFileReference; lastKnownFileType = text.plist.stringsdict; name = de; path = KeyJig/de.lproj/Localizable.stringsdict; sourceTree = "<group>"; };
+		AA100100000000000000007 /* es */ = {isa = PBXFileReference; lastKnownFileType = text.plist.stringsdict; name = es; path = KeyJig/es.lproj/Localizable.stringsdict; sourceTree = "<group>"; };
+		AA100100000000000000008 /* ja */ = {isa = PBXFileReference; lastKnownFileType = text.plist.stringsdict; name = ja; path = KeyJig/ja.lproj/Localizable.stringsdict; sourceTree = "<group>"; };
 		AB4A692526A4678500B3EF9A /* svgToKeyRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = svgToKeyRepository.swift; sourceTree = "<group>"; };
 		AB8978B326A4239F003D201E /* KeyJig-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "KeyJig-Bridging-Header.h"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -47,12 +57,22 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		050DD9462F74BB9E00F45412 /* Recovered References */ = {
+			isa = PBXGroup;
+			children = (
+				AA10010000000000000000A0 /* Localizable.strings */,
+				AA10010000000000000000B1 /* Localizable.stringsdict */,
+			);
+			name = "Recovered References";
+			sourceTree = "<group>";
+		};
 		459A278423AA910A003D50EC = {
 			isa = PBXGroup;
 			children = (
 				459A278F23AA910B003D50EC /* KeyJig */,
 				459A278E23AA910B003D50EC /* Products */,
 				AB8978BB26A42A26003D201E /* Frameworks */,
+				050DD9462F74BB9E00F45412 /* Recovered References */,
 			);
 			sourceTree = "<group>";
 		};
@@ -144,6 +164,9 @@
 			knownRegions = (
 				en,
 				Base,
+				de,
+				es,
+				ja,
 			);
 			mainGroup = 459A278423AA910A003D50EC;
 			packageReferences = (
@@ -163,6 +186,8 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				AA10010000000000000000B0 /* Localizable.strings in Resources */,
+				AA10010000000000000000C0 /* Localizable.stringsdict in Resources */,
 				05F195182F65DE4C008DEF94 /* KeyJig.sdef in Resources */,
 				459A279B23AA910B003D50EC /* Main.storyboard in Resources */,
 				459A279823AA910B003D50EC /* Preview Assets.xcassets in Resources */,
@@ -194,6 +219,28 @@
 				459A279A23AA910B003D50EC /* Base */,
 			);
 			name = Main.storyboard;
+			sourceTree = "<group>";
+		};
+		AA10010000000000000000A0 /* Localizable.strings */ = {
+			isa = PBXVariantGroup;
+			children = (
+				AA100100000000000000001 /* en */,
+				AA100100000000000000002 /* de */,
+				AA100100000000000000003 /* es */,
+				AA100100000000000000004 /* ja */,
+			);
+			name = Localizable.strings;
+			sourceTree = "<group>";
+		};
+		AA10010000000000000000B1 /* Localizable.stringsdict */ = {
+			isa = PBXVariantGroup;
+			children = (
+				AA100100000000000000005 /* en */,
+				AA100100000000000000006 /* de */,
+				AA100100000000000000007 /* es */,
+				AA100100000000000000008 /* ja */,
+			);
+			name = Localizable.stringsdict;
 			sourceTree = "<group>";
 		};
 /* End PBXVariantGroup section */

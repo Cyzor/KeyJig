@@ -1,0 +1,114 @@
+/* KeyJig — Español (es) */
+
+/* ── Tooltips ───────────────────────────────────────────────────────── */
+"tooltip.open_file" = "Carga un archivo SVG desde tu ordenador. También puedes arrastrar y soltar archivos SVG directamente en el área de vista previa.";
+"tooltip.copy_to_clipboard" = "Copia el SVG cargado al portapapeles para pegarlo en Keynote con ⌘V, luego usa «Separar» y «Hacer editable».";
+"tooltip.status_ready" = "El SVG está listo. Arrástralo a Keynote o haz clic en «Copiar al portapapeles».";
+"tooltip.preview_loaded" = "Arrastra este SVG directamente a Keynote o cualquier app que acepte archivos SVG. El portapapeles no se modifica al arrastrar.";
+"tooltip.preview_empty" = "Suelta un archivo SVG aquí, ábrelo con el botón de abajo o copia ilustración y haz clic en «Copiar al portapapeles».";
+"tooltip.settings.details" = "Ver las rutas de instalación donde se encontró Inkscape en tu sistema.";
+"tooltip.settings.download" = "Descarga e instala Inkscape desde el sitio web oficial para habilitar la conversión de respaldo en PDF.";
+"tooltip.settings.copy_path" = "Copiar la ruta de instalación de Inkscape al portapapeles";
+"tooltip.settings.reveal" = "Mostrar la aplicación Inkscape en el Finder";
+"tooltip.settings.done" = "Cerrar el panel de detalles de instalación de Inkscape";
+
+/* ── Preview area ───────────────────────────────────────────────────── */
+"preview.drag_label" = "Arrastrar a Keynote";
+"context_menu.copy_for_keynote" = "Convertir y copiar para Keynote";
+"context_menu.clear" = "Eliminar";
+
+/* ── Metadata overlay ───────────────────────────────────────────────── */
+"metadata.dimensions" = "Dimensiones";
+"metadata.size" = "Tamaño";
+"metadata.source" = "Origen";
+
+/* ── Status messages ────────────────────────────────────────────────── */
+"status.converting" = "Convirtiendo con Inkscape…";
+"status.failed" = "Error de conversión — no se encontraron datos SVG ni convertibles.";
+"status.ready" = "Listo — arrastra la vista previa a Keynote o usa Copiar al portapapeles.";
+"status.no_svg_on_clipboard" = "No se encontró ningún SVG en el portapapeles.";
+"status.copied" = "¡Copiado al portapapeles!";
+"instruction.break_apart" = "Una vez en Keynote, selecciona el objeto y elige Formato ‣ Formas y líneas ‣ Separar.";
+
+/* ── Buttons ────────────────────────────────────────────────────────── */
+"button.open_svg_file" = "Abrir archivo SVG…";
+"button.copy_to_clipboard" = "Copiar al portapapeles";
+
+/* ── Footer ─────────────────────────────────────────────────────────── */
+"footer.build_date" = "Fecha de compilación: %@";
+
+/* ── Empty state ────────────────────────────────────────────────────── */
+"empty_state.title" = "Sin SVG cargado";
+"empty_state.body" = "Arrastra aquí un archivo SVG, ábrelo con el botón de abajo o copia ilustración al portapapeles y haz clic en *Copiar al portapapeles*.";
+
+/* ── File dialog ────────────────────────────────────────────────────── */
+"file_dialog.title" = "Seleccionar un archivo vectorial";
+
+/* ── Window ─────────────────────────────────────────────────────────── */
+"window.title.default" = "KeyJig";
+
+/* ── App menu ───────────────────────────────────────────────────────── */
+"menu.app.about" = "Acerca de KeyJig";
+"menu.app.preferences" = "Preferencias…";
+"menu.app.hide" = "Ocultar KeyJig";
+"menu.app.hide_others" = "Ocultar las demás";
+"menu.app.show_all" = "Mostrar todo";
+"menu.app.quit" = "Salir de KeyJig";
+
+/* ── File menu ──────────────────────────────────────────────────────── */
+"menu.file" = "Archivo";
+"menu.file.show_panel" = "Mostrar panel de menú";
+"menu.file.show_window" = "Mostrar ventana";
+"menu.file.new_viewer" = "Nueva ventana";
+"menu.file.open_svg" = "Abrir archivo SVG…";
+"menu.file.close" = "Cerrar";
+
+/* ── Edit menu ──────────────────────────────────────────────────────── */
+"menu.edit" = "Editar";
+"menu.edit.undo" = "Deshacer";
+"menu.edit.redo" = "Rehacer";
+"menu.edit.cut" = "Cortar";
+"menu.edit.copy" = "Copiar";
+"menu.edit.paste" = "Pegar";
+"menu.edit.clear" = "Eliminar";
+
+/* ── Window menu ────────────────────────────────────────────────────── */
+"menu.window" = "Ventana";
+"menu.window.minimize" = "Minimizar";
+"menu.window.zoom" = "Ampliar/Reducir";
+"menu.window.bring_all_to_front" = "Traer todo al frente";
+
+/* ── Help menu ──────────────────────────────────────────────────────── */
+"menu.help" = "Ayuda";
+"menu.help.keyjig_help" = "Ayuda de KeyJig";
+
+/* ── Dock menu ──────────────────────────────────────────────────────── */
+"dock.show_window" = "Mostrar ventana";
+"dock.new_viewer" = "Nueva ventana";
+
+/* ── About dialog ───────────────────────────────────────────────────── */
+"dialog.about.title" = "KeyJig";
+"dialog.about.info" = "Una utilidad para convertir gráficos vectoriales a formatos compatibles con Keynote.\n\nVersión %@\n\nCopyright © 2021–2026 Jonathan Lampérth\n\nThe Noun Project con licencia CC-BY-3.0 US:\nhttps://thenounproject.com/legal/terms-of-use/#icon-licenses";
+"dialog.about.button" = "Entendido";
+
+/* ── Help dialog ────────────────────────────────────────────────────── */
+"dialog.help.title" = "Ayuda";
+"dialog.help.info" = "KeyJig ayuda a convertir gráficos vectoriales para Apple Keynote.\n\n• Copia ilustración en Illustrator / Affinity Designer / Inkscape (⌘C).\n• KeyJig detecta el SVG en tu portapapeles automáticamente.\n• Pulsa «Copiar al portapapeles» para recodificarlo para Keynote.\n• Ve a Keynote y pega (⌘V).\n\nTambién puedes arrastrar un archivo SVG al área de vista previa o usar\nArchivo > Abrir archivo SVG… para buscarlo.";
+"dialog.help.button" = "OK";
+
+/* ── Settings ───────────────────────────────────────────────────────── */
+"settings.window.title" = "Ajustes";
+"settings.section.integration" = "Integración";
+"settings.external_deps" = "Dependencias externas";
+"settings.inkscape.checking" = "Comprobando…";
+"settings.inkscape.name" = "Inkscape";
+"settings.inkscape.details" = "Detalles";
+"settings.inkscape.not_found" = "No encontrado";
+"settings.inkscape.download" = "Descargar";
+"settings.inkscape.description" = "Esta utilidad usa Inkscape, una aplicación de gráficos de código abierto, para algunas conversiones.";
+"settings.inkscape.details_label" = "Detalles:";
+"settings.inkscape.installation_title" = "Instalación de Inkscape";
+"settings.inkscape.done" = "Listo";
+"settings.inkscape.no_installation" = "No se encontró ninguna instalación de Inkscape.";
+"settings.inkscape.copy" = "Copiar";
+"settings.inkscape.reveal" = "Mostrar en Finder";

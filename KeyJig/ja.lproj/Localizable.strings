@@ -1,0 +1,114 @@
+/* KeyJig — 日本語 (ja) */
+
+/* ── Tooltips ───────────────────────────────────────────────────────── */
+"tooltip.open_file" = "コンピュータからSVGファイルを読み込みます。SVGファイルをプレビューエリアに直接ドラッグ＆ドロップすることもできます。";
+"tooltip.copy_to_clipboard" = "読み込んだSVGをクリップボードにコピーし、⌘VでKeynoteに貼り付けます。その後「分割」と「編集可能にする」を使用してください。";
+"tooltip.status_ready" = "SVGの準備ができました。Keynoteにドラッグするか「クリップボードにコピー」をクリックしてください。";
+"tooltip.preview_loaded" = "このSVGをKeynoteまたはSVGファイルを受け付けるアプリに直接ドラッグします。ドラッグ中はクリップボードは変更されません。";
+"tooltip.preview_empty" = "SVGファイルをここにドロップするか、下のボタンで開くか、アートワークをコピーして「クリップボードにコピー」をクリックしてください。";
+"tooltip.settings.details" = "システムでInkscapeが見つかったインストールパスを表示します。";
+"tooltip.settings.download" = "公式サイトからInkscapeをダウンロードしてインストールし、PDFフォールバック変換を有効にします。";
+"tooltip.settings.copy_path" = "InkscapeのインストールパスをクリップボードにコピーL";
+"tooltip.settings.reveal" = "FinderでInkscapeアプリを表示";
+"tooltip.settings.done" = "Inkscapeインストール詳細シートを閉じる";
+
+/* ── Preview area ───────────────────────────────────────────────────── */
+"preview.drag_label" = "Keynoteへドラッグ";
+"context_menu.copy_for_keynote" = "変換してKeynoteにコピー";
+"context_menu.clear" = "クリア";
+
+/* ── Metadata overlay ───────────────────────────────────────────────── */
+"metadata.dimensions" = "サイズ";
+"metadata.size" = "ファイルサイズ";
+"metadata.source" = "ソース";
+
+/* ── Status messages ────────────────────────────────────────────────── */
+"status.converting" = "Inkscapeで変換中…";
+"status.failed" = "変換に失敗しました — SVGまたは変換可能なデータが見つかりません。";
+"status.ready" = "準備完了 — プレビューをKeynoteにドラッグするか、クリップボードにコピーしてください。";
+"status.no_svg_on_clipboard" = "クリップボードにSVGが見つかりません。";
+"status.copied" = "クリップボードにコピーしました！";
+"instruction.break_apart" = "Keynoteに配置後、オブジェクトを選択し、フォーマット ‣ 図形と線 ‣ 分割を選択してください。";
+
+/* ── Buttons ────────────────────────────────────────────────────────── */
+"button.open_svg_file" = "SVGファイルを開く…";
+"button.copy_to_clipboard" = "クリップボードにコピー";
+
+/* ── Footer ─────────────────────────────────────────────────────────── */
+"footer.build_date" = "ビルド日: %@";
+
+/* ── Empty state ────────────────────────────────────────────────────── */
+"empty_state.title" = "SVG未読み込み";
+"empty_state.body" = "SVGファイルをここにドロップするか、下のボタンで開くか、アートワークをコピーして*クリップボードにコピー*をクリックしてください。";
+
+/* ── File dialog ────────────────────────────────────────────────────── */
+"file_dialog.title" = "ベクターファイルを選択";
+
+/* ── Window ─────────────────────────────────────────────────────────── */
+"window.title.default" = "KeyJig";
+
+/* ── App menu ───────────────────────────────────────────────────────── */
+"menu.app.about" = "KeyJig について";
+"menu.app.preferences" = "環境設定…";
+"menu.app.hide" = "KeyJig を隠す";
+"menu.app.hide_others" = "ほかを隠す";
+"menu.app.show_all" = "すべてを表示";
+"menu.app.quit" = "KeyJig を終了";
+
+/* ── File menu ──────────────────────────────────────────────────────── */
+"menu.file" = "ファイル";
+"menu.file.show_panel" = "メニューバーパネルを表示";
+"menu.file.show_window" = "ウインドウを表示";
+"menu.file.new_viewer" = "新規ウインドウ";
+"menu.file.open_svg" = "SVGファイルを開く…";
+"menu.file.close" = "閉じる";
+
+/* ── Edit menu ──────────────────────────────────────────────────────── */
+"menu.edit" = "編集";
+"menu.edit.undo" = "取り消す";
+"menu.edit.redo" = "やり直す";
+"menu.edit.cut" = "カット";
+"menu.edit.copy" = "コピー";
+"menu.edit.paste" = "ペースト";
+"menu.edit.clear" = "削除";
+
+/* ── Window menu ────────────────────────────────────────────────────── */
+"menu.window" = "ウインドウ";
+"menu.window.minimize" = "しまう";
+"menu.window.zoom" = "ズーム";
+"menu.window.bring_all_to_front" = "すべてを前面へ";
+
+/* ── Help menu ──────────────────────────────────────────────────────── */
+"menu.help" = "ヘルプ";
+"menu.help.keyjig_help" = "KeyJig ヘルプ";
+
+/* ── Dock menu ──────────────────────────────────────────────────────── */
+"dock.show_window" = "ウインドウを表示";
+"dock.new_viewer" = "新規ウインドウ";
+
+/* ── About dialog ───────────────────────────────────────────────────── */
+"dialog.about.title" = "KeyJig";
+"dialog.about.info" = "Keynote互換フォーマットへのベクターグラフィック変換ユーティリティ。\n\nバージョン %@\n\nCopyright © 2021–2026 Jonathan Lampérth\n\nThe Noun Project（CC-BY-3.0 US ライセンス）：\nhttps://thenounproject.com/legal/terms-of-use/#icon-licenses";
+"dialog.about.button" = "閉じる";
+
+/* ── Help dialog ────────────────────────────────────────────────────── */
+"dialog.help.title" = "ヘルプ";
+"dialog.help.info" = "KeyJigはApple Keynote向けにベクターグラフィックを変換します。\n\n• Illustrator / Affinity Designer / Inkscapeでアートワークをコピー（⌘C）。\n• KeyJigがクリップボードのSVGを自動検出します。\n• 「クリップボードにコピー」を押してKeynote用に変換します。\n• Keynoteに切り替えて貼り付け（⌘V）。\n\nSVGファイルをプレビューエリアにドラッグするか、\nファイル > SVGファイルを開く… で選択することもできます。";
+"dialog.help.button" = "OK";
+
+/* ── Settings ───────────────────────────────────────────────────────── */
+"settings.window.title" = "設定";
+"settings.section.integration" = "連携";
+"settings.external_deps" = "外部依存関係";
+"settings.inkscape.checking" = "確認中…";
+"settings.inkscape.name" = "Inkscape";
+"settings.inkscape.details" = "詳細";
+"settings.inkscape.not_found" = "見つかりません";
+"settings.inkscape.download" = "ダウンロード";
+"settings.inkscape.description" = "このアプリは一部の変換にオープンソースのグラフィックアプリケーション Inkscape を使用します。";
+"settings.inkscape.details_label" = "詳細:";
+"settings.inkscape.installation_title" = "Inkscape インストール";
+"settings.inkscape.done" = "完了";
+"settings.inkscape.no_installation" = "Inkscapeのインストールが見つかりません。";
+"settings.inkscape.copy" = "コピー";
+"settings.inkscape.reveal" = "Finderで表示";
