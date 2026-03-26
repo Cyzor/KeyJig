@@ -24,7 +24,7 @@ class MainWindowController: NSWindowController, NSWindowDelegate {
         )
         window.isReleasedWhenClosed = false
         window.level = .normal
-        window.title = "Vector Converter"
+        window.title = "KeyJig Vector Converter"
         window.minSize = NSSize(width: 320, height: 520)
         window.maxSize = NSSize(width: 900, height: 1200)
 
@@ -73,7 +73,7 @@ class MainWindowController: NSWindowController, NSWindowDelegate {
         guard !appState.svgString.isEmpty else {
             // Well is empty — remove proxy icon.
             window?.representedURL = nil
-            window?.title = "Vector Converter"
+            window?.title = "KeyJig Vector Converter"
             return
         }
 
@@ -98,7 +98,7 @@ class MainWindowController: NSWindowController, NSWindowDelegate {
 
         // SVG came from the clipboard — no file to represent yet.
         window?.representedURL = nil
-        window?.title = "Vector Converter"
+        window?.title = "KeyJig Vector Converter"
     }
 
     // MARK: NSWindowDelegate
