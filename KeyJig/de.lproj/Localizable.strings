@@ -105,7 +105,7 @@
 "settings.inkscape.details" = "Details";
 "settings.inkscape.not_found" = "Nicht gefunden";
 "settings.inkscape.download" = "Laden";
-"settings.inkscape.description" = "Dieses Werkzeug verwendet für bestimmte Konvertierungen die Open-Source-Grafiksoftware Inkscape.";
+"settings.inkscape.description" = "Diese App verwendet für bestimmte Konvertierungen die Open-Source-Grafiksoftware Inkscape.";
 "settings.inkscape.details_label" = "Details:";
 "settings.inkscape.installation_title" = "Inkscape-Installation";
 "settings.inkscape.done" = "Fertig";

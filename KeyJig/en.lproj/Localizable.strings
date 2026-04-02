@@ -49,7 +49,7 @@
 
 /* ── App menu ───────────────────────────────────────────────────────── */
 "menu.app.about" = "About KeyJig";
-"menu.app.preferences" = "Preferences…";
+"menu.app.preferences" = "Settings…";
 "menu.app.hide" = "Hide KeyJig";
 "menu.app.hide_others" = "Hide Others";
 "menu.app.show_all" = "Show All";
@@ -89,7 +89,7 @@
 /* ── About dialog ───────────────────────────────────────────────────── */
 "dialog.about.title" = "KeyJig";
 "dialog.about.info" = "A utility for converting vector graphics to Keynote-compatible formats.\n\nVersion %@\n\nCopyright © 2021–2026 Jonathan Lampérth\n\nThe Noun Project licensed under CC-BY-3.0 US:\nhttps://thenounproject.com/legal/terms-of-use/#icon-licenses";
-"dialog.about.button" = "Noted";
+"dialog.about.button" = "OK";
 
 /* ── Help dialog ────────────────────────────────────────────────────── */
 "dialog.help.title" = "Help";

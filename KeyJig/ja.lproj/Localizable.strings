@@ -8,7 +8,7 @@
 "tooltip.preview_empty" = "SVGファイルをここにドロップするか、下のボタンで開くか、アートワークをコピーして「クリップボードにコピー」をクリックしてください。";
 "tooltip.settings.details" = "システムでInkscapeが見つかったインストールパスを表示します。";
 "tooltip.settings.download" = "公式サイトからInkscapeをダウンロードしてインストールし、PDFフォールバック変換を有効にします。";
-"tooltip.settings.copy_path" = "InkscapeのインストールパスをクリップボードにコピーL";
+"tooltip.settings.copy_path" = "Inkscapeのインストールパスをクリップボードにコピー";
 "tooltip.settings.reveal" = "FinderでInkscapeアプリを表示";
 "tooltip.settings.done" = "Inkscapeインストール詳細シートを閉じる";
 
@@ -49,7 +49,7 @@
 
 /* ── App menu ───────────────────────────────────────────────────────── */
 "menu.app.about" = "KeyJig について";
-"menu.app.preferences" = "環境設定…";
+"menu.app.preferences" = "設定…";
 "menu.app.hide" = "KeyJig を隠す";
 "menu.app.hide_others" = "ほかを隠す";
 "menu.app.show_all" = "すべてを表示";

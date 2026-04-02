@@ -49,7 +49,7 @@
 
 /* ── App menu ───────────────────────────────────────────────────────── */
 "menu.app.about" = "Acerca de KeyJig";
-"menu.app.preferences" = "Preferencias…";
+"menu.app.preferences" = "Ajustes…";
 "menu.app.hide" = "Ocultar KeyJig";
 "menu.app.hide_others" = "Ocultar las demás";
 "menu.app.show_all" = "Mostrar todo";
