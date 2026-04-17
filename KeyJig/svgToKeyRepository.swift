@@ -225,14 +225,18 @@ func pdfToClipboard(pdfData: Data?) -> Bool {
 
 private var _cachedInkscapeURL: URL?
 private var _inkscapeURLChecked = false
+private var _allInkscapeURLsCache: [URL]?
+private let _inkscapeLock = NSLock()
 
 /// Returns the path to the first Inkscape executable found on this machine,
-/// or nil if Inkscape is not installed.  Result is cached after the first call.
+/// or nil if Inkscape is not installed. Result is cached after the first call.
+/// Thread-safe via NSLock.
 func inkscapeURL() -> URL? {
+    _inkscapeLock.lock()
+    defer { _inkscapeLock.unlock() }
     if _inkscapeURLChecked {
         return _cachedInkscapeURL
     }
-
     let candidates = [
         "/Applications/Inkscape.app/Contents/MacOS/inkscape",
         "/opt/homebrew/bin/inkscape",
@@ -250,15 +254,23 @@ func inkscapeURL() -> URL? {
 }
 
 /// Returns all Inkscape executables found on this machine.
+/// Results are cached after the first call. Thread-safe via NSLock.
 func allInkscapeURLs() -> [URL] {
+    _inkscapeLock.lock()
+    defer { _inkscapeLock.unlock() }
+    if let cached = _allInkscapeURLsCache {
+        return cached
+    }
     let candidates = [
         "/Applications/Inkscape.app/Contents/MacOS/inkscape",
         "/opt/homebrew/bin/inkscape",
         "/usr/local/bin/inkscape",
     ]
-    return candidates.compactMap { path in
+    let result = candidates.compactMap { path in
         FileManager.default.isExecutableFile(atPath: path) ? URL(fileURLWithPath: path) : nil
     }
+    _allInkscapeURLsCache = result
+    return result
 }
 
 /// Converts the given input file to SVG using Inkscape and returns the SVG
@@ -351,7 +363,7 @@ func extractSVGDimensions(svgString: String) -> (width: Double, height: Double)?
         let cleanValue = String(viewBoxValue.dropFirst(9).dropLast(1))
         let parts = cleanValue.split(separator: " ")
         if parts.count >= 4,
-           let w = Double(parts[2]), let h = Double(parts[3])
+            let w = Double(parts[2]), let h = Double(parts[3])
         {
             return (w, h)
         }
@@ -429,20 +441,20 @@ private func normaliseSVGRootTag(_ svgString: String) -> String {
     func attr(_ name: String, in tag: String) -> String? {
         let pattern = "\(name)=[\"']([^\"']*)[\"']"
         guard let r = tag.range(of: pattern, options: .regularExpression) else { return nil }
-        let raw = String(tag[r])                // e.g. width="120"
+        let raw = String(tag[r])  // e.g. width="120"
         let inner = raw.dropFirst(name.count + 2).dropLast(1)  // strip name=" and trailing "
         return String(inner)
     }
 
     let oldTag = String(svgString[tagRange])
     let viewBox = attr("viewBox", in: oldTag)
-    let w = attr("width",   in: oldTag)
-    let h = attr("height",  in: oldTag)
+    let w = attr("width", in: oldTag)
+    let h = attr("height", in: oldTag)
 
     var newTag = oldTag
     // Synthesise viewBox from width/height if needed.
     if viewBox == nil, let w = w, let h = h,
-       !w.hasSuffix("%"), !h.hasSuffix("%")
+        !w.hasSuffix("%"), !h.hasSuffix("%")
     {
         // Strip any CSS unit suffix (px, pt, mm, cm, em, …) so that the
         // viewBox contains bare numbers.  "80px" → "80", "210mm" → "210".
