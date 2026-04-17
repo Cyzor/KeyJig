@@ -196,15 +196,26 @@ func getTempSVGURL() -> URL {
 /// AppState.bridgeFileURL for the proxy icon.
 @discardableResult
 func svgToClipboard(svgData: String, appState: AppState? = nil) -> URL? {
+    let sizeLimit = 50 * 1024 * 1024  // 50 MB
+    guard svgData.utf8.count <= sizeLimit else {
+        NSLog("KeyJig: SVG size (\(svgData.utf8.count)) exceeds limit of \(sizeLimit) bytes")
+        return nil
+    }
     let tempFile = makeTempSVGURL()
     do {
         try svgData.write(to: tempFile, atomically: true, encoding: .utf8)
+        // Hardened permissions: owner read/write only (0600)
+        try FileManager.default.setAttributes(
+            [.posixPermissions: 0o600],
+            ofItemAtPath: tempFile.path
+        )
         let pasteboard = NSPasteboard.general
         pasteboard.clearContents()
         pasteboard.writeObjects([tempFile as NSURL])
         appState?.bridgeFileURL = tempFile
         return tempFile
     } catch {
+        NSLog("KeyJig: error writing temp SVG: \(error)")
         return nil
     }
 }

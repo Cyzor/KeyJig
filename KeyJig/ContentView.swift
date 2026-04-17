@@ -569,6 +569,7 @@ struct ContentView: View {
             )
             .padding([.horizontal, .top])
             .frame(minHeight: 200, maxHeight: .infinity)
+            .accessibilityIdentifier("preview_drop_well")
 
             // ── Status ────────────────────────────────────────────────────
             if !statusMessage.isEmpty {
@@ -592,6 +593,7 @@ struct ContentView: View {
                         )
                         .accessibilityLabel(statusMessage)
                         .accessibilityAddTraits(.updatesFrequently)
+                        .accessibilityIdentifier("status_message")
                 }
                 .padding(.horizontal)
                 .padding(.top, 8)
@@ -687,9 +689,20 @@ struct ContentView: View {
             SVGInteractionViewWrapper(
                 onDragStart: { [weak appState] in
                     guard let svg = appState?.svgString else { return nil }
+                    // Reject oversized SVG before writing temp file
+                    let sizeLimit = 50 * 1024 * 1024  // 50 MB
+                    guard svg.utf8.count <= sizeLimit else {
+                        NSLog("KeyJig: dropped SVG exceeds size limit of %d bytes", sizeLimit)
+                        return nil
+                    }
                     let url = makeTempSVGURL()
                     do {
                         try svg.write(to: url, atomically: true, encoding: .utf8)
+                        // Hardened permissions: owner read/write only (0600)
+                        try FileManager.default.setAttributes(
+                            [.posixPermissions: 0o600],
+                            ofItemAtPath: url.path
+                        )
                         appState?.bridgeFileURL = url
                     } catch {
                         NSLog("KeyJig: error writing temp SVG: \(error)")
