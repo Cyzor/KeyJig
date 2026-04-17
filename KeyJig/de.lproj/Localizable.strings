@@ -1,5 +1,9 @@
 /* KeyJig — Deutsch (de) */
 
+/* ── Accessibility ──────────────────────────────────────────────────── */
+"accessibility.status_bar" = "KeyJig-Menüleistensymbol. Klicken, um das Schnellpanel zu öffnen.";
+"accessibility.placeholder_icon" = "Illustration, die anzeigt, dass kein SVG geladen ist";
+
 /* ── Tooltips ───────────────────────────────────────────────────────── */
 "tooltip.open_file" = "SVG-Datei vom Computer laden. SVG-Dateien können auch direkt auf den Vorschaubereich gezogen werden.";
 "tooltip.copy_to_clipboard" = "Das geladene SVG in die Zwischenablage kopieren, um es mit ⌘V in Keynote einzufügen. Dann „Aufteilen\" und „Bearbeitbar machen\" verwenden.";

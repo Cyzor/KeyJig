@@ -1,5 +1,9 @@
 /* KeyJig — English (en) */
 
+/* ── Accessibility ──────────────────────────────────────────────────── */
+"accessibility.status_bar" = "KeyJig menu bar icon. Click to open the quick panel.";
+"accessibility.placeholder_icon" = "Illustration indicating no SVG is loaded";
+
 /* ── Tooltips ───────────────────────────────────────────────────────── */
 "tooltip.open_file" = "Load an SVG file from your computer. You can also drag and drop SVG files directly onto the preview area.";
 "tooltip.copy_to_clipboard" = "Copy the loaded SVG to your clipboard for pasting into Keynote with ⌘V, then use 'Break Apart' and 'Make Editable'.";

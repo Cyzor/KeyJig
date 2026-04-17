@@ -521,7 +521,8 @@ struct ContentView: View {
 
     private static let breakApartInstruction = NSLocalizedString(
         "instruction.break_apart",
-        comment: "Instruction shown below the status area directing user to use Keynote's Break Apart")
+        comment:
+            "Instruction shown below the status area directing user to use Keynote's Break Apart")
 
     var statusMessage: String {
         switch appState.conversionStatus {
@@ -587,7 +588,10 @@ struct ContentView: View {
                         .font(.subheadline)
                         .multilineTextAlignment(.center)
                         .foregroundColor(
-                            appState.conversionStatus == .failed ? .red : .secondary)
+                            appState.conversionStatus == .failed ? .red : .secondary
+                        )
+                        .accessibilityLabel(statusMessage)
+                        .accessibilityAddTraits(.updatesFrequently)
                 }
                 .padding(.horizontal)
                 .padding(.top, 8)
@@ -611,12 +615,15 @@ struct ContentView: View {
                         appState.conversionStatus = .idle
                     }
                 } label: {
-                    Text(NSLocalizedString(
-                        "button.open_svg_file",
-                        comment: "Button: opens the file picker to load an SVG"))
+                    Text(
+                        NSLocalizedString(
+                            "button.open_svg_file",
+                            comment: "Button: opens the file picker to load an SVG")
+                    )
                     .frame(maxWidth: .infinity)
                 }
                 .help(Tooltips.openFile)
+                .keyboardShortcut("o", modifiers: [.command])
                 .disabled(isConverting)
 
                 Button {
@@ -633,12 +640,16 @@ struct ContentView: View {
                             comment: "Error message when no SVG is found on the clipboard")
                     }
                 } label: {
-                    Text(NSLocalizedString(
-                        "button.copy_to_clipboard",
-                        comment: "Button: copies the loaded SVG to the clipboard in Keynote format"))
+                    Text(
+                        NSLocalizedString(
+                            "button.copy_to_clipboard",
+                            comment:
+                                "Button: copies the loaded SVG to the clipboard in Keynote format")
+                    )
                     .frame(maxWidth: .infinity)
                 }
                 .help(Tooltips.copyToClipboard)
+                .keyboardShortcut("c", modifiers: [.command, .shift])
                 .disabled(appState.svgString.isEmpty || isConverting)
             }
             .padding(.horizontal, 16)
@@ -647,14 +658,17 @@ struct ContentView: View {
             Divider()
 
             // ── Footer ────────────────────────────────────────────────────
-            Text(String(format: NSLocalizedString(
-                "footer.build_date",
-                comment: "Footer label showing the app build date; %@ is the date string"),
-                Self.buildDate))
-                .font(.caption)
-                .foregroundColor(.secondary)
-                .frame(maxWidth: .infinity, alignment: .center)
-                .padding()
+            Text(
+                String(
+                    format: NSLocalizedString(
+                        "footer.build_date",
+                        comment: "Footer label showing the app build date; %@ is the date string"),
+                    Self.buildDate)
+            )
+            .font(.caption)
+            .foregroundColor(.secondary)
+            .frame(maxWidth: .infinity, alignment: .center)
+            .padding()
         }
     }
 
@@ -691,7 +705,8 @@ struct ContentView: View {
                     if svgToClipboard(svgData: appState.svgString, appState: appState) != nil {
                         localStatus = NSLocalizedString(
                             "status.copied",
-                            comment: "Confirmation shown after copying to clipboard via context menu")
+                            comment:
+                                "Confirmation shown after copying to clipboard via context menu")
                     }
                 },
                 onClear: {
@@ -745,16 +760,25 @@ struct ContentView: View {
                     .aspectRatio(contentMode: .fit)
                     .frame(width: 80, height: 80)
                     .foregroundColor(.secondary)
+                    .accessibilityLabel(
+                        NSLocalizedString(
+                            "accessibility.placeholder_icon",
+                            comment: "VoiceOver label for the empty state illustration"
+                        ))
 
-                Text(NSLocalizedString(
-                    "empty_state.title",
-                    comment: "Empty state heading when no SVG is loaded"))
-                    .font(.headline)
-                    .foregroundColor(.secondary)
+                Text(
+                    NSLocalizedString(
+                        "empty_state.title",
+                        comment: "Empty state heading when no SVG is loaded")
+                )
+                .font(.headline)
+                .foregroundColor(.secondary)
 
-                Text(NSLocalizedString(
-                    "empty_state.body",
-                    comment: "Empty state instructions when no SVG is loaded"))
+                Text(
+                    NSLocalizedString(
+                        "empty_state.body",
+                        comment: "Empty state instructions when no SVG is loaded")
+                )
                 .font(.caption)
                 .foregroundColor(.secondary)
                 .multilineTextAlignment(.center)

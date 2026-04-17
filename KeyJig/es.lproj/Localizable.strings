@@ -1,4 +1,7 @@
 /* KeyJig — Español (es) */
+/* ── Accessibility ──────────────────────────────────────────────────── */
+"accessibility.status_bar" = "Icono de la barra de menú de KeyJig. Haz clic para abrir el panel rápido.";
+"accessibility.placeholder_icon" = "Ilustración que indica que no hay ningún SVG cargado";
 
 /* ── Tooltips ───────────────────────────────────────────────────────── */
 "tooltip.open_file" = "Carga un archivo SVG desde tu ordenador. También puedes arrastrar y soltar archivos SVG directamente en el área de vista previa.";

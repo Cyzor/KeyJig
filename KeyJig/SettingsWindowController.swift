@@ -14,7 +14,7 @@ class SettingsWindowController: NSWindowController, NSWindowDelegate {
             defer: false
         )
 
-        window.title = "Settings"
+        window.title = NSLocalizedString("settings.window.title", comment: "")
         window.isReleasedWhenClosed = false
         window.setFrameUsingName("SettingsWindow")
 

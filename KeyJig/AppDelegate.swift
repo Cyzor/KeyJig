@@ -379,6 +379,10 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             }
             button.action = #selector(togglePopover)
             button.target = self
+            button.setAccessibilityLabel(
+                NSLocalizedString(
+                    "accessibility.status_bar",
+                    comment: "VoiceOver label for the menu bar icon"))
         }
 
         // ── Primary floating window ───────────────────────────────────────
@@ -572,9 +576,10 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                 comment: "About dialog informative text; %@ is replaced with the version number"),
             version)
         alert.alertStyle = .informational
-        alert.addButton(withTitle: NSLocalizedString(
-            "dialog.about.button",
-            comment: "About dialog dismiss button"))
+        alert.addButton(
+            withTitle: NSLocalizedString(
+                "dialog.about.button",
+                comment: "About dialog dismiss button"))
         alert.runModal()
     }
 
@@ -587,9 +592,10 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             "dialog.help.info",
             comment: "Help dialog body text explaining the app workflow")
         alert.alertStyle = .informational
-        alert.addButton(withTitle: NSLocalizedString(
-            "dialog.help.button",
-            comment: "Help dialog dismiss button"))
+        alert.addButton(
+            withTitle: NSLocalizedString(
+                "dialog.help.button",
+                comment: "Help dialog dismiss button"))
         alert.runModal()
     }
 
