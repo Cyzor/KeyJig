@@ -1,5 +1,6 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN"
+    "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
 	<key>CFBundleDevelopmentRegion</key>
@@ -30,17 +31,17 @@
 	<key>LSMinimumSystemVersion</key>
 	<string>$(MACOSX_DEPLOYMENT_TARGET)</string>
 	<key>LSUIElement</key>
-	<false/>
+	<false />
 	<key>NSAppleScriptEnabled</key>
-	<true/>
+	<true />
 	<key>NSHumanReadableCopyright</key>
-	<string>Copyright © 2021–2026 Jonathan Lampérth. All rights reserved.</string>
+	<string>Copyright © 2026 KeyJig Contributors. Copyright © 2021–2026 Jonathan Lampérth.</string>
 		<key>NSMainStoryboardFile</key>
 		<string>Main</string>
 	<key>NSSupportsAutomaticTermination</key>
-	<true/>
+	<true />
 	<key>NSSupportsSuddenTermination</key>
-	<true/>
+	<true />
 	<key>OSAScriptingDefinition</key>
 	<string>KeyJig.sdef</string>
 	<key>CFBundleDocumentTypes</key>

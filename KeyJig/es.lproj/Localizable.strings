@@ -91,7 +91,7 @@
 
 /* ── About dialog ───────────────────────────────────────────────────── */
 "dialog.about.title" = "KeyJig";
-"dialog.about.info" = "Una utilidad para convertir gráficos vectoriales a formatos compatibles con Keynote.\n\nVersión %@\n\nCopyright © 2021–2026 Jonathan Lampérth\n\nThe Noun Project con licencia CC-BY-3.0 US:\nhttps://thenounproject.com/legal/terms-of-use/#icon-licenses";
+"dialog.about.info" = "Una utilidad para convertir gráficos vectoriales a formatos compatibles con Keynote.\n\nVersión %@\n\nCopyright © 2026 KeyJig Contributors\nCopyright © 2021–2026 Jonathan Lampérth\n\nThe Noun Project con licencia CC-BY-3.0 US:\nhttps://thenounproject.com/legal/terms-of-use/#icon-licenses";
 "dialog.about.button" = "Entendido";
 
 /* ── Help dialog ────────────────────────────────────────────────────── */

@@ -1,6 +1,7 @@
 import Cocoa
 import Combine
 import SwiftUI
+import UniformTypeIdentifiers
 import WebKit
 
 // MARK: - Main Window Controller
@@ -546,13 +547,14 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         dialog.showsHiddenFiles = false
         dialog.canChooseDirectories = false
         dialog.allowsMultipleSelection = false
-
-        var types = ["svg"]
+        var types: [UTType] = [.svg]
         if inkscapeURL() != nil {
-            types += ["pdf", "ai"]
+            types.append(.pdf)
+            if let aiType = UTType(filenameExtension: "ai") {
+                types.append(aiType)
+            }
         }
-        dialog.allowedFileTypes = types
-
+        dialog.allowedContentTypes = types
         guard dialog.runModal() == .OK, let url = dialog.url else { return }
         guard let state = frontWindowState else { return }
         loadFile(at: url, into: state)

@@ -1,4 +1,5 @@
 import Cocoa
+import Security
 import SwiftUI
 
 enum ConversionStatus: Equatable {
@@ -57,6 +58,49 @@ class AppState: ObservableObject {
 /// Synchronously checks the clipboard for SVG content.
 /// Returns the SVG string if found, empty string otherwise.
 /// Fast path only — no subprocesses, no I/O beyond the pasteboard read.
+// MARK: - SVG Validation
+
+/// Errors that can occur during SVG validation.
+enum SVGValidationError: Error, LocalizedError {
+    case empty
+    case notSVGElement
+    case containsDangerousContent
+
+    var errorDescription: String? {
+        switch self {
+        case .empty:
+            return "SVG content is empty"
+        case .notSVGElement:
+            return "Content does not contain an <svg> element"
+        case .containsDangerousContent:
+            return
+                "SVG contains potentially dangerous content (scripts, event handlers, or external references)"
+        }
+    }
+}
+
+/// Validates that the given string is safe, well-formed XML containing an
+/// <svg> root element. Returns nil if valid; returns an error otherwise.
+func validateSVG(_ string: String) -> SVGValidationError? {
+    guard !string.isEmpty else { return .empty }
+    guard string.contains("<svg") else { return .notSVGElement }
+    let dangerousPatterns = [
+        "<script", "javascript:", "onerror=", "onclick=",
+        "onload=", "onmouseover=", "xlink:href=[\"']https?://",
+    ]
+    for pattern in dangerousPatterns {
+        if string.range(of: pattern, options: .caseInsensitive) != nil {
+            return .containsDangerousContent
+        }
+    }
+    return nil
+}
+
+// MARK: - Clipboard SVG detection
+
+/// Synchronously checks the clipboard for SVG content.
+/// Returns the SVG string if found, empty string otherwise.
+/// Fast path only — no subprocesses, no I/O beyond the pasteboard read.
 func convertClipboardToSVG() -> String {
     let pasteboard = NSPasteboard.general
 
@@ -65,13 +109,15 @@ func convertClipboardToSVG() -> String {
     let svgType = NSPasteboard.PasteboardType("public.svg-image")
     if let data = pasteboard.data(forType: svgType),
         let svgString = String(data: data, encoding: .utf8),
-        svgString.contains("<svg")
+        validateSVG(svgString) == nil
     {
         return svgString
     }
 
     // 2. Raw SVG text on the string pasteboard
-    if let content = pasteboard.string(forType: .string), content.contains("<svg") {
+    if let content = pasteboard.string(forType: .string),
+        validateSVG(content) == nil
+    {
         return content
     }
 
@@ -175,8 +221,11 @@ private let _nouns: [String] = [
 /// "Adjective-Noun-Vector-YYYY-MM-DD.svg".  Uses arc4random for speed —
 /// no locking, no seeding, always cryptographically random.
 func makeTempSVGURL() -> URL {
-    let adj = _adjectives[Int(arc4random_uniform(UInt32(_adjectives.count)))]
-    let noun = _nouns[Int(arc4random_uniform(UInt32(_nouns.count)))]
+    var byte: UInt8 = 0
+    _ = SecRandomCopyBytes(kSecRandomDefault, 1, &byte)
+    let adj = _adjectives[Int(byte) % _adjectives.count]
+    _ = SecRandomCopyBytes(kSecRandomDefault, 1, &byte)
+    let noun = _nouns[Int(byte) % _nouns.count]
     let date = {
         let c = Calendar.current.dateComponents([.year, .month, .day], from: Date())
         return String(format: "%04d-%02d-%02d", c.year ?? 0, c.month ?? 0, c.day ?? 0)
@@ -300,7 +349,8 @@ func convertToSVGWithInkscape(inputURL: URL) -> String? {
     task.arguments = [
         "--export-type=svg",
         "--export-plain-svg",
-        "--export-filename=\(outputURL.path)",
+        "--export-filename",
+        outputURL.path,
         inputURL.path,
     ]
 

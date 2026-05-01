@@ -91,7 +91,7 @@
 
 /* ── About dialog ───────────────────────────────────────────────────── */
 "dialog.about.title" = "KeyJig";
-"dialog.about.info" = "Keynote互換フォーマットへのベクターグラフィック変換ユーティリティ。\n\nバージョン %@\n\nCopyright © 2021–2026 Jonathan Lampérth\n\nThe Noun Project（CC-BY-3.0 US ライセンス）：\nhttps://thenounproject.com/legal/terms-of-use/#icon-licenses";
+"dialog.about.info" = "Keynote互換フォーマットへのベクターグラフィック変換ユーティリティ。\n\nバージョン %@\n\nCopyright © 2026 KeyJig Contributors\nCopyright © 2021–2026 Jonathan Lampérth\n\nThe Noun Project（CC-BY-3.0 US ライセンス)：\nhttps://thenounproject.com/legal/terms-of-use/#icon-licenses";
 "dialog.about.button" = "閉じる";
 
 /* ── Help dialog ────────────────────────────────────────────────────── */

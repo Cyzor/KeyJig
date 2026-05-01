@@ -92,7 +92,7 @@
 
 /* ── About dialog ───────────────────────────────────────────────────── */
 "dialog.about.title" = "KeyJig";
-"dialog.about.info" = "Ein Werkzeug zur Konvertierung von Vektorgrafiken in Keynote-kompatible Formate.\n\nVersion %@\n\nCopyright © 2021–2026 Jonathan Lampérth\n\nThe Noun Project lizenziert unter CC-BY-3.0 US:\nhttps://thenounproject.com/legal/terms-of-use/#icon-licenses";
+"dialog.about.info" = "Ein Werkzeug zur Konvertierung von Vektorgrafiken in Keynote-kompatible Formate.\n\nVersion %@\n\nCopyright © 2026 KeyJig Contributors\nCopyright © 2021–2026 Jonathan Lampérth\n\nThe Noun Project lizenziert unter CC-BY-3.0 US:\nhttps://thenounproject.com/legal/terms-of-use/#icon-licenses";
 "dialog.about.button" = "OK";
 
 /* ── Help dialog ────────────────────────────────────────────────────── */

@@ -1,5 +1,6 @@
 import AppKit
 import SwiftUI
+import UniformTypeIdentifiers
 import WebKit
 
 // MARK: - Unified interaction view (drag source + drop target + context menu)
@@ -817,11 +818,14 @@ func browseFile(into appState: AppState) -> String {
 
     // Always offer SVG. Offer PDF and AI only when Inkscape is available,
     // so the extra types don't appear greyed-out and confuse the user.
-    var types = ["svg"]
+    var types: [UTType] = [.svg]
     if inkscapeURL() != nil {
-        types += ["pdf", "ai"]
+        types.append(.pdf)
+        if let aiType = UTType(filenameExtension: "ai") {
+            types.append(aiType)
+        }
     }
-    dialog.allowedFileTypes = types
+    dialog.allowedContentTypes = types
 
     guard dialog.runModal() == .OK, let url = dialog.url else { return "" }
 

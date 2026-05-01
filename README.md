@@ -2,10 +2,9 @@
 
 **Slightly easier way to import editable vector graphics into Apple Keynote.**
 
-Originally developed as **SVG2Keynote** by [Jonathan Lampérth](https://www.linkedin.com/in/jonathan-lamperth-7059b418a) and [Christian Holz](https://www.christianholz.net) at the [Sensing, Interaction & Perception Lab](https://siplab.org), ETH Zürich.
+KeyJig is a macOS menu-bar utility that imports vector graphics into Apple Keynote as native, editable Bezier paths. It was inspired by and takes a different approach than the original [SVG2Keynote](https://github.com/eth-siplab/SVG2Keynote-gui) project by [Jonathan Lampérth](https://www.linkedin.com/in/jonathan-lamperth-7059b418a) and [Christian Holz](https://www.christianholz.net) at the [Sensing, Interaction & Perception Lab](https://siplab.org), ETH Zürich.
 
-
-KeyJig converts graphics from applications such as Adobe Illustrator, Affinity Designer, and Inkscape into native, editable Bezier paths in Apple Keynote.
+KeyJig converts graphics from applications such as Adobe Illustrator, Affinity Designer, and Inkscape into native, editable Bezier paths in Apple Keynote and Microsoft PowerPoint.
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
@@ -96,11 +95,13 @@ To see all available commands in Script Editor:
 
 ---
 
-## Technical History
+## Acknowledgments
 
-The original project utilized a custom C++ library and Google Protobuf to manually construct Keynote's internal `.iwa` format. While powerful, this was prone to breaking whenever Apple updated Keynote's internal structures or when Protobuf versions changed.
+KeyJig was inspired by and takes a different technical approach than **SVG2Keynote** by Jonathan Lampérth and Christian Holz at ETH Zürich's Sensing, Interaction & Perception Lab.
 
-The current version of **KeyJig** leverages Keynote's native SVG support added in version 10.0+. By providing a temporary file URL as a clipboard promise, we bypass the need for custom binary construction while achieving the same high-fidelity, editable results.
+The original SVG2Keynote used a custom C++ library with Google Protobuf to construct Keynote's internal `.iwa` format. KeyJig reimagined the problem using a clipboard bridge approach that leverages Keynote's built-in SVG support (added in Keynote 10.0+), eliminating the need for binary format manipulation or external dependencies beyond Inkscape for PDF/AI conversion.
+
+For the original SVG2Keynote project, see https://github.com/eth-siplab/SVG2Keynote-gui
 
 ---
 
