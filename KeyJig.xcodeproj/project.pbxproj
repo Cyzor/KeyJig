@@ -17,9 +17,13 @@
 		AA10010000000000000000B0 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = AA10010000000000000000A0 /* Localizable.strings */; };
 		AA10010000000000000000C0 /* Localizable.stringsdict in Resources */ = {isa = PBXBuildFile; fileRef = AA10010000000000000000B1 /* Localizable.stringsdict */; };
 		AB4A692426A45A5A00B3EF9A /* SVGWebView in Frameworks */ = {isa = PBXBuildFile; productRef = AB4A692326A45A5A00B3EF9A /* SVGWebView */; };
-		AB4A692626A4678500B3EF9A /* svgToKeyRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB4A692526A4678500B3EF9A /* svgToKeyRepository.swift */; };
 		BB942CF682F473477D8EF06C /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0CCA99F0817B45088BB121 /* SettingsView.swift */; };
-/* End PBXBuildFile section */
+		05FB65872FA5BC1F00C7674D /* AppState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 05FB657D2FA5BC1F00C7674D /* AppState.swift */; };
+		05FB65842FA5BC1F00C7674D /* ClipboardHelpers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 05FB657E2FA5BC1F00C7674D /* ClipboardHelpers.swift */; };
+		05FB65852FA5BC1F00C7674D /* InkscapeIntegration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 05FB657F2FA5BC1F00C7674D /* InkscapeIntegration.swift */; };
+		05FB65862FA5BC1F00C7674D /* SVGProcessing.swift in Sources */ = {isa = PBXBuildFile; fileRef = 05FB65812FA5BC1F00C7674D /* SVGProcessing.swift */; };
+				05FB65882FA5BC1F00C7674D /* SettingsWindowController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 05FB65802FA5BC1F00C7674D /* SettingsWindowController.swift */; };
+		/* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		057851852F48F0D900ED1254 /* SwiftUIMenuBar.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = SwiftUIMenuBar.entitlements; sourceTree = "<group>"; };
@@ -41,9 +45,12 @@
 		AA100100000000000000006 /* de */ = {isa = PBXFileReference; lastKnownFileType = text.plist.stringsdict; name = de; path = KeyJig/de.lproj/Localizable.stringsdict; sourceTree = "<group>"; };
 		AA100100000000000000007 /* es */ = {isa = PBXFileReference; lastKnownFileType = text.plist.stringsdict; name = es; path = KeyJig/es.lproj/Localizable.stringsdict; sourceTree = "<group>"; };
 		AA100100000000000000008 /* ja */ = {isa = PBXFileReference; lastKnownFileType = text.plist.stringsdict; name = ja; path = KeyJig/ja.lproj/Localizable.stringsdict; sourceTree = "<group>"; };
-		AB4A692526A4678500B3EF9A /* svgToKeyRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = svgToKeyRepository.swift; sourceTree = "<group>"; };
-		AB8978B326A4239F003D201E /* KeyJig-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "KeyJig-Bridging-Header.h"; sourceTree = "<group>"; };
-/* End PBXFileReference section */
+		05FB657D2FA5BC1F00C7674D /* AppState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppState.swift; sourceTree = "<group>"; };
+		05FB657E2FA5BC1F00C7674D /* ClipboardHelpers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClipboardHelpers.swift; sourceTree = "<group>"; };
+		05FB657F2FA5BC1F00C7674D /* InkscapeIntegration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InkscapeIntegration.swift; sourceTree = "<group>"; };
+		05FB65812FA5BC1F00C7674D /* SVGProcessing.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SVGProcessing.swift; sourceTree = "<group>"; };
+				05FB65802FA5BC1F00C7674D /* SettingsWindowController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsWindowController.swift; sourceTree = "<group>"; };
+		/* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
 		459A278A23AA910B003D50EC /* Frameworks */ = {
@@ -96,9 +103,12 @@
 				459A279923AA910B003D50EC /* Main.storyboard */,
 				459A279C23AA910B003D50EC /* Info.plist */,
 				459A279623AA910B003D50EC /* Preview Content */,
-				AB8978B326A4239F003D201E /* KeyJig-Bridging-Header.h */,
-				AB4A692526A4678500B3EF9A /* svgToKeyRepository.swift */,
 				057851852F48F0D900ED1254 /* SwiftUIMenuBar.entitlements */,
+				05FB65802FA5BC1F00C7674D /* SettingsWindowController.swift */,
+				05FB657D2FA5BC1F00C7674D /* AppState.swift */,
+				05FB657E2FA5BC1F00C7674D /* ClipboardHelpers.swift */,
+				05FB657F2FA5BC1F00C7674D /* InkscapeIntegration.swift */,
+				05FB65812FA5BC1F00C7674D /* SVGProcessing.swift */,
 			);
 			path = KeyJig;
 			sourceTree = "<group>";
@@ -204,9 +214,14 @@
 			files = (
 				459A279323AA910B003D50EC /* ContentView.swift in Sources */,
 				459A279123AA910B003D50EC /* AppDelegate.swift in Sources */,
-				AB4A692626A4678500B3EF9A /* svgToKeyRepository.swift in Sources */,
 				05F195192F65DE4C008DEF94 /* ScriptingCommands.swift in Sources */,
 				BB942CF682F473477D8EF06C /* SettingsView.swift in Sources */,
+								05FB65882FA5BC1F00C7674D /* SettingsWindowController.swift in Sources */,
+								05FB65872FA5BC1F00C7674D /* AppState.swift in Sources */,
+				05FB65842FA5BC1F00C7674D /* ClipboardHelpers.swift in Sources */,
+				05FB65852FA5BC1F00C7674D /* InkscapeIntegration.swift in Sources */,
+				05FB65862FA5BC1F00C7674D /* SVGProcessing.swift in Sources */,
+
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -400,7 +415,6 @@
 				PRODUCT_BUNDLE_IDENTIFIER = com.cyzor.KeyJig;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
-				SWIFT_OBJC_BRIDGING_HEADER = "KeyJig/KeyJig-Bridging-Header.h";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
 			};
@@ -444,7 +458,6 @@
 				PRODUCT_BUNDLE_IDENTIFIER = com.cyzor.KeyJig;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
-				SWIFT_OBJC_BRIDGING_HEADER = "KeyJig/KeyJig-Bridging-Header.h";
 				SWIFT_VERSION = 5.0;
 			};
 			name = Release;

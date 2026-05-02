@@ -14,9 +14,17 @@ class SettingsWindowController: NSWindowController, NSWindowDelegate {
             defer: false
         )
 
-        window.title = NSLocalizedString("settings.window.title", comment: "")
+        window.title = NSLocalizedString(
+            "settings.window.title",
+            comment: "Settings window title")
         window.isReleasedWhenClosed = false
-        window.setFrameUsingName("SettingsWindow")
+
+        // Centre the window on the main screen, or restore saved position
+        let didRestore = window.setFrameUsingName("SettingsWindow")
+        if !didRestore {
+            window.center()
+        }
+        window.setFrameAutosaveName("SettingsWindow")
 
         let settingsView = SettingsView(appState: appState)
         window.contentViewController = NSHostingController(rootView: settingsView)
