@@ -1,0 +1,169 @@
+{
+  "fill" : {
+    "automatic-gradient" : "display-p3:0.33523,0.55046,0.74968,1.00000"
+  },
+  "groups" : [
+    {
+      "blur-material" : null,
+      "hidden" : false,
+      "layers" : [
+        {
+          "glass" : false,
+          "image-name" : "butter.svg",
+          "name" : "butter",
+          "position-specializations" : [
+            {
+              "value" : {
+                "scale" : 1,
+                "translation-in-points" : [
+                  0,
+                  -53.24256789995843
+                ]
+              }
+            },
+            {
+              "idiom" : "square",
+              "value" : {
+                "scale" : 1,
+                "translation-in-points" : [
+                  0,
+                  -53.24256789995843
+                ]
+              }
+            }
+          ]
+        }
+      ],
+      "position-specializations" : [
+        {
+          "idiom" : "square",
+          "value" : {
+            "scale" : 1.04,
+            "translation-in-points" : [
+              0,
+              0
+            ]
+          }
+        }
+      ],
+      "shadow" : {
+        "kind" : "neutral",
+        "opacity" : 0.5
+      },
+      "specular" : false,
+      "translucency" : {
+        "enabled" : true,
+        "value" : 0.1
+      }
+    },
+    {
+      "blur-material" : 0.5,
+      "layers" : [
+        {
+          "fill" : {
+            "solid" : "display-p3:0.75243,0.82699,0.96611,1.00000"
+          },
+          "glass" : true,
+          "image-name" : "Image 5.svg",
+          "name" : "Image 5",
+          "position-specializations" : [
+            {
+              "idiom" : "square",
+              "value" : {
+                "scale" : 1.71,
+                "translation-in-points" : [
+                  0,
+                  0
+                ]
+              }
+            }
+          ]
+        }
+      ],
+      "lighting" : "combined",
+      "opacity" : 0.1,
+      "shadow" : {
+        "kind" : "neutral",
+        "opacity" : 0.5
+      },
+      "specular" : false,
+      "translucency" : {
+        "enabled" : true,
+        "value" : 0.5
+      }
+    },
+    {
+      "blend-mode" : "soft-light",
+      "blur-material" : 0.5,
+      "layers" : [
+        {
+          "blend-mode" : "multiply",
+          "fill" : "automatic",
+          "glass" : false,
+          "hidden" : false,
+          "image-name" : "Image 3.svg",
+          "name" : "shaded",
+          "opacity" : 1,
+          "position-specializations" : [
+            {
+              "idiom" : "square",
+              "value" : {
+                "scale" : 0.6,
+                "translation-in-points" : [
+                  0,
+                  23.513999999999896
+                ]
+              }
+            }
+          ]
+        }
+      ],
+      "opacity" : 0.1,
+      "shadow" : {
+        "kind" : "neutral",
+        "opacity" : 0.5
+      },
+      "translucency" : {
+        "enabled" : true,
+        "value" : 0.5
+      }
+    },
+    {
+      "hidden" : true,
+      "layers" : [
+        {
+          "fill" : {
+            "solid" : "display-p3:0.92598,0.96611,0.94924,1.00000"
+          },
+          "glass" : false,
+          "hidden" : false,
+          "image-name" : "Terse-Vulture-Vector-2026-05-03.svg",
+          "name" : "Terse-Vulture-Vector-2026-05-03",
+          "position-specializations" : [
+            {
+              "idiom" : "square",
+              "value" : {
+                "scale" : 9.75,
+                "translation-in-points" : [
+                  0,
+                  0
+                ]
+              }
+            }
+          ]
+        }
+      ],
+      "shadow" : {
+        "kind" : "neutral",
+        "opacity" : 0.5
+      },
+      "translucency" : {
+        "enabled" : true,
+        "value" : 0.5
+      }
+    }
+  ],
+  "supported-platforms" : {
+    "squares" : "shared"
+  }
+}
