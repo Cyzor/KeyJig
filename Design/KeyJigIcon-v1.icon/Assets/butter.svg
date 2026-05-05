@@ -1,0 +1,478 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg id="Ebene_2" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" viewBox="0 0 1024 1024">
+  <!-- Generator: Adobe Illustrator 29.8.4, SVG Export Plug-In . SVG Version: 2.1.1 Build 6)  -->
+  <defs>
+    <style>
+      .st0 {
+        fill: #887d28;
+      }
+
+      .st1 {
+        fill: #ded178;
+      }
+
+      .st2 {
+        fill: #8a7f2a;
+      }
+
+      .st3 {
+        fill: #8c812c;
+      }
+
+      .st4 {
+        fill: #a39641;
+      }
+
+      .st5 {
+        fill: url(#extruded_gradient_5);
+      }
+
+      .st6 {
+        fill: url(#extruded_gradient_7);
+      }
+
+      .st7 {
+        fill: url(#extruded_gradient_6);
+      }
+
+      .st8 {
+        fill: url(#extruded_gradient_3);
+      }
+
+      .st9 {
+        fill: #948834;
+      }
+
+      .st10 {
+        fill: #918531;
+      }
+
+      .st11 {
+        fill: #776d16;
+      }
+
+      .st12 {
+        fill: #7b701a;
+      }
+
+      .st13 {
+        stroke: #fff;
+        stroke-width: 18.5px;
+      }
+
+      .st13, .st14 {
+        fill: none;
+        stroke-linejoin: round;
+      }
+
+      .st14 {
+        stroke: #1d1d1b;
+        stroke-width: 37px;
+      }
+
+      .st15 {
+        fill: url(#extruded_gradient_43);
+      }
+
+      .st16 {
+        fill: url(#extruded_gradient_33);
+      }
+
+      .st17 {
+        fill: url(#extruded_gradient_14);
+      }
+
+      .st18 {
+        fill: url(#extruded_gradient_40);
+      }
+
+      .st19 {
+        fill: url(#extruded_gradient_46);
+      }
+
+      .st20 {
+        fill: url(#extruded_gradient_50);
+      }
+
+      .st21 {
+        fill: url(#extruded_gradient_20);
+      }
+
+      .st22 {
+        fill: url(#extruded_gradient_26);
+      }
+
+      .st23 {
+        fill: url(#extruded_gradient_28);
+      }
+
+      .st24 {
+        fill: url(#extruded_gradient_19);
+      }
+
+      .st25 {
+        fill: url(#extruded_gradient_13);
+      }
+
+      .st26 {
+        fill: url(#extruded_gradient_16);
+      }
+
+      .st27 {
+        fill: url(#Extruded_panel_gradient);
+      }
+    </style>
+    <linearGradient id="extruded_gradient_33" data-name="extruded gradient 33" x1="450.3" y1="-284.6" x2="450.3" y2="-124.8" gradientTransform="translate(305.4 -123.3) rotate(90)" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#a39641"/>
+      <stop offset=".9" stop-color="#776d16"/>
+      <stop offset=".9" stop-color="#766c15"/>
+      <stop offset="1" stop-color="#a39641"/>
+    </linearGradient>
+    <linearGradient id="extruded_gradient_20" data-name="extruded gradient 20" x1="651.5" y1="-563.4" x2="651.5" y2="-612.7" gradientTransform="translate(305.4 -123.3) rotate(90)" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#d3c36b"/>
+      <stop offset=".6" stop-color="#d3c46b"/>
+      <stop offset=".7" stop-color="#d3c46c"/>
+      <stop offset=".8" stop-color="#cfbf67"/>
+      <stop offset="1" stop-color="#d3c36b"/>
+    </linearGradient>
+    <linearGradient id="extruded_gradient_19" data-name="extruded gradient 19" x1="502.5" y1="-286.5" x2="502.5" y2="-563.4" gradientTransform="translate(305.4 -123.3) rotate(90)" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#d3c46c"/>
+      <stop offset="0" stop-color="#d3c46c"/>
+      <stop offset=".4" stop-color="#cfbf67"/>
+      <stop offset=".6" stop-color="#cfbf67"/>
+      <stop offset="1" stop-color="#d3c46c"/>
+    </linearGradient>
+    <linearGradient id="extruded_gradient_16" data-name="extruded gradient 16" x1="322.1" y1="-126.7" x2="322.1" y2="-286.5" gradientTransform="translate(305.4 -123.3) rotate(90)" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#918531"/>
+      <stop offset="0" stop-color="#cfbf67"/>
+      <stop offset=".9" stop-color="#d3c36b"/>
+      <stop offset=".9" stop-color="#d3c46c"/>
+      <stop offset="1" stop-color="#cfbf67"/>
+      <stop offset="1" stop-color="#918531"/>
+    </linearGradient>
+    <linearGradient id="extruded_gradient_14" data-name="extruded gradient 14" x1="502.5" y1="150.3" x2="502.5" y2="-126.7" gradientTransform="translate(305.4 -123.3) rotate(90)" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#958935"/>
+      <stop offset="0" stop-color="#978b37"/>
+      <stop offset="0" stop-color="#978b37"/>
+      <stop offset=".8" stop-color="#cfbf67"/>
+      <stop offset="1" stop-color="#cfbf67"/>
+      <stop offset="1" stop-color="#958935"/>
+    </linearGradient>
+    <linearGradient id="extruded_gradient_13" data-name="extruded gradient 13" x1="651.5" y1="199.5" x2="651.5" y2="150.3" gradientTransform="translate(305.4 -123.3) rotate(90)" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#918531"/>
+      <stop offset=".3" stop-color="#cfbf67"/>
+      <stop offset="1" stop-color="#918531"/>
+    </linearGradient>
+    <linearGradient id="extruded_gradient_28" data-name="extruded gradient 28" x1="651.5" y1="-450.1" x2="651.5" y2="-491.9" gradientTransform="translate(305.4 -123.3) rotate(90)" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#918531"/>
+      <stop offset=".4" stop-color="#cfbf67"/>
+      <stop offset="1" stop-color="#918531"/>
+    </linearGradient>
+    <linearGradient id="extruded_gradient_40" data-name="extruded gradient 40" x1="651.5" y1="82.4" x2="651.5" y2="40.6" gradientTransform="translate(305.4 -123.3) rotate(90)" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#d3c36b"/>
+      <stop offset=".5" stop-color="#d3c46b"/>
+      <stop offset=".6" stop-color="#d3c46c"/>
+      <stop offset=".8" stop-color="#cfbf67"/>
+      <stop offset="1" stop-color="#d3c36b"/>
+    </linearGradient>
+    <linearGradient id="extruded_gradient_26" data-name="extruded gradient 26" x1="778.9" y1="-612.7" x2="778.9" y2="-450.1" gradientTransform="translate(305.4 -123.3) rotate(90)" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#a39641"/>
+      <stop offset=".1" stop-color="#776d16"/>
+      <stop offset=".9" stop-color="#776d16"/>
+      <stop offset=".9" stop-color="#766c15"/>
+      <stop offset="1" stop-color="#a39641"/>
+    </linearGradient>
+    <linearGradient id="extruded_gradient_43" data-name="extruded gradient 43" x1="778.9" y1="40.6" x2="778.9" y2="199.5" gradientTransform="translate(305.4 -123.3) rotate(90)" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#a39641"/>
+      <stop offset=".9" stop-color="#776d16"/>
+      <stop offset=".9" stop-color="#766c15"/>
+      <stop offset="1" stop-color="#a39641"/>
+    </linearGradient>
+    <linearGradient id="extruded_gradient_6" data-name="extruded gradient 6" x1="609.5" y1="-246.5" x2="609.5" y2="-327.5" gradientTransform="translate(305.4 -123.3) rotate(90)" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#c7b760"/>
+      <stop offset=".9" stop-color="#c7b860"/>
+      <stop offset="1" stop-color="#c7b760"/>
+    </linearGradient>
+    <linearGradient id="extruded_gradient_5" data-name="extruded gradient 5" x1="555.9" y1="-236.3" x2="555.9" y2="-246.5" gradientTransform="translate(305.4 -123.3) rotate(90)" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#918531"/>
+      <stop offset=".4" stop-color="#cfbf67"/>
+      <stop offset=".5" stop-color="#cfbf67"/>
+      <stop offset=".7" stop-color="#d3c46c"/>
+      <stop offset=".9" stop-color="#cfbf67"/>
+      <stop offset="1" stop-color="#918531"/>
+    </linearGradient>
+    <linearGradient id="extruded_gradient_3" data-name="extruded gradient 3" x1="680.4" y1="-178.7" x2="680.4" y2="-236.3" gradientTransform="translate(305.4 -123.3) rotate(90)" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#a39641"/>
+      <stop offset=".2" stop-color="#cfbf67"/>
+      <stop offset=".2" stop-color="#cfbf67"/>
+      <stop offset=".4" stop-color="#d3c46c"/>
+      <stop offset=".7" stop-color="#cfbf67"/>
+      <stop offset=".7" stop-color="#cfbf67"/>
+      <stop offset="1" stop-color="#a39641"/>
+    </linearGradient>
+    <linearGradient id="Extruded_panel_gradient" data-name="Extruded panel gradient" x1="555.9" y1="-168.5" x2="555.9" y2="-178.7" gradientTransform="translate(305.4 -123.3) rotate(90)" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#ab9e48"/>
+      <stop offset=".2" stop-color="#cfbf67"/>
+      <stop offset=".5" stop-color="#d3c46c"/>
+      <stop offset=".8" stop-color="#cfbf67"/>
+      <stop offset="1" stop-color="#ab9e48"/>
+    </linearGradient>
+    <linearGradient id="extruded_gradient_7" data-name="extruded gradient 7" x1="667.6" y1="-327.5" x2="667.6" y2="-326.5" gradientTransform="translate(305.4 -123.3) rotate(90)" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#a39641"/>
+      <stop offset=".8" stop-color="#978b37"/>
+      <stop offset=".9" stop-color="#978b37"/>
+      <stop offset="1" stop-color="#a39641"/>
+    </linearGradient>
+    <linearGradient id="extruded_gradient_46" data-name="extruded gradient 46" x1="868.2" y1="-90.4" x2="868.2" y2="-315.3" gradientTransform="translate(305.4 -123.3) rotate(90)" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#918531"/>
+      <stop offset="0" stop-color="#cfbf67"/>
+      <stop offset=".9" stop-color="#d3c36b"/>
+      <stop offset=".9" stop-color="#d3c46c"/>
+      <stop offset="1" stop-color="#cfbf67"/>
+      <stop offset="1" stop-color="#918531"/>
+    </linearGradient>
+    <linearGradient id="extruded_gradient_50" data-name="extruded gradient 50" x1="963.2" y1="-315.3" x2="963.2" y2="-90.4" gradientTransform="translate(305.4 -123.3) rotate(90)" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#a39641"/>
+      <stop offset=".9" stop-color="#776d16"/>
+      <stop offset=".9" stop-color="#766c16"/>
+      <stop offset="1" stop-color="#a39641"/>
+    </linearGradient>
+  </defs>
+  <g id="Axo_Compound_Group_Extrusion">
+    <g id="Axo_Extrusion">
+      <g id="Axo_Surface">
+        <polygon id="Axo_panel" class="st14" points="590.1 309.5 590.1 296.8 590.1 313.1 590.1 325.8 590.1 309.5"/>
+      </g>
+      <g id="Axo_Surface1" data-name="Axo_Surface">
+        <polygon id="Axo_panel1" data-name="Axo_panel" class="st14" points="430.2 296.8 430.2 309.5 430.2 325.8 430.2 313.1 430.2 296.8"/>
+      </g>
+      <g id="Axo_Surface2" data-name="Axo_Surface">
+        <path id="Axo_panel2" data-name="Axo_panel" class="st14" d="M430.2,309.5c0,10.2,9.3,18.7,20.4,18.7h118.9c11.2,0,20.4-8.5,20.4-18.7v16.3c0,10.2-9.3,18.7-20.4,18.7h-118.9c-11.2,0-20.4-8.5-20.4-18.7v-16.3Z"/>
+      </g>
+      <g id="Axo_Surface3" data-name="Axo_Surface">
+        <path id="Axo_panel3" data-name="Axo_panel" class="st14" d="M590.1,296.8c107.8,28,189.6,112.1,207.2,213.9v16.3c-17.7-101.9-99.4-185.9-207.2-213.9v-16.3Z"/>
+      </g>
+      <g id="Axo_Surface4" data-name="Axo_Surface">
+        <path id="Axo_panel4" data-name="Axo_panel" class="st14" d="M223,510.7c17.7-101.9,99.4-185.9,207.2-213.9v16.3c-107.8,28-189.6,112.1-207.2,213.9v-16.3Z"/>
+      </g>
+      <g id="Axo_Surface5" data-name="Axo_Surface">
+        <polygon id="Axo_panel5" data-name="Axo_panel" class="st14" points="918.1 638.1 918.1 529.4 918.1 545.7 918.1 654.3 918.1 638.1"/>
+        <path id="Axo_panel6" data-name="Axo_panel" class="st14" d="M918.1,529.4c0-10.2-9.3-18.7-20.4-18.7h-28.8v16.3h28.8c11.2,0,20.4,8.5,20.4,18.7v-16.3Z"/>
+        <path id="Axo_panel7" data-name="Axo_panel" class="st14" d="M868.8,510.7c-19.5-138.4-132-248.7-276.9-279.3v16.3c145,30.6,257.4,140.9,276.9,279.3v-16.3Z"/>
+        <polygon id="Axo_panel8" data-name="Axo_panel" class="st14" points="591.9 231.4 591.9 200 591.9 216.3 591.9 247.7 591.9 231.4"/>
+        <path id="Axo_panel9" data-name="Axo_panel" class="st14" d="M591.9,200c0-10.2-9.3-18.7-20.4-18.7h-118.9c-11.2,0-20.4,8.5-20.4,18.7v16.3c0-10.2,9.3-18.7,20.4-18.7h118.9c11.2,0,20.4,8.5,20.4,18.7v-16.3Z"/>
+        <polygon id="Axo_panel10" data-name="Axo_panel" class="st14" points="432.1 200 432.1 231.4 432.1 247.7 432.1 216.3 432.1 200"/>
+        <path id="Axo_panel11" data-name="Axo_panel" class="st14" d="M432.1,231.4c-145,30.6-257.4,141.8-276.9,279.3v16.3c19.5-137.5,132-248.7,276.9-279.3v-16.3Z"/>
+        <path id="Axo_panel12" data-name="Axo_panel" class="st14" d="M155.2,510.7h-28.8c-11.2,0-20.4,8.5-20.4,18.7v16.3c0-10.2,9.3-18.7,20.4-18.7h28.8v-16.3Z"/>
+        <polygon id="Axo_panel13" data-name="Axo_panel" class="st14" points="105.9 529.4 105.9 638.1 105.9 654.3 105.9 545.7 105.9 529.4"/>
+      </g>
+      <g id="Axo_Surface6" data-name="Axo_Surface">
+        <path id="Axo_panel14" data-name="Axo_panel" class="st14" d="M797.3,510.7h-21.4c-11.2,0-20.4,8.5-20.4,18.7v16.3c0-10.2,9.3-18.7,20.4-18.7h21.4v-16.3Z"/>
+        <polygon id="Axo_panel15" data-name="Axo_panel" class="st14" points="755.5 529.4 755.5 638.1 755.5 654.3 755.5 545.7 755.5 529.4"/>
+      </g>
+      <g id="Axo_Surface7" data-name="Axo_Surface">
+        <polygon id="Axo_panel16" data-name="Axo_panel" class="st14" points="264.8 638.1 264.8 529.4 264.8 545.7 264.8 654.3 264.8 638.1"/>
+        <path id="Axo_panel17" data-name="Axo_panel" class="st14" d="M264.8,529.4c0-10.2-9.3-18.7-20.4-18.7h-21.4v16.3h21.4c11.2,0,20.4,8.5,20.4,18.7v-16.3Z"/>
+      </g>
+      <g id="Axo_Surface_x2A_">
+        <path id="Axo_panel18" data-name="Axo_panel" class="st14" d="M755.5,638.1c0,10.2,9.3,18.7,20.4,18.7h121.7c11.2,0,20.4-8.5,20.4-18.7v16.3c0,10.2-9.3,18.7-20.4,18.7h-121.7c-11.2,0-20.4-8.5-20.4-18.7v-16.3Z"/>
+      </g>
+      <g id="Axo_Surface_x2A__x2A_">
+        <path id="Axo_panel19" data-name="Axo_panel" class="st14" d="M105.9,638.1c0,10.2,9.3,18.7,20.4,18.7h118c11.2,0,20.4-8.5,20.4-18.7v16.3c0,10.2-9.3,18.7-20.4,18.7h-118c-11.2,0-20.4-8.5-20.4-18.7v-16.3Z"/>
+      </g>
+      <g id="Axo_cap">
+        <path id="Axo_base" class="st14" d="M105.9,638.1v-108.7c0-10.2,9.3-18.7,20.4-18.7h28.8c19.5-137.5,132-248.7,276.9-279.3v-31.4c0-10.2,9.3-18.7,20.4-18.7h118.9c11.2,0,20.4,8.5,20.4,18.7v31.4c145,30.6,257.4,140.9,276.9,279.3h28.8c11.2,0,20.4,8.5,20.4,18.7v108.7c0,10.2-9.3,18.7-20.4,18.7h-121.7c-11.2,0-20.4-8.5-20.4-18.7v-108.7c0-10.2,9.3-18.7,20.4-18.7h21.4c-17.7-101.9-99.4-185.9-207.2-213.9v12.7c0,10.2-9.3,18.7-20.4,18.7h-118.9c-11.2,0-20.4-8.5-20.4-18.7v-12.7c-107.8,28-189.6,112.1-207.2,213.9h21.4c11.2,0,20.4,8.5,20.4,18.7v108.7c0,10.2-9.3,18.7-20.4,18.7h-118c-11.2,0-20.4-8.5-20.4-18.7Z"/>
+      </g>
+    </g>
+    <g id="Axo_Extrusion1" data-name="Axo_Extrusion">
+      <g id="Axo_Surface8" data-name="Axo_Surface">
+        <path id="Axo_panel20" data-name="Axo_panel" class="st14" d="M632.9,531.9c0-8.3-3-16.5-8.5-22.9l-72.5-84.9v16.3l72.5,84.9c5.5,6.3,8.5,14.5,8.5,22.9v-16.3Z"/>
+        <path id="Axo_panel21" data-name="Axo_panel" class="st14" d="M552,424.1c-2.8-4.2-10.2-.8-10.2,2.5v16.3c0-3.4,7.4-6.8,10.2-2.5v-16.3Z"/>
+        <polygon id="Axo_panel22" data-name="Axo_panel" class="st14" points="541.7 426.7 541.7 537.1 541.7 553.3 541.7 443 541.7 426.7"/>
+        <path id="Axo_panel23" data-name="Axo_panel" class="st14" d="M541.7,537.1c0,13.6-13.8,23.8-28.8,23.8s-28.8-10.2-28.8-23.8v16.3c0,13.6,13.8,23.8,28.8,23.8s28.8-10.2,28.8-23.8v-16.3Z"/>
+        <polygon id="Axo_panel24" data-name="Axo_panel" class="st14" points="484.1 537.1 484.1 426.7 484.1 443 484.1 553.3 484.1 537.1"/>
+        <path id="Axo_panel25" data-name="Axo_panel" class="st14" d="M484.1,426.7c0-3.4-7.4-6.8-10.2-2.5v16.3c2.8-4.2,10.2-.8,10.2,2.5v-16.3Z"/>
+        <path id="Axo_panel26" data-name="Axo_panel" class="st14" d="M473.9,424.1l-72.5,84.9c-5.5,6.3-8.5,14.5-8.5,22.9v16.3c0-8.3,3-16.5,8.5-22.9l72.5-84.9v-16.3Z"/>
+      </g>
+      <g id="Axo_Surface_x2A__x2A_1" data-name="Axo_Surface_x2A__x2A_">
+        <path id="Axo_panel27" data-name="Axo_panel" class="st14" d="M392.9,531.9c0,2.9.3,5.7,1.1,8.6v16.3c-.7-2.8-1.1-5.7-1.1-8.6v-16.3Z"/>
+        <polygon id="Axo_panel28" data-name="Axo_panel" class="st14" points="394 540.4 433.9 653.4 433.9 669.6 394 556.7 394 540.4"/>
+        <polygon id="Axo_panel29" data-name="Axo_panel" class="st14" points="433.9 653.4 512.9 653.4 591.9 653.4 591.9 669.6 512.9 669.6 433.9 669.6 433.9 653.4"/>
+        <polygon id="Axo_panel30" data-name="Axo_panel" class="st14" points="591.9 653.4 631.9 540.4 631.9 556.7 591.9 669.6 591.9 653.4"/>
+        <path id="Axo_panel31" data-name="Axo_panel" class="st14" d="M631.9,540.4c.7-2.8,1.1-5.7,1.1-8.6v16.3c0,2.9-.3,5.7-1.1,8.6v-16.3Z"/>
+      </g>
+      <path id="Axo_base1" data-name="Axo_base" class="st14" d="M392.9,531.9c0-8.3,3-16.5,8.5-22.9l72.5-84.9c2.8-4.2,10.2-.8,10.2,2.5v110.4c0,13.6,13.8,23.8,28.8,23.8s28.8-10.2,28.8-23.8v-110.4c0-3.4,7.4-6.8,10.2-2.5l72.5,84.9c5.5,6.3,8.5,14.5,8.5,22.9s-.3,5.7-1.1,8.6l-40,112.9h-158l-40-112.9c-.7-2.8-1.1-5.7-1.1-8.6Z"/>
+    </g>
+    <g id="Axo_Extrusion2" data-name="Axo_Extrusion">
+      <g id="Axo_Surface9" data-name="Axo_Surface">
+        <polygon id="Axo_panel32" data-name="Axo_panel" class="st14" points="620.7 820.8 620.7 747.7 620.7 764 620.7 837 620.7 820.8"/>
+        <path id="Axo_panel33" data-name="Axo_panel" class="st14" d="M620.7,747.7c0-11-12.1-22.1-24.2-22.1h-176.6c-13.9,0-24.2,11-24.2,22.1v16.3c0-11,10.2-22.1,24.2-22.1h176.6c12.1,0,24.2,11,24.2,22.1v-16.3Z"/>
+        <polygon id="Axo_panel34" data-name="Axo_panel" class="st14" points="395.8 747.7 395.8 820.8 395.8 837 395.8 764 395.8 747.7"/>
+      </g>
+      <g id="Axo_Surface_x2A__x2A_2" data-name="Axo_Surface_x2A__x2A_">
+        <path id="Axo_panel35" data-name="Axo_panel" class="st14" d="M395.8,820.8c0,11,12.1,22.1,24.2,22.1h176.6c13.9,0,24.2-11,24.2-22.1v16.3c0,11-10.2,22.1-24.2,22.1h-176.6c-12.1,0-24.2-11-24.2-22.1v-16.3Z"/>
+      </g>
+      <g id="Axo_cap1" data-name="Axo_cap">
+        <path id="Axo_base2" data-name="Axo_base" class="st14" d="M395.8,820.8v-73c0-11,10.2-22.1,24.2-22.1h176.6c12.1,0,24.2,11,24.2,22.1v73c0,11-10.2,22.1-24.2,22.1h-176.6c-12.1,0-24.2-11-24.2-22.1Z"/>
+      </g>
+    </g>
+  </g>
+  <g id="Axo_Compound_Group_Extrusion1" data-name="Axo_Compound_Group_Extrusion">
+    <g id="Axo_Extrusion3" data-name="Axo_Extrusion">
+      <g id="Axo_Surface10" data-name="Axo_Surface">
+        <polygon id="Axo_panel36" data-name="Axo_panel" class="st13" points="590.1 309.5 590.1 296.8 590.1 313.1 590.1 325.8 590.1 309.5"/>
+      </g>
+      <g id="Axo_Surface11" data-name="Axo_Surface">
+        <polygon id="Axo_panel37" data-name="Axo_panel" class="st13" points="430.2 296.8 430.2 309.5 430.2 325.8 430.2 313.1 430.2 296.8"/>
+      </g>
+      <g id="Axo_Surface12" data-name="Axo_Surface">
+        <path id="Axo_panel38" data-name="Axo_panel" class="st13" d="M430.2,309.5c0,10.2,9.3,18.7,20.4,18.7h118.9c11.2,0,20.4-8.5,20.4-18.7v16.3c0,10.2-9.3,18.7-20.4,18.7h-118.9c-11.2,0-20.4-8.5-20.4-18.7v-16.3Z"/>
+      </g>
+      <g id="Axo_Surface13" data-name="Axo_Surface">
+        <path id="Axo_panel39" data-name="Axo_panel" class="st13" d="M590.1,296.8c107.8,28,189.6,112.1,207.2,213.9v16.3c-17.7-101.9-99.4-185.9-207.2-213.9v-16.3Z"/>
+      </g>
+      <g id="Axo_Surface14" data-name="Axo_Surface">
+        <path id="Axo_panel40" data-name="Axo_panel" class="st13" d="M223,510.7c17.7-101.9,99.4-185.9,207.2-213.9v16.3c-107.8,28-189.6,112.1-207.2,213.9v-16.3Z"/>
+      </g>
+      <g id="Axo_Surface15" data-name="Axo_Surface">
+        <polygon id="Axo_panel41" data-name="Axo_panel" class="st13" points="918.1 638.1 918.1 529.4 918.1 545.7 918.1 654.3 918.1 638.1"/>
+        <path id="Axo_panel42" data-name="Axo_panel" class="st13" d="M918.1,529.4c0-10.2-9.3-18.7-20.4-18.7h-28.8v16.3h28.8c11.2,0,20.4,8.5,20.4,18.7v-16.3Z"/>
+        <path id="Axo_panel43" data-name="Axo_panel" class="st13" d="M868.8,510.7c-19.5-138.4-132-248.7-276.9-279.3v16.3c145,30.6,257.4,140.9,276.9,279.3v-16.3Z"/>
+        <polygon id="Axo_panel44" data-name="Axo_panel" class="st13" points="591.9 231.4 591.9 200 591.9 216.3 591.9 247.7 591.9 231.4"/>
+        <path id="Axo_panel45" data-name="Axo_panel" class="st13" d="M591.9,200c0-10.2-9.3-18.7-20.4-18.7h-118.9c-11.2,0-20.4,8.5-20.4,18.7v16.3c0-10.2,9.3-18.7,20.4-18.7h118.9c11.2,0,20.4,8.5,20.4,18.7v-16.3Z"/>
+        <polygon id="Axo_panel46" data-name="Axo_panel" class="st13" points="432.1 200 432.1 231.4 432.1 247.7 432.1 216.3 432.1 200"/>
+        <path id="Axo_panel47" data-name="Axo_panel" class="st13" d="M432.1,231.4c-145,30.6-257.4,141.8-276.9,279.3v16.3c19.5-137.5,132-248.7,276.9-279.3v-16.3Z"/>
+        <path id="Axo_panel48" data-name="Axo_panel" class="st13" d="M155.2,510.7h-28.8c-11.2,0-20.4,8.5-20.4,18.7v16.3c0-10.2,9.3-18.7,20.4-18.7h28.8v-16.3Z"/>
+        <polygon id="Axo_panel49" data-name="Axo_panel" class="st13" points="105.9 529.4 105.9 638.1 105.9 654.3 105.9 545.7 105.9 529.4"/>
+      </g>
+      <g id="Axo_Surface16" data-name="Axo_Surface">
+        <path id="Axo_panel50" data-name="Axo_panel" class="st13" d="M797.3,510.7h-21.4c-11.2,0-20.4,8.5-20.4,18.7v16.3c0-10.2,9.3-18.7,20.4-18.7h21.4v-16.3Z"/>
+        <polygon id="Axo_panel51" data-name="Axo_panel" class="st13" points="755.5 529.4 755.5 638.1 755.5 654.3 755.5 545.7 755.5 529.4"/>
+      </g>
+      <g id="Axo_Surface17" data-name="Axo_Surface">
+        <polygon id="Axo_panel52" data-name="Axo_panel" class="st13" points="264.8 638.1 264.8 529.4 264.8 545.7 264.8 654.3 264.8 638.1"/>
+        <path id="Axo_panel53" data-name="Axo_panel" class="st13" d="M264.8,529.4c0-10.2-9.3-18.7-20.4-18.7h-21.4v16.3h21.4c11.2,0,20.4,8.5,20.4,18.7v-16.3Z"/>
+      </g>
+      <g id="Axo_Surface_x2A_1" data-name="Axo_Surface_x2A_">
+        <path id="Axo_panel54" data-name="Axo_panel" class="st13" d="M755.5,638.1c0,10.2,9.3,18.7,20.4,18.7h121.7c11.2,0,20.4-8.5,20.4-18.7v16.3c0,10.2-9.3,18.7-20.4,18.7h-121.7c-11.2,0-20.4-8.5-20.4-18.7v-16.3Z"/>
+      </g>
+      <g id="Axo_Surface_x2A__x2A_3" data-name="Axo_Surface_x2A__x2A_">
+        <path id="Axo_panel55" data-name="Axo_panel" class="st13" d="M105.9,638.1c0,10.2,9.3,18.7,20.4,18.7h118c11.2,0,20.4-8.5,20.4-18.7v16.3c0,10.2-9.3,18.7-20.4,18.7h-118c-11.2,0-20.4-8.5-20.4-18.7v-16.3Z"/>
+      </g>
+      <g id="Axo_cap2" data-name="Axo_cap">
+        <path id="Axo_base3" data-name="Axo_base" class="st13" d="M105.9,638.1v-108.7c0-10.2,9.3-18.7,20.4-18.7h28.8c19.5-137.5,132-248.7,276.9-279.3v-31.4c0-10.2,9.3-18.7,20.4-18.7h118.9c11.2,0,20.4,8.5,20.4,18.7v31.4c145,30.6,257.4,140.9,276.9,279.3h28.8c11.2,0,20.4,8.5,20.4,18.7v108.7c0,10.2-9.3,18.7-20.4,18.7h-121.7c-11.2,0-20.4-8.5-20.4-18.7v-108.7c0-10.2,9.3-18.7,20.4-18.7h21.4c-17.7-101.9-99.4-185.9-207.2-213.9v12.7c0,10.2-9.3,18.7-20.4,18.7h-118.9c-11.2,0-20.4-8.5-20.4-18.7v-12.7c-107.8,28-189.6,112.1-207.2,213.9h21.4c11.2,0,20.4,8.5,20.4,18.7v108.7c0,10.2-9.3,18.7-20.4,18.7h-118c-11.2,0-20.4-8.5-20.4-18.7Z"/>
+      </g>
+    </g>
+    <g id="Axo_Extrusion4" data-name="Axo_Extrusion">
+      <g id="Axo_Surface18" data-name="Axo_Surface">
+        <path id="Axo_panel56" data-name="Axo_panel" class="st13" d="M632.9,531.9c0-8.3-3-16.5-8.5-22.9l-72.5-84.9v16.3l72.5,84.9c5.5,6.3,8.5,14.5,8.5,22.9v-16.3Z"/>
+        <path id="Axo_panel57" data-name="Axo_panel" class="st13" d="M552,424.1c-2.8-4.2-10.2-.8-10.2,2.5v16.3c0-3.4,7.4-6.8,10.2-2.5v-16.3Z"/>
+        <polygon id="Axo_panel58" data-name="Axo_panel" class="st13" points="541.7 426.7 541.7 537.1 541.7 553.3 541.7 443 541.7 426.7"/>
+        <path id="Axo_panel59" data-name="Axo_panel" class="st13" d="M541.7,537.1c0,13.6-13.8,23.8-28.8,23.8s-28.8-10.2-28.8-23.8v16.3c0,13.6,13.8,23.8,28.8,23.8s28.8-10.2,28.8-23.8v-16.3Z"/>
+        <polygon id="Axo_panel60" data-name="Axo_panel" class="st13" points="484.1 537.1 484.1 426.7 484.1 443 484.1 553.3 484.1 537.1"/>
+        <path id="Axo_panel61" data-name="Axo_panel" class="st13" d="M484.1,426.7c0-3.4-7.4-6.8-10.2-2.5v16.3c2.8-4.2,10.2-.8,10.2,2.5v-16.3Z"/>
+        <path id="Axo_panel62" data-name="Axo_panel" class="st13" d="M473.9,424.1l-72.5,84.9c-5.5,6.3-8.5,14.5-8.5,22.9v16.3c0-8.3,3-16.5,8.5-22.9l72.5-84.9v-16.3Z"/>
+      </g>
+      <g id="Axo_Surface_x2A__x2A_4" data-name="Axo_Surface_x2A__x2A_">
+        <path id="Axo_panel63" data-name="Axo_panel" class="st13" d="M392.9,531.9c0,2.9.3,5.7,1.1,8.6v16.3c-.7-2.8-1.1-5.7-1.1-8.6v-16.3Z"/>
+        <polygon id="Axo_panel64" data-name="Axo_panel" class="st13" points="394 540.4 433.9 653.4 433.9 669.6 394 556.7 394 540.4"/>
+        <polygon id="Axo_panel65" data-name="Axo_panel" class="st13" points="433.9 653.4 512.9 653.4 591.9 653.4 591.9 669.6 512.9 669.6 433.9 669.6 433.9 653.4"/>
+        <polygon id="Axo_panel66" data-name="Axo_panel" class="st13" points="591.9 653.4 631.9 540.4 631.9 556.7 591.9 669.6 591.9 653.4"/>
+        <path id="Axo_panel67" data-name="Axo_panel" class="st13" d="M631.9,540.4c.7-2.8,1.1-5.7,1.1-8.6v16.3c0,2.9-.3,5.7-1.1,8.6v-16.3Z"/>
+      </g>
+      <path id="Axo_base4" data-name="Axo_base" class="st13" d="M392.9,531.9c0-8.3,3-16.5,8.5-22.9l72.5-84.9c2.8-4.2,10.2-.8,10.2,2.5v110.4c0,13.6,13.8,23.8,28.8,23.8s28.8-10.2,28.8-23.8v-110.4c0-3.4,7.4-6.8,10.2-2.5l72.5,84.9c5.5,6.3,8.5,14.5,8.5,22.9s-.3,5.7-1.1,8.6l-40,112.9h-158l-40-112.9c-.7-2.8-1.1-5.7-1.1-8.6Z"/>
+    </g>
+    <g id="Axo_Extrusion5" data-name="Axo_Extrusion">
+      <g id="Axo_Surface19" data-name="Axo_Surface">
+        <polygon id="Axo_panel68" data-name="Axo_panel" class="st13" points="620.7 820.8 620.7 747.7 620.7 764 620.7 837 620.7 820.8"/>
+        <path id="Axo_panel69" data-name="Axo_panel" class="st13" d="M620.7,747.7c0-11-12.1-22.1-24.2-22.1h-176.6c-13.9,0-24.2,11-24.2,22.1v16.3c0-11,10.2-22.1,24.2-22.1h176.6c12.1,0,24.2,11,24.2,22.1v-16.3Z"/>
+        <polygon id="Axo_panel70" data-name="Axo_panel" class="st13" points="395.8 747.7 395.8 820.8 395.8 837 395.8 764 395.8 747.7"/>
+      </g>
+      <g id="Axo_Surface_x2A__x2A_5" data-name="Axo_Surface_x2A__x2A_">
+        <path id="Axo_panel71" data-name="Axo_panel" class="st13" d="M395.8,820.8c0,11,12.1,22.1,24.2,22.1h176.6c13.9,0,24.2-11,24.2-22.1v16.3c0,11-10.2,22.1-24.2,22.1h-176.6c-12.1,0-24.2-11-24.2-22.1v-16.3Z"/>
+      </g>
+      <g id="Axo_cap3" data-name="Axo_cap">
+        <path id="Axo_base5" data-name="Axo_base" class="st13" d="M395.8,820.8v-73c0-11,10.2-22.1,24.2-22.1h176.6c12.1,0,24.2,11,24.2,22.1v73c0,11-10.2,22.1-24.2,22.1h-176.6c-12.1,0-24.2-11-24.2-22.1Z"/>
+      </g>
+    </g>
+  </g>
+  <g id="Axo_Compound_Group_Extrusion2" data-name="Axo_Compound_Group_Extrusion">
+    <g id="Axo_Extrusion6" data-name="Axo_Extrusion">
+      <g id="Axo_Surface20" data-name="Axo_Surface">
+        <polygon id="Axo_panel72" data-name="Axo_panel" class="st4" points="590.1 309.5 590.1 296.8 590.1 313.1 590.1 325.8 590.1 309.5"/>
+      </g>
+      <g id="Axo_Surface21" data-name="Axo_Surface">
+        <polygon id="Axo_panel73" data-name="Axo_panel" class="st10" points="430.2 296.8 430.2 309.5 430.2 325.8 430.2 313.1 430.2 296.8"/>
+      </g>
+      <g id="Axo_Surface22" data-name="Axo_Surface">
+        <path id="Axo_panel74" data-name="Axo_panel" class="st16" d="M430.2,309.5c0,10.2,9.3,18.7,20.4,18.7h118.9c11.2,0,20.4-8.5,20.4-18.7v16.3c0,10.2-9.3,18.7-20.4,18.7h-118.9c-11.2,0-20.4-8.5-20.4-18.7v-16.3Z"/>
+      </g>
+      <g id="Axo_Surface23" data-name="Axo_Surface">
+        <path id="Axo_panel75" data-name="Axo_panel" class="st3" d="M590.1,296.8c107.8,28,189.6,112.1,207.2,213.9v16.3c-17.7-101.9-99.4-185.9-207.2-213.9v-16.3Z"/>
+      </g>
+      <g id="Axo_Surface24" data-name="Axo_Surface">
+        <path id="Axo_panel76" data-name="Axo_panel" class="st12" d="M223,510.7c17.7-101.9,99.4-185.9,207.2-213.9v16.3c-107.8,28-189.6,112.1-207.2,213.9v-16.3Z"/>
+      </g>
+      <g id="Axo_Surface25" data-name="Axo_Surface">
+        <polygon id="Axo_panel77" data-name="Axo_panel" class="st4" points="918.1 638.1 918.1 529.4 918.1 545.7 918.1 654.3 918.1 638.1"/>
+        <path id="Axo_panel78" data-name="Axo_panel" class="st21" d="M918.1,529.4c0-10.2-9.3-18.7-20.4-18.7h-28.8v16.3h28.8c11.2,0,20.4,8.5,20.4,18.7v-16.3Z"/>
+        <path id="Axo_panel79" data-name="Axo_panel" class="st24" d="M868.8,510.7c-19.5-138.4-132-248.7-276.9-279.3v16.3c145,30.6,257.4,140.9,276.9,279.3v-16.3Z"/>
+        <polygon id="Axo_panel80" data-name="Axo_panel" class="st4" points="591.9 231.4 591.9 200 591.9 216.3 591.9 247.7 591.9 231.4"/>
+        <path id="Axo_panel81" data-name="Axo_panel" class="st26" d="M591.9,200c0-10.2-9.3-18.7-20.4-18.7h-118.9c-11.2,0-20.4,8.5-20.4,18.7v16.3c0-10.2,9.3-18.7,20.4-18.7h118.9c11.2,0,20.4,8.5,20.4,18.7v-16.3Z"/>
+        <polygon id="Axo_panel82" data-name="Axo_panel" class="st10" points="432.1 200 432.1 231.4 432.1 247.7 432.1 216.3 432.1 200"/>
+        <path id="Axo_panel83" data-name="Axo_panel" class="st17" d="M432.1,231.4c-145,30.6-257.4,141.8-276.9,279.3v16.3c19.5-137.5,132-248.7,276.9-279.3v-16.3Z"/>
+        <path id="Axo_panel84" data-name="Axo_panel" class="st25" d="M155.2,510.7h-28.8c-11.2,0-20.4,8.5-20.4,18.7v16.3c0-10.2,9.3-18.7,20.4-18.7h28.8v-16.3Z"/>
+        <polygon id="Axo_panel85" data-name="Axo_panel" class="st10" points="105.9 529.4 105.9 638.1 105.9 654.3 105.9 545.7 105.9 529.4"/>
+      </g>
+      <g id="Axo_Surface26" data-name="Axo_Surface">
+        <path id="Axo_panel86" data-name="Axo_panel" class="st23" d="M797.3,510.7h-21.4c-11.2,0-20.4,8.5-20.4,18.7v16.3c0-10.2,9.3-18.7,20.4-18.7h21.4v-16.3Z"/>
+        <polygon id="Axo_panel87" data-name="Axo_panel" class="st10" points="755.5 529.4 755.5 638.1 755.5 654.3 755.5 545.7 755.5 529.4"/>
+      </g>
+      <g id="Axo_Surface27" data-name="Axo_Surface">
+        <polygon id="Axo_panel88" data-name="Axo_panel" class="st4" points="264.8 638.1 264.8 529.4 264.8 545.7 264.8 654.3 264.8 638.1"/>
+        <path id="Axo_panel89" data-name="Axo_panel" class="st18" d="M264.8,529.4c0-10.2-9.3-18.7-20.4-18.7h-21.4v16.3h21.4c11.2,0,20.4,8.5,20.4,18.7v-16.3Z"/>
+      </g>
+      <g id="Axo_Surface_x2A_2" data-name="Axo_Surface_x2A_">
+        <path id="Axo_panel90" data-name="Axo_panel" class="st22" d="M755.5,638.1c0,10.2,9.3,18.7,20.4,18.7h121.7c11.2,0,20.4-8.5,20.4-18.7v16.3c0,10.2-9.3,18.7-20.4,18.7h-121.7c-11.2,0-20.4-8.5-20.4-18.7v-16.3Z"/>
+      </g>
+      <g id="Axo_Surface_x2A__x2A_6" data-name="Axo_Surface_x2A__x2A_">
+        <path id="Axo_panel91" data-name="Axo_panel" class="st15" d="M105.9,638.1c0,10.2,9.3,18.7,20.4,18.7h118c11.2,0,20.4-8.5,20.4-18.7v16.3c0,10.2-9.3,18.7-20.4,18.7h-118c-11.2,0-20.4-8.5-20.4-18.7v-16.3Z"/>
+      </g>
+      <g id="Axo_cap4" data-name="Axo_cap">
+        <path id="Axo_base6" data-name="Axo_base" class="st1" d="M105.9,638.1v-108.7c0-10.2,9.3-18.7,20.4-18.7h28.8c19.5-137.5,132-248.7,276.9-279.3v-31.4c0-10.2,9.3-18.7,20.4-18.7h118.9c11.2,0,20.4,8.5,20.4,18.7v31.4c145,30.6,257.4,140.9,276.9,279.3h28.8c11.2,0,20.4,8.5,20.4,18.7v108.7c0,10.2-9.3,18.7-20.4,18.7h-121.7c-11.2,0-20.4-8.5-20.4-18.7v-108.7c0-10.2,9.3-18.7,20.4-18.7h21.4c-17.7-101.9-99.4-185.9-207.2-213.9v12.7c0,10.2-9.3,18.7-20.4,18.7h-118.9c-11.2,0-20.4-8.5-20.4-18.7v-12.7c-107.8,28-189.6,112.1-207.2,213.9h21.4c11.2,0,20.4,8.5,20.4,18.7v108.7c0,10.2-9.3,18.7-20.4,18.7h-118c-11.2,0-20.4-8.5-20.4-18.7Z"/>
+      </g>
+    </g>
+    <g id="Axo_Extrusion7" data-name="Axo_Extrusion">
+      <g id="Axo_Surface28" data-name="Axo_Surface">
+        <path id="Axo_panel92" data-name="Axo_panel" class="st7" d="M632.9,531.9c0-8.3-3-16.5-8.5-22.9l-72.5-84.9v16.3l72.5,84.9c5.5,6.3,8.5,14.5,8.5,22.9v-16.3Z"/>
+        <path id="Axo_panel93" data-name="Axo_panel" class="st5" d="M552,424.1c-2.8-4.2-10.2-.8-10.2,2.5v16.3c0-3.4,7.4-6.8,10.2-2.5v-16.3Z"/>
+        <polygon id="Axo_panel94" data-name="Axo_panel" class="st10" points="541.7 426.7 541.7 537.1 541.7 553.3 541.7 443 541.7 426.7"/>
+        <path id="Axo_panel95" data-name="Axo_panel" class="st8" d="M541.7,537.1c0,13.6-13.8,23.8-28.8,23.8s-28.8-10.2-28.8-23.8v16.3c0,13.6,13.8,23.8,28.8,23.8s28.8-10.2,28.8-23.8v-16.3Z"/>
+        <polygon id="Axo_panel96" data-name="Axo_panel" class="st4" points="484.1 537.1 484.1 426.7 484.1 443 484.1 553.3 484.1 537.1"/>
+        <path id="Axo_panel97" data-name="Axo_panel" class="st27" d="M484.1,426.7c0-3.4-7.4-6.8-10.2-2.5v16.3c2.8-4.2,10.2-.8,10.2,2.5v-16.3Z"/>
+        <path id="Axo_panel98" data-name="Axo_panel" class="st10" d="M473.9,424.1l-72.5,84.9c-5.5,6.3-8.5,14.5-8.5,22.9v16.3c0-8.3,3-16.5,8.5-22.9l72.5-84.9v-16.3Z"/>
+      </g>
+      <g id="Axo_Surface_x2A__x2A_7" data-name="Axo_Surface_x2A__x2A_">
+        <path id="Axo_panel99" data-name="Axo_panel" class="st2" d="M392.9,531.9c0,2.9.3,5.7,1.1,8.6v16.3c-.7-2.8-1.1-5.7-1.1-8.6v-16.3Z"/>
+        <polygon id="Axo_panel100" data-name="Axo_panel" class="st0" points="394 540.4 433.9 653.4 433.9 669.6 394 556.7 394 540.4"/>
+        <polygon id="Axo_panel101" data-name="Axo_panel" class="st11" points="433.9 653.4 512.9 653.4 591.9 653.4 591.9 669.6 512.9 669.6 433.9 669.6 433.9 653.4"/>
+        <polygon id="Axo_panel102" data-name="Axo_panel" class="st9" points="591.9 653.4 631.9 540.4 631.9 556.7 591.9 669.6 591.9 653.4"/>
+        <path id="Axo_panel103" data-name="Axo_panel" class="st6" d="M631.9,540.4c.7-2.8,1.1-5.7,1.1-8.6v16.3c0,2.9-.3,5.7-1.1,8.6v-16.3Z"/>
+      </g>
+      <path id="Axo_base7" data-name="Axo_base" class="st1" d="M392.9,531.9c0-8.3,3-16.5,8.5-22.9l72.5-84.9c2.8-4.2,10.2-.8,10.2,2.5v110.4c0,13.6,13.8,23.8,28.8,23.8s28.8-10.2,28.8-23.8v-110.4c0-3.4,7.4-6.8,10.2-2.5l72.5,84.9c5.5,6.3,8.5,14.5,8.5,22.9s-.3,5.7-1.1,8.6l-40,112.9h-158l-40-112.9c-.7-2.8-1.1-5.7-1.1-8.6Z"/>
+    </g>
+    <g id="Axo_Extrusion8" data-name="Axo_Extrusion">
+      <g id="Axo_Surface29" data-name="Axo_Surface">
+        <polygon id="Axo_panel104" data-name="Axo_panel" class="st4" points="620.7 820.8 620.7 747.7 620.7 764 620.7 837 620.7 820.8"/>
+        <path id="Axo_panel105" data-name="Axo_panel" class="st19" d="M620.7,747.7c0-11-12.1-22.1-24.2-22.1h-176.6c-13.9,0-24.2,11-24.2,22.1v16.3c0-11,10.2-22.1,24.2-22.1h176.6c12.1,0,24.2,11,24.2,22.1v-16.3Z"/>
+        <polygon id="Axo_panel106" data-name="Axo_panel" class="st10" points="395.8 747.7 395.8 820.8 395.8 837 395.8 764 395.8 747.7"/>
+      </g>
+      <g id="Axo_Surface_x2A__x2A_8" data-name="Axo_Surface_x2A__x2A_">
+        <path id="Axo_panel107" data-name="Axo_panel" class="st20" d="M395.8,820.8c0,11,12.1,22.1,24.2,22.1h176.6c13.9,0,24.2-11,24.2-22.1v16.3c0,11-10.2,22.1-24.2,22.1h-176.6c-12.1,0-24.2-11-24.2-22.1v-16.3Z"/>
+      </g>
+      <g id="Axo_cap5" data-name="Axo_cap">
+        <path id="Axo_base8" data-name="Axo_base" class="st1" d="M395.8,820.8v-73c0-11,10.2-22.1,24.2-22.1h176.6c12.1,0,24.2,11,24.2,22.1v73c0,11-10.2,22.1-24.2,22.1h-176.6c-12.1,0-24.2-11-24.2-22.1Z"/>
+      </g>
+    </g>
+  </g>
+</svg>

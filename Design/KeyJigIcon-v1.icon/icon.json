@@ -1,6 +1,6 @@
 {
   "fill" : {
-    "automatic-gradient" : "display-p3:0.33523,0.55046,0.74968,1.00000"
+    "automatic-gradient" : "display-p3:0.74968,0.55461,0.09696,1.00000"
   },
   "groups" : [
     {
@@ -8,7 +8,7 @@
       "hidden" : false,
       "layers" : [
         {
-          "glass" : false,
+          "glass" : true,
           "image-name" : "butter.svg",
           "name" : "butter",
           "position-specializations" : [
@@ -53,43 +53,7 @@
       "specular" : false,
       "translucency" : {
         "enabled" : true,
-        "value" : 0.1
-      }
-    },
-    {
-      "blur-material" : 0.5,
-      "layers" : [
-        {
-          "fill" : {
-            "solid" : "display-p3:0.75243,0.82699,0.96611,1.00000"
-          },
-          "glass" : true,
-          "image-name" : "frame.svg",
-          "name" : "frame",
-          "position-specializations" : [
-            {
-              "idiom" : "square",
-              "value" : {
-                "scale" : 1.71,
-                "translation-in-points" : [
-                  0,
-                  0
-                ]
-              }
-            }
-          ]
-        }
-      ],
-      "lighting" : "combined",
-      "opacity" : 0.1,
-      "shadow" : {
-        "kind" : "neutral",
-        "opacity" : 0.5
-      },
-      "specular" : false,
-      "translucency" : {
-        "enabled" : true,
-        "value" : 0.5
+        "value" : 0.04
       }
     },
     {
@@ -101,7 +65,7 @@
           "fill" : "automatic",
           "glass" : false,
           "hidden" : false,
-          "image-name" : "ring.svg",
+          "image-name" : "Image 3.svg",
           "name" : "shaded",
           "opacity" : 1,
           "position-specializations" : [
