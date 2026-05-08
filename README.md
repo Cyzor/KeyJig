@@ -1,64 +1,71 @@
 # KeyJig
 
-**Slightly easier way to import editable vector graphics into Apple Keynote.**
+**Import editable vector graphics into Apple Keynote.**
 
-KeyJig is a macOS menu-bar utility that imports vector graphics into Apple Keynote as native, editable Bezier paths. It was inspired by and takes a different approach than the original [SVG2Keynote](https://github.com/eth-siplab/SVG2Keynote-gui) project by [Jonathan Lampérth](https://www.linkedin.com/in/jonathan-lamperth-7059b418a) and [Christian Holz](https://www.christianholz.net) at the [Sensing, Interaction & Perception Lab](https://siplab.org), ETH Zürich.
-
-KeyJig converts graphics from applications such as Adobe Illustrator, Affinity Designer, and Inkscape into native, editable Bezier paths in Apple Keynote and Microsoft PowerPoint.
+KeyJig is a macOS menu-bar utility that bridges vector artwork from Adobe Illustrator, Affinity Designer, Inkscape, and other SVG-capable tools into Keynote as native, editable Bézier paths.
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 ---
 
-## Why use KeyJig?
+## Why KeyJig?
 
-Apple Keynote can read SVG files, but it is often inaccessible through standard Copy/Paste from tools like Adobe Illustrator or Affinity Designer (which usually fall back to static PDF images).
+Keynote reads SVG natively, but standard Copy/Paste from Illustrator or Affinity Designer usually falls back to a static PDF image. KeyJig acts as a clipboard bridge: it intercepts the vector data and hands Keynote a payload that triggers the high-fidelity SVG importer. You can then **Break Apart** and **Make Editable** to control every node and path.
 
-**KeyJig** acts as a clipboard "bridge." It intercepts vector data and feeds it to Keynote in a format that triggers its high-fidelity native importer. This allows you to immediately **"Make Editable"** and have full control over every node and path.
+---
 
-### The Workflow:
-1. **Copy:** Select your vector artwork in Illustrator, Affinity Designer, or any SVG-supporting tool and press `⌘C`.
-2. **Switch:** Bring KeyJig to the front. It detects the SVG on your clipboard automatically and shows a preview.
-3. **Bridge:** Click **"Copy to Clipboard"** in KeyJig.
-4. **Paste:** Go to Keynote and press `⌘V`.
-5. **Break:** Choose **Format > Shapes and Lines > Break Apart**.  Or right-click the pasted object and choose **Break Apart**.
-6. **Edit:** (Optional) Choose **Format > Shapes and Lines > Make Editable**.  Or right-click the pasted object and choose **Make Editable**.
-7. **Modify:** Now that the pasted object is a native Keynote shape, freely alter its color, stroke, and anchor points.
+## Workflow
 
+1. **Copy** your vector artwork in Illustrator, Affinity Designer, or any SVG tool (`⌘C`).
+2. **Switch** to KeyJig — it detects the SVG and shows a preview.
+3. **Bridge** by clicking **Copy to Clipboard**.
+4. **Paste** in Keynote (`⌘V`).
+5. **Break Apart** via *Format → Shapes and Lines → Break Apart* (or right-click the object).
+6. **Make Editable** (optional) via the same menu.
+7. **Modify** color, stroke, and anchor points like any native Keynote shape.
+
+---
+
+## Screenshots
+
+_Coming soon._
 
 ---
 
 ## Installation
 
 ### Prerequisites
-- macOS 11.3 (Big Sur) or later.
-- No external libraries (Protobuf, Snappy, etc.) are required.
+
+- macOS 11.3 (Big Sur) or later
+- [Inkscape](https://inkscape.org/) — optional, only needed for PDF and `.ai` fallback. KeyJig auto-detects it at `/Applications/Inkscape.app`, `/opt/homebrew/bin/inkscape`, or `/usr/local/bin/inkscape`.
 
 ### Build from Source
-1. Clone the repository:
-   ```bash
-   git clone https://github.com/cyzor/keynote-vector-importer.git
-   ```
-2. Open `KeyJig.xcodeproj` in Xcode.
-3. Select the **KeyJig** scheme and click **Build** (`⌘B`) or **Run** (`⌘R`).
+
+```bash
+git clone https://github.com/cyzor/keynote-vector-importer.git
+```
+
+Open `KeyJig.xcodeproj` in Xcode, select the **KeyJig** scheme, and Build (`⌘B`) or Run (`⌘R`).
+
+### Distribution & Security
+
+KeyJig ships as a Developer ID–signed, notarized, stapled `.app`. The release workflow enables the Hardened Runtime (`-o runtime`) so notarization passes. The App Sandbox stays off because KeyJig shells out to Inkscape and writes temp files for the Keynote clipboard handoff.
 
 ---
 
 ## Features
 
-- **Clipboard Bridging:** Automatically detects SVG data on your clipboard and prepares it for Keynote.
-- **File Support:** Open any `.svg` file directly to preview and copy it for Keynote.
-- **Zero Dependencies:** The app is 100% Swift and SwiftUI, making it lightweight and easy to maintain.
-- **PDF Fallback:** If native import isn't sufficient, use the "PDF Fallback" (requires [Inkscape](https://inkscape.org/)) to copy as a high-quality vector image.
-- **AppleScript Automation:** Fully scriptable via AppleScript for integration with workflows, automation tools, and other applications.
+- **Clipboard bridging** — detects SVG on the clipboard and re-encodes it for Keynote.
+- **File support** — open any `.svg` to preview and copy.
+- **PDF/AI fallback** — converts via Inkscape when needed.
+- **AppleScript** — fully scriptable for automation workflows.
+- **Pure Swift/SwiftUI** — no bundled third-party libraries.
 
 ---
 
-## AppleScript Automation
+## AppleScript
 
-KeyJig is fully scriptable via AppleScript, allowing you to automate SVG conversions, file operations, and window management. 
-
-### Quick Example
+KeyJig exposes 17 commands for scripting conversions, file operations, and window management.
 
 ```applescript
 tell application "KeyJig"
@@ -67,44 +74,26 @@ tell application "KeyJig"
 end tell
 ```
 
-### Available Commands
-
-- **Core Operations:** `convert`, `clear`
-- **File Operations:** `load SVG file`, `open file`
-- **Clipboard:** `check clipboard`, `check for convertible`, `convert clipboard`
-- **Information:** `get SVG`, `get SVG file path`, `get file size`, `get SVG creator`
-- **Windows:** `show main window`, `show popover`, `new floating window`
-- **Help:** `show about`, `show help`
-
-For complete documentation, syntax examples, and advanced workflows, see [**applescript.md**](./docs/applescript.md).
-
-### View the Dictionary
-
-To see all available commands in Script Editor:
-1. Open **Script Editor** (in Applications > Utilities)
-2. Go to **File > Open Dictionary**
-3. Select **KeyJig**
+See [**docs/applescript.md**](./docs/applescript.md) for the full command reference, or open the dictionary in Script Editor via *File → Open Dictionary → KeyJig*.
 
 ---
 
 ## Documentation
 
-- [**user_guide.md**](./docs/user_guide.md) — Installation, usage modes, importing SVGs, drag and drop, and troubleshooting
-- [**applescript.md**](./docs/applescript.md) — Complete AppleScript command reference and examples
-- [**scripting_implementation.md**](./docs/scripting_implementation.md) — Technical implementation notes for developers
+- [**user_guide.md**](./docs/user_guide.md) — installation, usage modes, drag and drop, troubleshooting
+- [**applescript.md**](./docs/applescript.md) — AppleScript command reference
+- [**scripting_implementation.md**](./docs/scripting_implementation.md) — developer notes on the scripting layer
 
 ---
 
 ## Acknowledgments
 
-KeyJig was inspired by and takes a different technical approach than **SVG2Keynote** by Jonathan Lampérth and Christian Holz at ETH Zürich's Sensing, Interaction & Perception Lab.
+KeyJig draws on, and takes a different technical approach than, [**SVG2Keynote**](https://github.com/eth-siplab/SVG2Keynote-gui) by [Jonathan Lampérth](https://www.linkedin.com/in/jonathan-lamperth-7059b418a) and [Christian Holz](https://www.christianholz.net) at the [Sensing, Interaction & Perception Lab](https://siplab.org), ETH Zürich. Where SVG2Keynote constructs Keynote's `.iwa` format directly via Protobuf, KeyJig leans on Keynote's built-in SVG importer (Keynote 10.0+).
 
-The original SVG2Keynote used a custom C++ library with Google Protobuf to construct Keynote's internal `.iwa` format. KeyJig reimagined the problem using a clipboard bridge approach that leverages Keynote's built-in SVG support (added in Keynote 10.0+), eliminating the need for binary format manipulation or external dependencies beyond Inkscape for PDF/AI conversion.
-
-For the original SVG2Keynote project, see https://github.com/eth-siplab/SVG2Keynote-gui
+Earlier builds used the [SVGWebView](https://github.com/ZeeZide/SVGWebView) Swift package by ZeeZide GmbH; the current preview is an in-house WebKit view.
 
 ---
 
 ## License
 
-This project is licensed under the MIT License.
+MIT License. See [LICENSE](./LICENSE).

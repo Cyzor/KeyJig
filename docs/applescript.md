@@ -14,6 +14,20 @@ KeyJig is fully scriptable via AppleScript. Use Script Editor, Automator, shell 
 
 ## Quick Reference
 
+### Application Properties
+
+All read-only. Access via `tell application "KeyJig" to get <property>`.
+
+| Property | Returns |
+|---|---|
+| `SVG` | Full SVG text of the loaded file |
+| `SVG file path` | POSIX path of the loaded file, or `""` |
+| `pixel width` | Width string parsed from the SVG |
+| `pixel height` | Height string parsed from the SVG |
+| `file size` | Human-readable size, e.g. `"42.3 KB"` |
+| `SVG creator` | Creator metadata from the SVG, or `""` |
+| `document name` | Loaded file's name without extension, or `""` |
+
 ### All Commands
 
 | Command | What it does | Returns |
@@ -27,7 +41,7 @@ KeyJig is fully scriptable via AppleScript. Use Script Editor, Automator, shell 
 | `convert clipboard` | Convert clipboard PDF/vector to SVG via Inkscape | text |
 | `get SVG` | Return the currently loaded SVG as text | text |
 | `get SVG file path` | Return the loaded file's path, or `""` | text |
-
+| `get SVG dimensions` | Return `{width:"…", height:"…"}` record | record |
 | `get file size` | Return human-readable file size (e.g. `"42.1 KB"`) | text |
 | `get SVG creator` | Return creator metadata from the SVG, or `""` | text |
 | `show main window` | Show the main application window | boolean |
@@ -92,6 +106,8 @@ end tell
 **`get SVG`** — Returns the full SVG text of the loaded file.
 
 **`get SVG file path`** — Returns the file system path of the loaded SVG, or `""` if the SVG was loaded from the clipboard.
+
+**`get SVG dimensions`** — Returns an AppleScript record `{width:"512", height:"384"}` parsed from the SVG. Equivalent to reading the `pixel width` / `pixel height` properties separately.
 
 **`get file size`** — Returns a formatted string such as `"23.4 KB"`.
 

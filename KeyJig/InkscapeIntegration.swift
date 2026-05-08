@@ -1,5 +1,8 @@
 import Cocoa
 import Foundation
+import os
+
+private let log = Logger(subsystem: "com.cyzor.KeyJig", category: "Inkscape")
 
 // MARK: - Inkscape Integration
 
@@ -73,6 +76,11 @@ func convertToSVGWithInkscape(inputURL: URL) -> String? {
         inputURL.path,
     ]
 
+    // Inkscape is chatty on stdout/stderr even on success. We don't surface
+    // its output to the user — failures are signalled via a non-zero exit
+    // and a nil return, which the caller logs and translates into the UI's
+    // generic "conversion failed" state. If you need to debug a specific
+    // Inkscape invocation, swap these for `Pipe()` and read after exit.
     task.standardError = FileHandle.nullDevice
     task.standardOutput = FileHandle.nullDevice
 
@@ -80,12 +88,12 @@ func convertToSVGWithInkscape(inputURL: URL) -> String? {
         try task.run()
         task.waitUntilExit()
     } catch {
-        NSLog("KeyJig: Inkscape launch failed: \(error)")
+        log.error("Inkscape launch failed: \(error.localizedDescription, privacy: .public)")
         return nil
     }
 
     guard task.terminationStatus == 0 else {
-        NSLog("KeyJig: Inkscape exited with status \(task.terminationStatus)")
+        log.error("Inkscape exited with status \(task.terminationStatus, privacy: .public)")
         return nil
     }
 
@@ -111,7 +119,7 @@ func convertClipboardPDFToSVG(completion: @escaping (String?) -> Void) {
         do {
             try pdfData.write(to: inputURL)
         } catch {
-            NSLog("KeyJig: failed to write temp PDF: \(error)")
+            log.error("failed to write temp PDF: \(error.localizedDescription, privacy: .public)")
             DispatchQueue.main.async { completion(nil) }
             return
         }

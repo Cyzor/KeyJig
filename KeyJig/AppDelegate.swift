@@ -3,6 +3,9 @@ import Combine
 import SwiftUI
 import UniformTypeIdentifiers
 import WebKit
+import os
+
+private let log = Logger(subsystem: "com.cyzor.KeyJig", category: "AppDelegate")
 
 // MARK: - Main Window Controller
 
@@ -515,7 +518,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                 state.svgURL = url.path
                 state.svgString = content
             } catch {
-                NSLog("KeyJig: error reading SVG: \(error)")
+                log.error("error reading SVG: \(error.localizedDescription, privacy: .public)")
             }
         case "pdf", "ai":
             state.conversionStatus = .converting
@@ -532,7 +535,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                 }
             }
         default:
-            NSLog("KeyJig: unsupported file type: \(url.pathExtension)")
+            log.error("unsupported file type: \(url.pathExtension, privacy: .public)")
         }
     }
 

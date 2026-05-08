@@ -1,5 +1,7 @@
 import SwiftUI
 
+private let inkscapeDownloadURL = URL(string: "https://inkscape.org/release/")!
+
 // MARK: - Tooltip Text Constants for Settings
 
 struct SettingsTooltips {
@@ -111,7 +113,7 @@ struct SettingsView: View {
                         Spacer()
 
                         if #available(macOS 11.0, *) {
-                            Link(destination: URL(string: "https://inkscape.org/release/")!) {
+                            Link(destination: inkscapeDownloadURL) {
                                 Text(NSLocalizedString(
                                     "settings.inkscape.download",
                                     comment: "Button label to download Inkscape"))
@@ -125,8 +127,7 @@ struct SettingsView: View {
                             .help(SettingsTooltips.downloadInkscape)
                         } else {
                             Button(action: {
-                                NSWorkspace.shared.open(
-                                    URL(string: "https://inkscape.org/release/")!)
+                                NSWorkspace.shared.open(inkscapeDownloadURL)
                             }) {
                                 Text(NSLocalizedString(
                                     "settings.inkscape.download",

@@ -17,23 +17,13 @@ Implementation reference for the AppleScript scripting layer. Covers architectur
 
 ## SDEF Structure
 
-Two suites. Neither application class uses `inherits="application"` — doing so creates a cycle that hangs the app permanently on the first Apple Event (infinite loop in `-[NSScriptClassDescription supportsCommand:]`).
+One suite — `KeyJig Suite` (`VcIm`). Cocoa Scripting serves the standard `name`, `frontmost`, and `version` properties on `NSApplication` natively, so the SDEF doesn't redeclare them. Adding them back would conflict with Foundation's built-in handlers.
 
-### Standard Suite (`????`)
+The `application` class (`capp` / `NSApplication`) does **not** use `inherits="application"` — doing so creates a cycle that hangs the app permanently on the first Apple Event (infinite loop in `-[NSScriptClassDescription supportsCommand:]`).
 
-Declares the base `application` class (`capp` / `NSApplication`) with three properties that Script Debugger uses to populate its Explorer header:
+Do **not** redeclare `get`, `set`, or `quit`. Foundation registers those handlers at runtime; duplicating them in the SDEF causes duplicate-handler conflicts that produce -1712 timeout hangs.
 
-- `name` (`pnam`)
-- `frontmost` (`pisf`) — `<cocoa key="isActive" />`
-- `version` (`vers`)
-
-Do **not** redeclare `get`, `set`, or `quit` here. Foundation registers those handlers at runtime; duplicating them in the SDEF causes duplicate-handler conflicts that produce the same -1712 timeout hang.
-
-### KeyJig Suite (`VcIm`)
-
-A second `application` class block (same `capp` code) adds the KeyJig-specific properties. Cocoa Scripting merges same-code classes across suites automatically — no `inherits` needed or wanted.
-
-All 16 commands live here as siblings of the class, not nested inside it.
+All 17 commands live as siblings of the class, not nested inside it.
 
 ---
 
@@ -49,6 +39,7 @@ Backed by `@objc dynamic` computed vars on `AppDelegate`, forwarded from `NSAppl
 | `pixel height` | `SVGh` | `scriptingSVGHeight` | Height string extracted from SVG |
 | `file size` | `SVGs` | `scriptingFileSize` | Human-readable size, e.g. `"42.3 KB"` |
 | `SVG creator` | `SVGr` | `scriptingSVGCreator` | Creator metadata, or `""` |
+| `document name` | `SVGd` | `scriptingDocumentName` | Loaded file's basename without extension, or `""` |
 
 **Naming pitfalls:** Property names share the AppleScript namespace with built-ins.
 - `SVG width` / `SVG height` — AppleScript parses `SVG` as a complete property reference, leaving `width`/`height` unresolved. Fixed by renaming to `pixel width` / `pixel height`.
@@ -56,7 +47,7 @@ Backed by `@objc dynamic` computed vars on `AppDelegate`, forwarded from `NSAppl
 
 ---
 
-## Commands (16 total)
+## Commands (17 total)
 
 All event codes are exactly 8 characters. All commands are direct children of the suite, not nested inside the class.
 
@@ -88,6 +79,7 @@ All event codes are exactly 8 characters. All commands are direct children of th
 |---|---|---|---|
 | `get SVG` | `VcImGtSV` | `GetSVGCommand` | `text` |
 | `get SVG file path` | `VcImGtFP` | `GetSVGFilePathCommand` | `text` |
+| `get SVG dimensions` | `VcImGtDm` | `GetSVGDimensionsCommand` | `record` — `{width:"…", height:"…"}` |
 | `get file size` | `VcImGtSz` | `GetFileSizeCommand` | `text` |
 | `get SVG creator` | `VcImGtCr` | `GetSVGCreatorCommand` | `text` |
 
@@ -129,9 +121,9 @@ Properties on `AppDelegate` use `frontWindowState` (a private computed var with 
 
 ---
 
-## What Was Removed
+## Records as Results
 
-- **`get SVG dimensions`** (`VcImGtDm`) — removed entirely. Returning a named `record-type` from an `NSScriptCommand` requires building a raw `NSAppleEventDescriptor` by hand, and even then the AE machinery returned -1708 (event not handled) before `performDefaultImplementation` was ever reached. The `pixel width` / `pixel height` properties on the application object cover the practical use case.
+`get SVG dimensions` returns a record. The earlier attempt to declare a *named* `record-type` in the SDEF and return it from `NSScriptCommand` failed with -1708 (event not handled) — the AE machinery rejected the event before `performDefaultImplementation` ran. The current implementation declares the result as a generic `<result type="record" />` in the SDEF and returns a Swift `[String: String]` dictionary, which Cocoa Scripting auto-bridges to an AppleScript record. The `pixel width` / `pixel height` properties cover the same use case for callers that prefer scalar reads.
 
 ---
 

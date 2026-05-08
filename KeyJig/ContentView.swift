@@ -2,13 +2,10 @@ import AppKit
 import SwiftUI
 import UniformTypeIdentifiers
 import WebKit
+import os
 
-// MARK: - Unified interaction view (drag source + drop target + context menu)
+private let log = Logger(subsystem: "com.cyzor.KeyJig", category: "ContentView")
 
-/// A single NSView that handles all three interaction modes without Z-order conflicts:
-///   • mouseDown  → outbound drag to Keynote (drag source)
-///   • draggingEntered/performDragOperation → inbound SVG drop (drag destination)
-///   • menu(for:) → right-click context menu
 // MARK: - Tooltip Text Constants
 
 struct Tooltips {
@@ -33,6 +30,12 @@ struct Tooltips {
         comment: "Tooltip for the SVG preview drop well when empty")
 }
 
+// MARK: - Unified interaction view (drag source + drop target + context menu)
+
+/// A single NSView that handles all three interaction modes without Z-order conflicts:
+///   • mouseDown  → outbound drag to Keynote (drag source)
+///   • draggingEntered/performDragOperation → inbound SVG drop (drag destination)
+///   • menu(for:) → right-click context menu
 class SVGInteractionView: NSView {
 
     // MARK: Callbacks
@@ -380,8 +383,9 @@ struct SVGInteractionViewWrapper: NSViewRepresentable {
 // MARK: - Responsive SVG renderer
 
 /// A WKWebView-backed renderer that scales the SVG to fill its frame while
-/// preserving aspect ratio.  Replaces the ZeeZide SVGWebView package, whose
-/// minimal HTML wrapper lacks the CSS reset needed for height: 100% to work.
+/// preserving aspect ratio. The HTML wrapper in `wrapSVGForResponsiveDisplay`
+/// (see `SVGProcessing.swift`) supplies the CSS reset and `position: fixed`
+/// trick that makes `height: 100%` actually fill the viewport.
 struct ResponsiveSVGWebView: NSViewRepresentable {
 
     let svg: String
@@ -609,11 +613,9 @@ struct ContentView: View {
             let isConverting = appState.conversionStatus == .converting
             VStack(spacing: 8) {
                 Button {
-                    let picked = browseFile(into: appState)
-                    // "(converting)" is the sentinel returned when a background
-                    // conversion was kicked off — conversionStatus drives the
-                    // message in that case, so we don't overwrite it here.
-                    if picked != "(converting)" && !picked.isEmpty {
+                    // For .converting, conversionStatus drives the message
+                    // until the background work finishes — don't overwrite it.
+                    if case .loaded = browseFile(into: appState) {
                         localStatus = ""
                         appState.conversionStatus = .idle
                     }
@@ -691,9 +693,8 @@ struct ContentView: View {
                 onDragStart: { [weak appState] in
                     guard let svg = appState?.svgString else { return nil }
                     // Reject oversized SVG before writing temp file
-                    let sizeLimit = 50 * 1024 * 1024  // 50 MB
-                    guard svg.utf8.count <= sizeLimit else {
-                        NSLog("KeyJig: dropped SVG exceeds size limit of %d bytes", sizeLimit)
+                    guard svg.utf8.count <= maxSVGBytes else {
+                        log.error("dropped SVG exceeds size limit of \(maxSVGBytes, privacy: .public) bytes")
                         return nil
                     }
                     let url = makeTempSVGURL()
@@ -706,7 +707,7 @@ struct ContentView: View {
                         )
                         appState?.bridgeFileURL = url
                     } catch {
-                        NSLog("KeyJig: error writing temp SVG: \(error)")
+                        log.error("error writing temp SVG: \(error.localizedDescription, privacy: .public)")
                         return nil
                     }
                     return url
@@ -806,8 +807,19 @@ struct ContentView: View {
 
 // MARK: - File browser helper
 
+/// Result of presenting the open-file dialog.
+/// `.loaded` means an SVG was read synchronously and `appState.svgString` is now populated.
+/// `.converting` means a PDF/AI was picked and Inkscape conversion is running on a
+///     background queue — `appState.conversionStatus` will transition to `.idle`/`.failed`.
+/// `.cancelled` means the user dismissed the dialog or the file failed to read.
+enum BrowseResult {
+    case loaded
+    case converting
+    case cancelled
+}
+
 @discardableResult
-func browseFile(into appState: AppState) -> String {
+func browseFile(into appState: AppState) -> BrowseResult {
     let dialog = NSOpenPanel()
     dialog.title = NSLocalizedString(
         "file_dialog.title",
@@ -827,18 +839,17 @@ func browseFile(into appState: AppState) -> String {
     }
     dialog.allowedContentTypes = types
 
-    guard dialog.runModal() == .OK, let url = dialog.url else { return "" }
+    guard dialog.runModal() == .OK, let url = dialog.url else { return .cancelled }
 
     let ext = url.pathExtension.lowercased()
 
     if ext == "svg" {
         // Fast path — read directly.
         let content = (try? String(contentsOf: url, encoding: .utf8)) ?? ""
-        if !content.isEmpty {
-            appState.svgURL = url.path
-            appState.svgString = content
-        }
-        return content
+        guard !content.isEmpty else { return .cancelled }
+        appState.svgURL = url.path
+        appState.svgString = content
+        return .loaded
     }
 
     if ext == "pdf" || ext == "ai" {
@@ -856,12 +867,10 @@ func browseFile(into appState: AppState) -> String {
                 }
             }
         }
-        // Return a sentinel so the caller knows a conversion was kicked off,
-        // without blocking the main thread.
-        return "(converting)"
+        return .converting
     }
 
-    return ""
+    return .cancelled
 }
 
 // MARK: - Preview

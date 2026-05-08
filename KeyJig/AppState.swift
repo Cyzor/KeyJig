@@ -59,7 +59,23 @@ enum InkscapeStatus: Equatable {
     case notInstalled
 }
 
+// MARK: - Limits
+
+/// Upper bound on SVG payload size we will write to the pasteboard or to a
+/// temp file. Keynote's importer struggles with multi-megabyte SVGs, and
+/// passing very large strings through `String.write(to:)` and the pasteboard
+/// risks blocking the UI. 50 MB is generous in practice; legitimate vector
+/// art is almost always under 1 MB.
+let maxSVGBytes = 50 * 1024 * 1024
+
 // MARK: - Temp File Naming
+
+// Each call to `svgToClipboard` writes to a freshly-named temp file because
+// Keynote will sometimes reuse the URL on the pasteboard rather than re-read
+// the contents — if two consecutive imports use the same filename, the second
+// silently inserts the first SVG's content. A unique, human-readable name
+// (e.g. "Amber-Lemur-Vector-2026-05-08.svg") sidesteps that collision and
+// keeps the pasteboard entry self-explanatory if the user inspects it.
 
 private let _adjectives: [String] = [
     "Amber", "Ancient", "Angular", "Antique", "Arcane", "Argent", "Astral", "Azure",
@@ -122,7 +138,10 @@ private let _nouns: [String] = [
 ]
 
 /// Generates a unique temp-file URL with a human-readable name of the form
-/// "Adjective-Noun-Vector-YYYY-MM-DD.svg".  Uses SecRandomCopyBytes for security.
+/// "Adjective-Noun-Vector-YYYY-MM-DD.svg". `SecRandomCopyBytes` is used purely
+/// as a uniform random source for the word picks — there is no secrecy
+/// requirement; a weaker PRNG would do, but `SecRandomCopyBytes` ships with
+/// the system and avoids pulling in `arc4random_uniform` quirks.
 func makeTempSVGURL() -> URL {
     var byte: UInt8 = 0
     _ = SecRandomCopyBytes(kSecRandomDefault, 1, &byte)
@@ -135,10 +154,4 @@ func makeTempSVGURL() -> URL {
     }()
     let name = "\(adj)-\(noun)-Vector-\(date).svg"
     return URL(fileURLWithPath: NSTemporaryDirectory()).appendingPathComponent(name)
-}
-
-/// Legacy alias kept so call sites that don't need a stable URL still compile.
-/// New writes should call makeTempSVGURL() directly and store the result.
-func getTempSVGURL() -> URL {
-    return makeTempSVGURL()
 }

@@ -26,6 +26,12 @@ enum SVGValidationError: Error, LocalizedError {
 func validateSVG(_ string: String) -> SVGValidationError? {
     guard !string.isEmpty else { return .empty }
     guard string.contains("<svg") else { return .notSVGElement }
+    // Defence-in-depth screen for the most common XSS vectors carried by
+    // SVGs scraped from the web. The WebKit preview already runs with
+    // JavaScript disabled (see ResponsiveSVGWebView.makeNSView), so this is
+    // belt-and-braces — but it also keeps us from copying anything obviously
+    // hostile onto the system pasteboard. Not a substitute for a real XML
+    // sanitiser; if a new attack surface comes up, extend this list.
     let dangerousPatterns = [
         "<script", "javascript:", "onerror=", "onclick=",
         "onload=", "onmouseover=", "xlink:href=[\"']https?://",

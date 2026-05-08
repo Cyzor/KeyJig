@@ -1,4 +1,7 @@
 import Cocoa
+import os
+
+private let log = Logger(subsystem: "com.cyzor.KeyJig", category: "Clipboard")
 
 // MARK: - Clipboard SVG Detection
 
@@ -49,9 +52,8 @@ func clipboardHasConvertibleVectorData() -> Bool {
 /// AppState.bridgeFileURL for the proxy icon.
 @discardableResult
 func svgToClipboard(svgData: String, appState: AppState? = nil) -> URL? {
-    let sizeLimit = 50 * 1024 * 1024  // 50 MB
-    guard svgData.utf8.count <= sizeLimit else {
-        NSLog("KeyJig: SVG size (\(svgData.utf8.count)) exceeds limit of \(sizeLimit) bytes")
+    guard svgData.utf8.count <= maxSVGBytes else {
+        log.error("SVG size (\(svgData.utf8.count, privacy: .public)) exceeds limit of \(maxSVGBytes, privacy: .public) bytes")
         return nil
     }
     let tempFile = makeTempSVGURL()
@@ -68,7 +70,7 @@ func svgToClipboard(svgData: String, appState: AppState? = nil) -> URL? {
         appState?.bridgeFileURL = tempFile
         return tempFile
     } catch {
-        NSLog("KeyJig: error writing temp SVG: \(error)")
+        log.error("error writing temp SVG: \(error.localizedDescription, privacy: .public)")
         return nil
     }
 }

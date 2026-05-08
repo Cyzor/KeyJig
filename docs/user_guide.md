@@ -28,12 +28,12 @@ Best for quick, one-off imports while you're focused in another app.
 
 Open a persistent, resizable window that stays on screen while you work.
 
-- **File > New Floating Window** or **Cmd+Shift+N** opens a new window.
+- **File > New Viewer** or **Cmd+Shift+N** opens a new window.
 - You can open multiple floating windows at the same time.
 - Each window can be moved, resized, and minimized independently.
 - Window position and size are remembered between sessions.
 
-**Floating window size range:** 320×380 px (minimum) to 900×1200 px (maximum). The SVG preview scales automatically as you resize.
+**Floating window size range:** 320×520 px (minimum) to 900×1200 px (maximum). The SVG preview scales automatically as you resize.
 
 Best for working with multiple SVGs, comparing files side by side, or keeping KeyJig visible on a secondary display.
 
@@ -110,7 +110,7 @@ Not all apps export SVG to the clipboard in a recognized format. Use **Open SVG 
 Confirm the file is a valid SVG by opening it in a browser. If it appears broken there too, the file itself may be malformed.
 
 **Popover doesn't appear when clicking the menu bar icon**
-Use **File > Show Panel** from the menu bar as an alternative. If the problem persists, check Activity Monitor to confirm the app is running and restart if needed.
+Use **File > Show Menubar Panel** from the menu bar as an alternative. If the problem persists, check Activity Monitor to confirm the app is running and restart if needed.
 
 **Floating window size isn't remembered after relaunch**
 Make sure the window is fully within your screen bounds when you close it. Avoid closing the app with Force Quit, which can prevent the saved state from being written.
