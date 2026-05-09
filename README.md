@@ -5,6 +5,8 @@
 KeyJig is a macOS menu-bar utility that bridges vector artwork from Adobe Illustrator, Affinity Designer, Inkscape, and other SVG-capable tools into Keynote as native, editable Bézier paths.
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![macOS](https://img.shields.io/badge/macOS-11.3+-blue.svg)](#installation)
+[![Release](https://img.shields.io/github/v/release/cyzor/keynote-vector-importer)](https://github.com/cyzor/keynote-vector-importer/releases/latest)
 
 ---
 
@@ -34,10 +36,14 @@ _Coming soon._
 
 ## Installation
 
-### Prerequisites
+### Requirements
 
 - macOS 11.3 (Big Sur) or later
 - [Inkscape](https://inkscape.org/) — optional, only needed for PDF and `.ai` fallback. KeyJig auto-detects it at `/Applications/Inkscape.app`, `/opt/homebrew/bin/inkscape`, or `/usr/local/bin/inkscape`.
+
+### Download
+
+Grab the latest signed `.app` from [Releases](https://github.com/cyzor/keynote-vector-importer/releases/latest). Notarized by Apple — drag to `/Applications` and open.
 
 ### Build from Source
 
@@ -47,18 +53,16 @@ git clone https://github.com/cyzor/keynote-vector-importer.git
 
 Open `KeyJig.xcodeproj` in Xcode, select the **KeyJig** scheme, and Build (`⌘B`) or Run (`⌘R`).
 
-### Distribution & Security
-
-KeyJig ships as a Developer ID–signed, notarized, stapled `.app`. The release workflow enables the Hardened Runtime (`-o runtime`) so notarization passes. The App Sandbox stays off because KeyJig shells out to Inkscape and writes temp files for the Keynote clipboard handoff.
-
 ---
 
 ## Features
 
-- **Clipboard bridging** — detects SVG on the clipboard and re-encodes it for Keynote.
-- **File support** — open any `.svg` to preview and copy.
-- **PDF/AI fallback** — converts via Inkscape when needed.
-- **AppleScript** — fully scriptable for automation workflows.
+- **Clipboard bridging** — re-encodes SVG so Keynote imports it as editable paths.
+- **Auto-detect** — picks up SVGs the moment they land on the clipboard, no button press needed.
+- **Drag-and-drop** — drag the preview straight onto a slide; the clipboard stays untouched.
+- **File open** — load any `.svg` from disk.
+- **PDF/AI fallback** — converts via Inkscape when Keynote's native import isn't enough.
+- **AppleScript** — 17 commands for scripting and automation.
 - **Pure Swift/SwiftUI** — no bundled third-party libraries.
 
 ---
@@ -78,6 +82,12 @@ See [**docs/applescript.md**](./docs/applescript.md) for the full command refere
 
 ---
 
+## Security
+
+KeyJig ships as a Developer ID–signed, notarized, stapled `.app` with the Hardened Runtime enabled. The App Sandbox stays off because KeyJig shells out to Inkscape and writes temp files for the Keynote clipboard handoff.
+
+---
+
 ## Documentation
 
 - [**user_guide.md**](./docs/user_guide.md) — installation, usage modes, drag and drop, troubleshooting
@@ -88,7 +98,7 @@ See [**docs/applescript.md**](./docs/applescript.md) for the full command refere
 
 ## Acknowledgments
 
-KeyJig draws on, and takes a different technical approach than, [**SVG2Keynote**](https://github.com/eth-siplab/SVG2Keynote-gui) by [Jonathan Lampérth](https://www.linkedin.com/in/jonathan-lamperth-7059b418a) and [Christian Holz](https://www.christianholz.net) at the [Sensing, Interaction & Perception Lab](https://siplab.org), ETH Zürich. Where SVG2Keynote constructs Keynote's `.iwa` format directly via Protobuf, KeyJig leans on Keynote's built-in SVG importer (Keynote 10.0+).
+KeyJig draws inspiration from [**SVG2Keynote**](https://github.com/eth-siplab/SVG2Keynote-gui) by [Jonathan Lampérth](https://www.linkedin.com/in/jonathan-lamperth-7059b418a) and [Christian Holz](https://www.christianholz.net) at the [Sensing, Interaction & Perception Lab](https://siplab.org), ETH Zürich, but takes a different technical approach. Where SVG2Keynote constructs Keynote's `.iwa` format directly via Protobuf, KeyJig leans on Keynote's built-in SVG importer (Keynote 10.0+).
 
 Earlier builds used the [SVGWebView](https://github.com/ZeeZide/SVGWebView) Swift package by ZeeZide GmbH; the current preview is an in-house WebKit view.
 
