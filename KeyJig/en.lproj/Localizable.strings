@@ -106,8 +106,12 @@
 "settings.external_deps" = "External Dependencies";
 "settings.inkscape.checking" = "Checking…";
 "settings.inkscape.name" = "Inkscape";
+"settings.inkscape.locations" = "Installed — %d location(s)";
 "settings.inkscape.details" = "Details";
 "settings.inkscape.not_found" = "Not found";
+"accessibility.svg_preview" = "SVG preview, %1$@, %2$@";
+"accessibility.inkscape_installed" = "Inkscape installed";
+"accessibility.inkscape_missing" = "Inkscape not installed";
 "settings.inkscape.download" = "Download";
 "settings.inkscape.description" = "This utility relies on the open-source graphics application Inkscape for some conversions.";
 "settings.inkscape.details_label" = "Details:";

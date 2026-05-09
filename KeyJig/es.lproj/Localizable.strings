@@ -105,8 +105,12 @@
 "settings.external_deps" = "Dependencias externas";
 "settings.inkscape.checking" = "Comprobando…";
 "settings.inkscape.name" = "Inkscape";
+"settings.inkscape.locations" = "Instalado — %d ubicación(es)";
 "settings.inkscape.details" = "Detalles";
 "settings.inkscape.not_found" = "No encontrado";
+"accessibility.svg_preview" = "Vista previa SVG, %1$@, %2$@";
+"accessibility.inkscape_installed" = "Inkscape instalado";
+"accessibility.inkscape_missing" = "Inkscape no instalado";
 "settings.inkscape.download" = "Descargar";
 "settings.inkscape.description" = "Esta utilidad usa Inkscape, una aplicación de gráficos de código abierto, para algunas conversiones.";
 "settings.inkscape.details_label" = "Detalles:";

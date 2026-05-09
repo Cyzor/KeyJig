@@ -105,8 +105,12 @@
 "settings.external_deps" = "外部依存関係";
 "settings.inkscape.checking" = "確認中…";
 "settings.inkscape.name" = "Inkscape";
+"settings.inkscape.locations" = "インストール済み — %d 箇所";
 "settings.inkscape.details" = "詳細";
 "settings.inkscape.not_found" = "見つかりません";
+"accessibility.svg_preview" = "SVGプレビュー、%1$@、%2$@";
+"accessibility.inkscape_installed" = "Inkscape はインストール済み";
+"accessibility.inkscape_missing" = "Inkscape は未インストール";
 "settings.inkscape.download" = "ダウンロード";
 "settings.inkscape.description" = "このアプリは一部の変換にオープンソースのグラフィックアプリケーション Inkscape を使用します。";
 "settings.inkscape.details_label" = "詳細:";

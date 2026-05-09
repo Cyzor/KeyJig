@@ -106,8 +106,12 @@
 "settings.external_deps" = "Externe Abhängigkeiten";
 "settings.inkscape.checking" = "Wird geprüft …";
 "settings.inkscape.name" = "Inkscape";
+"settings.inkscape.locations" = "Installiert — %d Speicherort(e)";
 "settings.inkscape.details" = "Details";
 "settings.inkscape.not_found" = "Nicht gefunden";
+"accessibility.svg_preview" = "SVG-Vorschau, %1$@, %2$@";
+"accessibility.inkscape_installed" = "Inkscape installiert";
+"accessibility.inkscape_missing" = "Inkscape nicht installiert";
 "settings.inkscape.download" = "Laden";
 "settings.inkscape.description" = "Diese App verwendet für bestimmte Konvertierungen die Open-Source-Grafiksoftware Inkscape.";
 "settings.inkscape.details_label" = "Details:";

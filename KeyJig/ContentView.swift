@@ -473,7 +473,7 @@ struct MetadataOverlay: View {
                     value: creator)
             }
         }
-        .font(.system(size: 10, design: .monospaced))
+        .font(.system(.caption2, design: .monospaced))
         .foregroundColor(.white)
         .padding(.horizontal, 8)
         .padding(.vertical, 6)
@@ -528,6 +528,23 @@ struct ContentView: View {
         "instruction.break_apart",
         comment:
             "Instruction shown below the status area directing user to use Keynote's Break Apart")
+
+    /// Spoken description of the loaded SVG for VoiceOver. WKWebView itself
+    /// exposes no useful accessibility tree for SVG content, so we synthesise
+    /// one from the metadata we already extract.
+    var svgPreviewAccessibilityLabel: String {
+        let format = NSLocalizedString(
+            "accessibility.svg_preview",
+            comment: "VoiceOver label for the loaded SVG preview, e.g. 'SVG preview, 512 by 384, 23.4 KB'")
+        let dims: String
+        if let (w, h) = extractSVGDimensions(svgString: appState.svgString) {
+            dims = "\(Int(w.rounded())) × \(Int(h.rounded()))"
+        } else {
+            dims = "—"
+        }
+        let size = getFileSizeString(svgString: appState.svgString)
+        return String.localizedStringWithFormat(format, dims, size)
+    }
 
     var statusMessage: String {
         switch appState.conversionStatus {
@@ -599,6 +616,9 @@ struct ContentView: View {
                         .accessibilityLabel(statusMessage)
                         .accessibilityAddTraits(.updatesFrequently)
                         .accessibilityIdentifier("status_message")
+                        .onChange(of: statusMessage) { newValue in
+                            announceToVoiceOver(newValue)
+                        }
                 }
                 .padding(.horizontal)
                 .padding(.top, 8)
@@ -686,6 +706,8 @@ struct ContentView: View {
             Color(NSColor.windowBackgroundColor)
 
             ResponsiveSVGWebView(svg: appState.svgString)
+                .accessibilityElement(children: .ignore)
+                .accessibilityLabel(svgPreviewAccessibilityLabel)
 
             // Single interaction layer — handles outbound drag, inbound drop,
             // and right-click menu with no Z-order conflict.
@@ -803,6 +825,24 @@ struct ContentView: View {
         }
         .help(Tooltips.previewAreaEmpty)
     }
+}
+
+// MARK: - VoiceOver
+
+/// Posts a polite announcement so VoiceOver users hear status changes
+/// (e.g. "Copied to clipboard", "Conversion failed") without having to
+/// navigate back to the status text.
+func announceToVoiceOver(_ message: String) {
+    guard !message.isEmpty else { return }
+    let target: Any = NSApp.keyWindow ?? NSApp.mainWindow ?? NSApp as Any
+    NSAccessibility.post(
+        element: target,
+        notification: .announcementRequested,
+        userInfo: [
+            .announcement: message,
+            .priority: NSAccessibilityPriorityLevel.medium.rawValue,
+        ]
+    )
 }
 
 // MARK: - File browser helper

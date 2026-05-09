@@ -25,7 +25,7 @@ struct SettingsView: View {
             Text(NSLocalizedString(
                 "settings.section.integration",
                 comment: "Settings section heading"))
-                .font(.system(size: 18, weight: .semibold))
+                .font(.title3.weight(.semibold))
 
             Divider()
 
@@ -55,6 +55,9 @@ struct SettingsView: View {
                             Image(systemName: "checkmark.circle.fill")
                                 .foregroundColor(.green)
                                 .font(.title3)
+                                .accessibilityLabel(NSLocalizedString(
+                                    "accessibility.inkscape_installed",
+                                    comment: "VoiceOver label for the green check shown when Inkscape is installed"))
                         } else {
                             Text("✓")
                                 .foregroundColor(.green)
@@ -91,6 +94,9 @@ struct SettingsView: View {
                             Image(systemName: "exclamationmark.triangle.fill")
                                 .foregroundColor(.orange)
                                 .font(.title3)
+                                .accessibilityLabel(NSLocalizedString(
+                                    "accessibility.inkscape_missing",
+                                    comment: "VoiceOver label for the warning icon shown when Inkscape is not installed"))
                         } else {
                             Text("⚠")
                                 .foregroundColor(.orange)
@@ -238,7 +244,7 @@ struct InkscapeDetailsView: View {
                                         Text(NSLocalizedString(
                                             "settings.inkscape.copy",
                                             comment: "Button to copy an Inkscape path to clipboard"))
-                                            .font(.system(size: 11))
+                                            .font(.caption)
                                     }
                                     .help(NSLocalizedString(
                                         "tooltip.settings.copy_path",
@@ -251,7 +257,7 @@ struct InkscapeDetailsView: View {
                                         Text(NSLocalizedString(
                                             "settings.inkscape.reveal",
                                             comment: "Button to reveal an Inkscape installation in Finder"))
-                                            .font(.system(size: 11))
+                                            .font(.caption)
                                     }
                                     .help(NSLocalizedString(
                                         "tooltip.settings.reveal",
