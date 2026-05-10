@@ -38,7 +38,7 @@ Apple Keynote supports vector file formats natively, but standard Copy/Paste fro
 _Workflow: Adobe Illustrator → KeyJig → Apple Keynote:_
 ![Workflow screenshot](docs/img/illustrator-keyjig-keynote.png)
 
-_Keynote > Shapes and Lines > Break Apart:_
+_Keynote > Format > Shapes and Lines > Break Apart:_
 ![Keynote break apart](docs/img/keynote-break-apart.png)
 
 _App Settings:_
