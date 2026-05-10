@@ -1,7 +1,6 @@
 # KeyJig
 
-<img src="docs/img/KeyJigIcon.png" width="256" height="256">
-
+![App icon](docs/img/keyjigicon-256.png)
 
 **Import editable vector graphics into Apple Keynote.**
 
