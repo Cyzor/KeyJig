@@ -277,6 +277,13 @@ class AppMenu {
                 comment: "Help menu: KeyJig Help item"),
             action: #selector(AppDelegate.showHelp),
             keyEquivalent: "?")
+        helpMenu.addItem(.separator())
+        helpMenu.addItem(
+            withTitle: NSLocalizedString(
+                "menu.help.keyjig_website",
+                comment: "Help menu: KeyJig Website item"),
+            action: #selector(AppDelegate.openKeyJigWebsite),
+            keyEquivalent: "")
         helpMenuItem.submenu = helpMenu
 
         NSApplication.shared.mainMenu = mainMenu
@@ -602,6 +609,10 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                 "dialog.help.button",
                 comment: "Help dialog dismiss button"))
         alert.runModal()
+    }
+
+    @objc func openKeyJigWebsite() {
+        NSWorkspace.shared.open(URL(string: "https://github.com/Cyzor/KeyJig")!)
     }
 
     @objc func openPreferences() {

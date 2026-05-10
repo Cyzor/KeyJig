@@ -84,6 +84,7 @@
 /* ── Help menu ──────────────────────────────────────────────────────── */
 "menu.help" = "ヘルプ";
 "menu.help.keyjig_help" = "KeyJig ヘルプ";
+"menu.help.keyjig_website" = "KeyJig ウェブサイト…";
 
 /* ── Dock menu ──────────────────────────────────────────────────────── */
 "dock.show_window" = "ウインドウを表示";

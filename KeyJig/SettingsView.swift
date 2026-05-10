@@ -160,7 +160,7 @@ struct SettingsView: View {
                     comment: "Explanatory text about Inkscape's role in the app"))
                 .font(.caption)
                 .foregroundColor(.secondary)
-                .lineLimit(nil)
+                .fixedSize(horizontal: false, vertical: true)
 
                 Text(NSLocalizedString(
                     "settings.inkscape.details_label",

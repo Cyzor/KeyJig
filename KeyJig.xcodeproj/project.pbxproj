@@ -391,10 +391,13 @@
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = KeyJig/SwiftUIMenuBar.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
-				CODE_SIGN_STYLE = Automatic;
+				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Developer ID Application";
+				CODE_SIGN_STYLE = Manual;
 				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"KeyJig/Preview Content\"";
-				DEVELOPMENT_TEAM = 3R62GZR6Q2;
+				DEVELOPMENT_TEAM = "";
+				"DEVELOPMENT_TEAM[sdk=macosx*]" = 3R62GZR6Q2;
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
 				HEADER_SEARCH_PATHS = (
@@ -414,7 +417,6 @@
 					/usr/local/lib,
 					/opt/homebrew/lib,
 				);
-				CURRENT_PROJECT_VERSION = 1;
 				MACOSX_DEPLOYMENT_TARGET = 11.5;
 				MARKETING_VERSION = 1.0.0;
 				OTHER_LDFLAGS = "";
@@ -436,10 +438,13 @@
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = KeyJig/SwiftUIMenuBar.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
-				CODE_SIGN_STYLE = Automatic;
+				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Developer ID Application";
+				CODE_SIGN_STYLE = Manual;
 				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"KeyJig/Preview Content\"";
-				DEVELOPMENT_TEAM = 3R62GZR6Q2;
+				DEVELOPMENT_TEAM = "";
+				"DEVELOPMENT_TEAM[sdk=macosx*]" = 3R62GZR6Q2;
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
 				HEADER_SEARCH_PATHS = (
@@ -459,7 +464,6 @@
 					/usr/local/lib,
 					/opt/homebrew/lib,
 				);
-				CURRENT_PROJECT_VERSION = 1;
 				MACOSX_DEPLOYMENT_TARGET = 11.5;
 				MARKETING_VERSION = 1.0.0;
 				ONLY_ACTIVE_ARCH = YES;

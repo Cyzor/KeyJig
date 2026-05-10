@@ -85,6 +85,7 @@
 /* ── Help menu ──────────────────────────────────────────────────────── */
 "menu.help" = "Hilfe";
 "menu.help.keyjig_help" = "KeyJig-Hilfe";
+"menu.help.keyjig_website" = "KeyJig-Website…";
 
 /* ── Dock menu ──────────────────────────────────────────────────────── */
 "dock.show_window" = "Fenster anzeigen";
