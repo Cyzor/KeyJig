@@ -11,13 +11,23 @@ private let log = Logger(subsystem: "com.cyzor.KeyJig", category: "Clipboard")
 func convertClipboardToSVG() -> String {
     let pasteboard = NSPasteboard.general
 
-    // 1. Explicit SVG data type (Affinity Designer with SVG export enabled,
-    //    Inkscape, some web browsers)
-    let svgType = NSPasteboard.PasteboardType("public.svg-image")
-    if let data = pasteboard.data(forType: svgType),
-        let svgString = String(data: data, encoding: .utf8),
-        validateSVG(svgString) == nil
-    {
+    // 1. Explicit SVG data types, in priority order.
+    //    public.svg-image and com.adobe.svg are declared by Illustrator but may
+    //    not materialise (no data). The actual payload lives in the proprietary
+    //    Adobe types. All four-char-code variants are listed for completeness.
+    let svgDataTypes: [NSPasteboard.PasteboardType] = [
+        NSPasteboard.PasteboardType("public.svg-image"),
+        NSPasteboard.PasteboardType("com.adobe.svg"),
+        NSPasteboard.PasteboardType("com.adobe.illustrator.svg"),
+        NSPasteboard.PasteboardType("com.adobe.illustrator.svgm"),
+        NSPasteboard.PasteboardType("CorePasteboardFlavorType 0x73766720"),  // 'svg '
+        NSPasteboard.PasteboardType("CorePasteboardFlavorType 0x53564720"),  // 'SVG '
+    ]
+    for type in svgDataTypes {
+        guard let data = pasteboard.data(forType: type) else { continue }
+        let candidate = String(data: data, encoding: .utf8)
+            ?? String(data: data, encoding: .utf16)
+        guard let svgString = candidate, validateSVG(svgString) == nil else { continue }
         return svgString
     }
 
