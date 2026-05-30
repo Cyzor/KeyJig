@@ -155,4 +155,5 @@ jobs:
             "$RUNNER_TEMP/KeyJig-${VERSION}.dmg" \
             "$RUNNER_TEMP/KeyJig-${VERSION}.zip" \
             --title "KeyJig $VERSION" \
-            --notes "$NOTES"
+            --notes "$NOTES" \
+            --draft
