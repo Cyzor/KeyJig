@@ -244,7 +244,7 @@ class SVGInteractionView: NSView {
                 case "pdf", "ai":
                     // Synchronous — drop operations are already dispatched off
                     // the main thread by AppKit's drag machinery.
-                    if let s = convertFileToSVGWithInkscape(url: url) {
+                    if let s = convertToSVGWithInkscape(inputURL: url) {
                         return s
                     }
                 default:
@@ -267,7 +267,7 @@ class SVGInteractionView: NSView {
                         .appendingPathComponent(UUID().uuidString)
                         .appendingPathExtension("pdf")
                     if (try? data.write(to: tempURL)) != nil,
-                        let s = convertFileToSVGWithInkscape(url: tempURL)
+                        let s = convertToSVGWithInkscape(inputURL: tempURL)
                     {
                         try? FileManager.default.removeItem(at: tempURL)
                         return s
@@ -896,7 +896,7 @@ func browseFile(into appState: AppState) -> BrowseResult {
         // Slow path — convert via Inkscape on a background thread.
         appState.conversionStatus = .converting
         DispatchQueue.global(qos: .userInitiated).async {
-            let svg = convertFileToSVGWithInkscape(url: url)
+            let svg = convertToSVGWithInkscape(inputURL: url)
             DispatchQueue.main.async {
                 if let svg = svg, !svg.isEmpty {
                     appState.svgURL = url.path

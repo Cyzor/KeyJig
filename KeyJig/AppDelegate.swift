@@ -530,7 +530,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         case "pdf", "ai":
             state.conversionStatus = .converting
             DispatchQueue.global(qos: .userInitiated).async {
-                let svg = convertFileToSVGWithInkscape(url: url)
+                let svg = convertToSVGWithInkscape(inputURL: url)
                 DispatchQueue.main.async {
                     if let svg = svg, !svg.isEmpty {
                         state.svgURL = url.path

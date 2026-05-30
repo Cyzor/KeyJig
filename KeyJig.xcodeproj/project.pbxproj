@@ -22,7 +22,6 @@
 		459A279B23AA910B003D50EC /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 459A279923AA910B003D50EC /* Main.storyboard */; };
 		AA10010000000000000000B0 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = AA10010000000000000000A0 /* Localizable.strings */; };
 		AA10010000000000000000C0 /* Localizable.stringsdict in Resources */ = {isa = PBXBuildFile; fileRef = AA10010000000000000000B1 /* Localizable.stringsdict */; };
-		AB4A692426A45A5A00B3EF9A /* SVGWebView in Frameworks */ = {isa = PBXBuildFile; productRef = AB4A692326A45A5A00B3EF9A /* SVGWebView */; };
 		BB942CF682F473477D8EF06C /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0CCA99F0817B45088BB121 /* SettingsView.swift */; };
 /* End PBXBuildFile section */
 
@@ -59,7 +58,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				AB4A692426A45A5A00B3EF9A /* SVGWebView in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -147,9 +145,6 @@
 			dependencies = (
 			);
 			name = KeyJig;
-			packageProductDependencies = (
-				AB4A692326A45A5A00B3EF9A /* SVGWebView */,
-			);
 			productName = SwiftUIMenuBar;
 			productReference = 459A278D23AA910B003D50EC /* KeyJig.app */;
 			productType = "com.apple.product-type.application";
@@ -182,9 +177,6 @@
 				ja,
 			);
 			mainGroup = 459A278423AA910A003D50EC;
-			packageReferences = (
-				AB4A692226A45A5A00B3EF9A /* XCRemoteSwiftPackageReference "SVGWebView" */,
-			);
 			productRefGroup = 459A278E23AA910B003D50EC /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
@@ -497,25 +489,6 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
-
-/* Begin XCRemoteSwiftPackageReference section */
-		AB4A692226A45A5A00B3EF9A /* XCRemoteSwiftPackageReference "SVGWebView" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/ZeeZide/SVGWebView.git";
-			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 1.0.0;
-			};
-		};
-/* End XCRemoteSwiftPackageReference section */
-
-/* Begin XCSwiftPackageProductDependency section */
-		AB4A692326A45A5A00B3EF9A /* SVGWebView */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = AB4A692226A45A5A00B3EF9A /* XCRemoteSwiftPackageReference "SVGWebView" */;
-			productName = SVGWebView;
-		};
-/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 459A278523AA910A003D50EC /* Project object */;
 }

@@ -6,54 +6,30 @@ private let log = Logger(subsystem: "com.cyzor.KeyJig", category: "Inkscape")
 
 // MARK: - Inkscape Integration
 
-private var _cachedInkscapeURL: URL?
-private var _inkscapeURLChecked = false
-private var _allInkscapeURLsCache: [URL]?
-private let _inkscapeLock = NSLock()
+/// Filesystem locations we probe for an Inkscape binary, in priority order:
+/// the GUI app bundle first, then Apple Silicon Homebrew, then Intel Homebrew.
+let inkscapeCandidatePaths: [String] = [
+    "/Applications/Inkscape.app/Contents/MacOS/inkscape",
+    "/opt/homebrew/bin/inkscape",
+    "/usr/local/bin/inkscape",
+]
 
 /// Returns the path to the first Inkscape executable found on this machine,
-/// or nil if Inkscape is not installed. Result is cached after the first call.
-/// Thread-safe via NSLock.
+/// or nil if Inkscape is not installed. Not cached — re-probed on each call
+/// so that an Inkscape install performed mid-session is picked up.
 func inkscapeURL() -> URL? {
-    _inkscapeLock.lock()
-    defer { _inkscapeLock.unlock() }
-    if _inkscapeURLChecked {
-        return _cachedInkscapeURL
+    for path in inkscapeCandidatePaths
+    where FileManager.default.isExecutableFile(atPath: path) {
+        return URL(fileURLWithPath: path)
     }
-    let candidates = [
-        "/Applications/Inkscape.app/Contents/MacOS/inkscape",
-        "/opt/homebrew/bin/inkscape",
-        "/usr/local/bin/inkscape",
-    ]
-    for path in candidates {
-        if FileManager.default.isExecutableFile(atPath: path) {
-            _cachedInkscapeURL = URL(fileURLWithPath: path)
-            _inkscapeURLChecked = true
-            return _cachedInkscapeURL
-        }
-    }
-    _inkscapeURLChecked = true
     return nil
 }
 
 /// Returns all Inkscape executables found on this machine.
-/// Results are cached after the first call. Thread-safe via NSLock.
 func allInkscapeURLs() -> [URL] {
-    _inkscapeLock.lock()
-    defer { _inkscapeLock.unlock() }
-    if let cached = _allInkscapeURLsCache {
-        return cached
-    }
-    let candidates = [
-        "/Applications/Inkscape.app/Contents/MacOS/inkscape",
-        "/opt/homebrew/bin/inkscape",
-        "/usr/local/bin/inkscape",
-    ]
-    let result = candidates.compactMap { path in
+    inkscapeCandidatePaths.compactMap { path in
         FileManager.default.isExecutableFile(atPath: path) ? URL(fileURLWithPath: path) : nil
     }
-    _allInkscapeURLsCache = result
-    return result
 }
 
 /// Converts the given input file to SVG using Inkscape and returns the SVG
@@ -128,12 +104,6 @@ func convertClipboardPDFToSVG(completion: @escaping (String?) -> Void) {
         try? FileManager.default.removeItem(at: inputURL)
         DispatchQueue.main.async { completion(svg) }
     }
-}
-
-/// Synchronous Inkscape conversion of an arbitrary file (PDF, AI, etc.) to SVG.
-/// Convenience wrapper around convertToSVGWithInkscape for use in drop handling.
-func convertFileToSVGWithInkscape(url: URL) -> String? {
-    return convertToSVGWithInkscape(inputURL: url)
 }
 
 // MARK: - Clipboard PDF Extraction

@@ -97,9 +97,48 @@ jobs:
         run: |
           xcrun stapler staple "$RUNNER_TEMP/export/KeyJig.app"
           VERSION="${{ steps.version.outputs.marketing }}"
+
+          # ZIP — plain stapled .app bundle
           ditto -c -k --keepParent \
             "$RUNNER_TEMP/export/KeyJig.app" \
             "$RUNNER_TEMP/KeyJig-${VERSION}.zip"
+
+          # DMG — app + Applications symlink, compressed read-only image
+          STAGING="$RUNNER_TEMP/dmg-staging"
+          mkdir -p "$STAGING"
+          cp -R "$RUNNER_TEMP/export/KeyJig.app" "$STAGING/"
+          ln -s /Applications "$STAGING/Applications"
+          hdiutil create \
+            -volname "KeyJig ${VERSION}" \
+            -srcfolder "$STAGING" \
+            -ov -format UDZO \
+            "$RUNNER_TEMP/KeyJig-${VERSION}.dmg"
+          codesign \
+            --sign "Developer ID Application" \
+            --timestamp \
+            "$RUNNER_TEMP/KeyJig-${VERSION}.dmg"
+
+      - name: Notarize DMG
+        env:
+          APPLE_ID: ${{ secrets.APPLE_ID }}
+          APPLE_APP_PASSWORD: ${{ secrets.APPLE_APP_PASSWORD }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+        run: |
+          VERSION="${{ steps.version.outputs.marketing }}"
+          xcrun notarytool submit "$RUNNER_TEMP/KeyJig-${VERSION}.dmg" \
+            --apple-id "$APPLE_ID" \
+            --password "$APPLE_APP_PASSWORD" \
+            --team-id "$APPLE_TEAM_ID" \
+            --wait
+          xcrun stapler staple "$RUNNER_TEMP/KeyJig-${VERSION}.dmg"
+
+      - name: Verify DMG signature and Gatekeeper acceptance
+        run: |
+          VERSION="${{ steps.version.outputs.marketing }}"
+          DMG="$RUNNER_TEMP/KeyJig-${VERSION}.dmg"
+          codesign --verify --verbose=2 "$DMG"
+          spctl --assess --type open --context context:primary-signature --verbose=4 "$DMG"
+          xcrun stapler validate "$DMG"
 
       - name: Create GitHub Release
         env:
@@ -113,6 +152,7 @@ jobs:
             NOTES="Release $VERSION"
           fi
           gh release create "$GITHUB_REF_NAME" \
+            "$RUNNER_TEMP/KeyJig-${VERSION}.dmg" \
             "$RUNNER_TEMP/KeyJig-${VERSION}.zip" \
             --title "KeyJig $VERSION" \
             --notes "$NOTES"

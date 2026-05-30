@@ -24,7 +24,7 @@ class AppState: ObservableObject {
 
     private func checkInkscapeStatus() {
         DispatchQueue.global(qos: .userInitiated).async {
-            let paths = self.allInkscapePaths()
+            let paths = allInkscapeURLs().map(\.path)
             DispatchQueue.main.async {
                 if paths.isEmpty {
                     self.inkscapeStatus = .notInstalled
@@ -33,15 +33,6 @@ class AppState: ObservableObject {
                 }
             }
         }
-    }
-
-    private func allInkscapePaths() -> [String] {
-        let candidates = [
-            "/Applications/Inkscape.app/Contents/MacOS/inkscape",
-            "/opt/homebrew/bin/inkscape",
-            "/usr/local/bin/inkscape",
-        ]
-        return candidates.filter { FileManager.default.isExecutableFile(atPath: $0) }
     }
 }
 
@@ -138,16 +129,10 @@ private let _nouns: [String] = [
 ]
 
 /// Generates a unique temp-file URL with a human-readable name of the form
-/// "Adjective-Noun-Vector-YYYY-MM-DD.svg". `SecRandomCopyBytes` is used purely
-/// as a uniform random source for the word picks — there is no secrecy
-/// requirement; a weaker PRNG would do, but `SecRandomCopyBytes` ships with
-/// the system and avoids pulling in `arc4random_uniform` quirks.
+/// "Adjective-Noun-Vector-YYYY-MM-DD.svg".
 func makeTempSVGURL() -> URL {
-    var byte: UInt8 = 0
-    _ = SecRandomCopyBytes(kSecRandomDefault, 1, &byte)
-    let adj = _adjectives[Int(byte) % _adjectives.count]
-    _ = SecRandomCopyBytes(kSecRandomDefault, 1, &byte)
-    let noun = _nouns[Int(byte) % _nouns.count]
+    let adj = _adjectives.randomElement() ?? "Vector"
+    let noun = _nouns.randomElement() ?? "File"
     let date = {
         let c = Calendar.current.dateComponents([.year, .month, .day], from: Date())
         return String(format: "%04d-%02d-%02d", c.year ?? 0, c.month ?? 0, c.day ?? 0)
