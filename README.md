@@ -24,7 +24,7 @@ Keynote 10+ has a native SVG importer, but Copy/Paste from Illustrator or Affini
 
 1. **Copy** vector artwork in Illustrator, Affinity Designer, or a similar application (`⌘C`).
 2. **Switch** to KeyJig; the app detects the SVG and shows a preview.
-3. **Drag** the preview into a slide, *or* click **Copy to Clipboard** and paste in Keynote (`⌘V`).
+3. **Drag** the preview into a slide, click **Copy to Clipboard** and paste in Keynote (`⌘V`), *or* click **Place in Keynote** to insert directly onto the current slide.
 4. **Break Apart** in Keynote via *Format → Shapes and Lines → Break Apart* (or right-click the object).
 5. **Make Editable** (optional) via the same menu.
 6. **Modify** color, stroke, and anchor points like any native Keynote shape.

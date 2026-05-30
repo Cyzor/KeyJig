@@ -6,6 +6,7 @@
 /* ── Tooltips ───────────────────────────────────────────────────────── */
 "tooltip.open_file" = "コンピュータからSVGファイルを読み込みます。SVGファイルをプレビューエリアに直接ドラッグ＆ドロップすることもできます。";
 "tooltip.copy_to_clipboard" = "読み込んだSVGをクリップボードにコピーし、⌘VでKeynoteに貼り付けます。その後「分割」と「編集可能にする」を使用してください。";
+"tooltip.place_in_keynote" = "SVGを現在のKeynoteスライドに直接配置します。Keynoteを開いておく必要があります。アクセシビリティアクセスが必要です。";
 "tooltip.status_ready" = "SVGの準備ができました。Keynoteにドラッグするか「クリップボードにコピー」をクリックしてください。";
 "tooltip.preview_loaded" = "このSVGをKeynoteまたはSVGファイルを受け付けるアプリに直接ドラッグします。ドラッグ中はクリップボードは変更されません。";
 "tooltip.preview_empty" = "SVGファイルをここにドロップするか、下のボタンで開くか、アートワークをコピーして「クリップボードにコピー」をクリックしてください。";
@@ -31,11 +32,20 @@
 "status.ready" = "準備完了 — プレビューをKeynoteにドラッグするか、クリップボードにコピーしてください。";
 "status.no_svg_on_clipboard" = "クリップボードにSVGが見つかりません。";
 "status.copied" = "クリップボードにコピーしました！";
+"status.keynote.sending" = "Keynoteに配置中…";
+"status.keynote.success" = "Keynoteに配置しました — オブジェクトを選択し、フォーマット ▸ 図形と線 ▸ 分割を選択してください。";
 "instruction.break_apart" = "Keynoteに配置後、オブジェクトを選択し、フォーマット ‣ 図形と線 ‣ 分割を選択してください。";
 
 /* ── Buttons ────────────────────────────────────────────────────────── */
 "button.open_svg_file" = "SVGファイルを開く…";
 "button.copy_to_clipboard" = "クリップボードにコピー";
+"button.place_in_keynote" = "Keynoteに配置";
+
+/* ── Keynote errors ─────────────────────────────────────────────────── */
+"error.keynote.not_running" = "Keynoteが起動していないか、ドキュメントが開かれていません。";
+"error.keynote.no_document" = "Keynoteにドキュメントが開かれていません。プレゼンテーションを開いて再度お試しください。";
+"error.keynote.accessibility" = "アクセシビリティアクセスが必要です。システム設定 ▸ プライバシーとセキュリティ ▸ アクセシビリティ でKeyJigを有効にして、再度お試しください。";
+"error.keynote.paste_failed" = "KeynoteにSVGを配置できませんでした。";
 
 /* ── Footer ─────────────────────────────────────────────────────────── */
 "footer.build_date" = "ビルド日: %@";
@@ -94,6 +104,7 @@
 "dialog.about.title" = "KeyJig";
 "dialog.about.info" = "Keynote互換フォーマットへのベクターグラフィック変換ユーティリティ。\n\nバージョン %@\n\nCopyright © 2026 KeyJig Contributors\nCopyright © 2021–2026 Jonathan Lampérth\n\nThe Noun Project（CC-BY-3.0 US ライセンス)：\nhttps://thenounproject.com/legal/terms-of-use/#icon-licenses";
 "dialog.about.button" = "閉じる";
+"dialog.about.website" = "プロジェクトサイト";
 
 /* ── Help dialog ────────────────────────────────────────────────────── */
 "dialog.help.title" = "ヘルプ";

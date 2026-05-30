@@ -7,6 +7,7 @@
 /* ── Tooltips ───────────────────────────────────────────────────────── */
 "tooltip.open_file" = "Load an SVG file from your computer. You can also drag and drop SVG files directly onto the preview area.";
 "tooltip.copy_to_clipboard" = "Copy the loaded SVG to your clipboard for pasting into Keynote with ⌘V, then use 'Break Apart' and 'Make Editable'.";
+"tooltip.place_in_keynote" = "Place the SVG directly onto the current Keynote slide. Keynote must be running with a presentation open. Requires Accessibility access.";
 "tooltip.status_ready" = "The SVG is ready. Drag it into Keynote or click 'Copy to Clipboard'.";
 "tooltip.preview_loaded" = "Drag this SVG directly into Keynote or any app that accepts SVG files. Your clipboard is not modified during dragging.";
 "tooltip.preview_empty" = "Drop an SVG file here, open one with the button below, or copy artwork and click 'Copy to Clipboard'.";
@@ -32,11 +33,20 @@
 "status.ready" = "Ready — drag the preview into Keynote, or Copy to Clipboard.";
 "status.no_svg_on_clipboard" = "No SVG found on clipboard.";
 "status.copied" = "Copied to clipboard!";
+"status.keynote.sending" = "Placing in Keynote…";
+"status.keynote.success" = "Placed in Keynote — select it and use Format ▸ Shapes and Lines ▸ Break Apart.";
 "instruction.break_apart" = "Once placed in Keynote, select the object and choose Format ‣ Shapes and Lines ‣ Break Apart.";
+
+/* ── Keynote errors ─────────────────────────────────────────────────── */
+"error.keynote.not_running" = "Keynote is not running or has no document open.";
+"error.keynote.no_document" = "Keynote has no document open. Open a presentation and try again.";
+"error.keynote.accessibility" = "Accessibility access is required. Enable KeyJig in System Settings ▸ Privacy & Security ▸ Accessibility, then try again.";
+"error.keynote.paste_failed" = "Could not place the SVG in Keynote.";
 
 /* ── Buttons ────────────────────────────────────────────────────────── */
 "button.open_svg_file" = "Open SVG File…";
 "button.copy_to_clipboard" = "Copy to Clipboard";
+"button.place_in_keynote" = "Place in Keynote";
 
 /* ── Footer ─────────────────────────────────────────────────────────── */
 "footer.build_date" = "App Build Date: %@";
@@ -95,6 +105,7 @@
 "dialog.about.title" = "KeyJig";
 "dialog.about.info" = "A utility for converting vector graphics to Keynote-compatible formats.\n\nVersion %@\n\nCopyright © 2026 KeyJig Contributors\nCopyright © 2021–2026 Jonathan Lampérth\n\nThe Noun Project licensed under CC-BY-3.0 US:\nhttps://thenounproject.com/legal/terms-of-use/#icon-licenses";
 "dialog.about.button" = "OK";
+"dialog.about.website" = "Project Website";
 
 /* ── Help dialog ────────────────────────────────────────────────────── */
 "dialog.help.title" = "Help";

@@ -12,6 +12,7 @@
 		05F195192F65DE4C008DEF94 /* ScriptingCommands.swift in Sources */ = {isa = PBXBuildFile; fileRef = 05F1951A2F65DE4C008DEF94 /* ScriptingCommands.swift */; };
 		05FB65842FA5BC1F00C7674D /* ClipboardHelpers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 05FB657E2FA5BC1F00C7674D /* ClipboardHelpers.swift */; };
 		05FB65852FA5BC1F00C7674D /* InkscapeIntegration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 05FB657F2FA5BC1F00C7674D /* InkscapeIntegration.swift */; };
+		05CC11012FA5BC1F00C7674D /* KeynoteIntegration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 05CC11002FA5BC1F00C7674D /* KeynoteIntegration.swift */; };
 		05FB65862FA5BC1F00C7674D /* SVGProcessing.swift in Sources */ = {isa = PBXBuildFile; fileRef = 05FB65812FA5BC1F00C7674D /* SVGProcessing.swift */; };
 		05FB65872FA5BC1F00C7674D /* AppState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 05FB657D2FA5BC1F00C7674D /* AppState.swift */; };
 		05FB65882FA5BC1F00C7674D /* SettingsWindowController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 05FB65802FA5BC1F00C7674D /* SettingsWindowController.swift */; };
@@ -33,6 +34,7 @@
 		05FB657D2FA5BC1F00C7674D /* AppState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppState.swift; sourceTree = "<group>"; };
 		05FB657E2FA5BC1F00C7674D /* ClipboardHelpers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClipboardHelpers.swift; sourceTree = "<group>"; };
 		05FB657F2FA5BC1F00C7674D /* InkscapeIntegration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InkscapeIntegration.swift; sourceTree = "<group>"; };
+		05CC11002FA5BC1F00C7674D /* KeynoteIntegration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeynoteIntegration.swift; sourceTree = "<group>"; };
 		05FB65802FA5BC1F00C7674D /* SettingsWindowController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsWindowController.swift; sourceTree = "<group>"; };
 		05FB65812FA5BC1F00C7674D /* SVGProcessing.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SVGProcessing.swift; sourceTree = "<group>"; };
 		459A278D23AA910B003D50EC /* KeyJig.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = KeyJig.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -43,14 +45,14 @@
 		459A279A23AA910B003D50EC /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
 		459A279C23AA910B003D50EC /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		AA0CCA99F0817B45088BB121 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
-		AA100100000000000000001 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = KeyJig/en.lproj/Localizable.strings; sourceTree = "<group>"; };
-		AA100100000000000000002 /* de */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = de; path = KeyJig/de.lproj/Localizable.strings; sourceTree = "<group>"; };
-		AA100100000000000000003 /* es */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = es; path = KeyJig/es.lproj/Localizable.strings; sourceTree = "<group>"; };
-		AA100100000000000000004 /* ja */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ja; path = KeyJig/ja.lproj/Localizable.strings; sourceTree = "<group>"; };
-		AA100100000000000000005 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.stringsdict; name = en; path = KeyJig/en.lproj/Localizable.stringsdict; sourceTree = "<group>"; };
-		AA100100000000000000006 /* de */ = {isa = PBXFileReference; lastKnownFileType = text.plist.stringsdict; name = de; path = KeyJig/de.lproj/Localizable.stringsdict; sourceTree = "<group>"; };
-		AA100100000000000000007 /* es */ = {isa = PBXFileReference; lastKnownFileType = text.plist.stringsdict; name = es; path = KeyJig/es.lproj/Localizable.stringsdict; sourceTree = "<group>"; };
-		AA100100000000000000008 /* ja */ = {isa = PBXFileReference; lastKnownFileType = text.plist.stringsdict; name = ja; path = KeyJig/ja.lproj/Localizable.stringsdict; sourceTree = "<group>"; };
+		AA100100000000000000001 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/Localizable.strings; sourceTree = "<group>"; };
+		AA100100000000000000002 /* de */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = de; path = de.lproj/Localizable.strings; sourceTree = "<group>"; };
+		AA100100000000000000003 /* es */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = es; path = es.lproj/Localizable.strings; sourceTree = "<group>"; };
+		AA100100000000000000004 /* ja */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ja; path = ja.lproj/Localizable.strings; sourceTree = "<group>"; };
+		AA100100000000000000005 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.stringsdict; name = en; path = en.lproj/Localizable.stringsdict; sourceTree = "<group>"; };
+		AA100100000000000000006 /* de */ = {isa = PBXFileReference; lastKnownFileType = text.plist.stringsdict; name = de; path = de.lproj/Localizable.stringsdict; sourceTree = "<group>"; };
+		AA100100000000000000007 /* es */ = {isa = PBXFileReference; lastKnownFileType = text.plist.stringsdict; name = es; path = es.lproj/Localizable.stringsdict; sourceTree = "<group>"; };
+		AA100100000000000000008 /* ja */ = {isa = PBXFileReference; lastKnownFileType = text.plist.stringsdict; name = ja; path = ja.lproj/Localizable.stringsdict; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -64,22 +66,12 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		050DD9462F74BB9E00F45412 /* Recovered References */ = {
-			isa = PBXGroup;
-			children = (
-				AA10010000000000000000A0 /* Localizable.strings */,
-				AA10010000000000000000B1 /* Localizable.stringsdict */,
-			);
-			name = "Recovered References";
-			sourceTree = "<group>";
-		};
 		459A278423AA910A003D50EC = {
 			isa = PBXGroup;
 			children = (
 				459A278F23AA910B003D50EC /* KeyJig */,
 				459A278E23AA910B003D50EC /* Products */,
 				AB8978BB26A42A26003D201E /* Frameworks */,
-				050DD9462F74BB9E00F45412 /* Recovered References */,
 				051673BF2FA9205400E4FD20 /* AppIcon.icon */,
 			);
 			sourceTree = "<group>";
@@ -95,6 +87,8 @@
 		459A278F23AA910B003D50EC /* KeyJig */ = {
 			isa = PBXGroup;
 			children = (
+				AA10010000000000000000A0 /* Localizable.strings */,
+				AA10010000000000000000B1 /* Localizable.stringsdict */,
 				05F195172F65DE4C008DEF94 /* KeyJig.sdef */,
 				459A279023AA910B003D50EC /* AppDelegate.swift */,
 				459A279223AA910B003D50EC /* ContentView.swift */,
@@ -109,6 +103,7 @@
 				05FB657D2FA5BC1F00C7674D /* AppState.swift */,
 				05FB657E2FA5BC1F00C7674D /* ClipboardHelpers.swift */,
 				05FB657F2FA5BC1F00C7674D /* InkscapeIntegration.swift */,
+				05CC11002FA5BC1F00C7674D /* KeynoteIntegration.swift */,
 				05FB65812FA5BC1F00C7674D /* SVGProcessing.swift */,
 			);
 			path = KeyJig;
@@ -216,6 +211,7 @@
 				05FB65872FA5BC1F00C7674D /* AppState.swift in Sources */,
 				05FB65842FA5BC1F00C7674D /* ClipboardHelpers.swift in Sources */,
 				05FB65852FA5BC1F00C7674D /* InkscapeIntegration.swift in Sources */,
+				05CC11012FA5BC1F00C7674D /* KeynoteIntegration.swift in Sources */,
 				05FB65862FA5BC1F00C7674D /* SVGProcessing.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

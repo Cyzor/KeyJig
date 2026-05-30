@@ -7,6 +7,7 @@
 /* ── Tooltips ───────────────────────────────────────────────────────── */
 "tooltip.open_file" = "SVG-Datei vom Computer laden. SVG-Dateien können auch direkt auf den Vorschaubereich gezogen werden.";
 "tooltip.copy_to_clipboard" = "Das geladene SVG in die Zwischenablage kopieren, um es mit ⌘V in Keynote einzufügen. Dann „Aufteilen\" und „Bearbeitbar machen\" verwenden.";
+"tooltip.place_in_keynote" = "SVG direkt auf die aktuelle Keynote-Folie einfügen. Keynote muss geöffnet sein. Erfordert Bedienungshilfenzugriff.";
 "tooltip.status_ready" = "Das SVG ist bereit. In Keynote ziehen oder \"In Zwischenablage kopieren\" klicken.";
 "tooltip.preview_loaded" = "Dieses SVG direkt in Keynote oder eine andere App ziehen, die SVG-Dateien akzeptiert. Die Zwischenablage wird beim Ziehen nicht verändert.";
 "tooltip.preview_empty" = "SVG-Datei hierher ziehen, über die Schaltfläche öffnen oder Grafik kopieren und \"In Zwischenablage kopieren\" klicken.";
@@ -27,16 +28,25 @@
 "metadata.source" = "Quelle";
 
 /* ── Status messages ────────────────────────────────────────────────── */
-"status.converting" = "Konvertierung via Inkscape …";
+"status.converting" = "Konvertierung via Inkscape…";
 "status.failed" = "Konvertierung fehlgeschlagen – keine SVG- oder konvertierbaren Daten gefunden.";
 "status.ready" = "Bereit – Vorschau in Keynote ziehen oder In Zwischenablage kopieren.";
 "status.no_svg_on_clipboard" = "Keine SVG in der Zwischenablage gefunden.";
 "status.copied" = "In Zwischenablage kopiert!";
+"status.keynote.sending" = "Wird in Keynote eingefügt…";
+"status.keynote.success" = "In Keynote eingefügt – Objekt auswählen und Format ▸ Formen und Linien ▸ Aufteilen wählen.";
 "instruction.break_apart" = "Nach dem Einsetzen in Keynote das Objekt auswählen und Format ‣ Formen und Linien ‣ Aufteilen wählen.";
 
 /* ── Buttons ────────────────────────────────────────────────────────── */
-"button.open_svg_file" = "SVG-Datei öffnen …";
+"button.open_svg_file" = "SVG-Datei öffnen…";
 "button.copy_to_clipboard" = "In Zwischenablage kopieren";
+"button.place_in_keynote" = "In Keynote einfügen";
+
+/* ── Keynote errors ─────────────────────────────────────────────────── */
+"error.keynote.not_running" = "Keynote läuft nicht oder hat kein Dokument geöffnet.";
+"error.keynote.no_document" = "Keynote hat kein Dokument geöffnet. Präsentation öffnen und erneut versuchen.";
+"error.keynote.accessibility" = "Bedienungshilfenzugriff erforderlich. KeyJig unter Systemeinstellungen ▸ Datenschutz & Sicherheit ▸ Bedienungshilfen aktivieren und erneut versuchen.";
+"error.keynote.paste_failed" = "Das SVG konnte nicht in Keynote eingefügt werden.";
 
 /* ── Footer ─────────────────────────────────────────────────────────── */
 "footer.build_date" = "Build-Datum: %@";
@@ -53,7 +63,7 @@
 
 /* ── App menu ───────────────────────────────────────────────────────── */
 "menu.app.about" = "Über KeyJig";
-"menu.app.preferences" = "Einstellungen …";
+"menu.app.preferences" = "Einstellungen…";
 "menu.app.hide" = "KeyJig ausblenden";
 "menu.app.hide_others" = "Andere ausblenden";
 "menu.app.show_all" = "Alle einblenden";
@@ -64,7 +74,7 @@
 "menu.file.show_panel" = "Menüleisten-Panel anzeigen";
 "menu.file.show_window" = "Fenster anzeigen";
 "menu.file.new_viewer" = "Neues Fenster";
-"menu.file.open_svg" = "SVG-Datei öffnen …";
+"menu.file.open_svg" = "SVG-Datei öffnen…";
 "menu.file.close" = "Schließen";
 
 /* ── Edit menu ──────────────────────────────────────────────────────── */
@@ -95,17 +105,18 @@
 "dialog.about.title" = "KeyJig";
 "dialog.about.info" = "Ein Werkzeug zur Konvertierung von Vektorgrafiken in Keynote-kompatible Formate.\n\nVersion %@\n\nCopyright © 2026 KeyJig Contributors\nCopyright © 2021–2026 Jonathan Lampérth\n\nThe Noun Project lizenziert unter CC-BY-3.0 US:\nhttps://thenounproject.com/legal/terms-of-use/#icon-licenses";
 "dialog.about.button" = "OK";
+"dialog.about.website" = "Projektwebsite";
 
 /* ── Help dialog ────────────────────────────────────────────────────── */
 "dialog.help.title" = "Hilfe";
-"dialog.help.info" = "KeyJig hilft dabei, Vektorgrafiken für Apple Keynote zu konvertieren.\n\n• Grafik in Illustrator / Affinity Designer / Inkscape kopieren (⌘C).\n• KeyJig erkennt das SVG automatisch in der Zwischenablage.\n• \"In Zwischenablage kopieren\" drücken, um es für Keynote zu codieren.\n• Zu Keynote wechseln und einsetzen (⌘V).\n\nAlternativ eine SVG-Datei auf den Vorschaubereich ziehen oder\nAblage > SVG-Datei öffnen … verwenden.";
+"dialog.help.info" = "KeyJig hilft dabei, Vektorgrafiken für Apple Keynote zu konvertieren.\n\n• Grafik in Illustrator / Affinity Designer / Inkscape kopieren (⌘C).\n• KeyJig erkennt das SVG automatisch in der Zwischenablage.\n• \"In Zwischenablage kopieren\" drücken, um es für Keynote zu codieren.\n• Zu Keynote wechseln und einsetzen (⌘V).\n\nAlternativ eine SVG-Datei auf den Vorschaubereich ziehen oder\nAblage > SVG-Datei öffnen… verwenden.";
 "dialog.help.button" = "OK";
 
 /* ── Settings ───────────────────────────────────────────────────────── */
 "settings.window.title" = "Einstellungen";
 "settings.section.integration" = "Integration";
 "settings.external_deps" = "Externe Abhängigkeiten";
-"settings.inkscape.checking" = "Wird geprüft …";
+"settings.inkscape.checking" = "Wird geprüft…";
 "settings.inkscape.name" = "Inkscape";
 "settings.inkscape.locations" = "Installiert — %d Speicherort(e)";
 "settings.inkscape.details" = "Details";

@@ -17,6 +17,10 @@ struct Tooltips {
         "tooltip.copy_to_clipboard",
         comment: "Tooltip for the Copy to Clipboard button")
 
+    static let placeInKeynote = NSLocalizedString(
+        "tooltip.place_in_keynote",
+        comment: "Tooltip for the Place in Keynote button")
+
     static let readyStatus = NSLocalizedString(
         "tooltip.status_ready",
         comment: "Tooltip shown on the status area when an SVG is ready")
@@ -510,20 +514,6 @@ struct ContentView: View {
         self.appState = appState
     }
 
-    /// Returns the app's build date derived from the executable's link-time
-    /// modification timestamp — updates automatically on every build.
-    private static let buildDate: String = {
-        let fallback = "Unknown"
-        guard let url = Bundle.main.executableURL,
-            let attrs = try? FileManager.default.attributesOfItem(atPath: url.path),
-            let date = attrs[.modificationDate] as? Date
-        else { return fallback }
-        let fmt = DateFormatter()
-        fmt.dateStyle = .short
-        fmt.timeStyle = .none
-        return fmt.string(from: date)
-    }()
-
     private static let breakApartInstruction = NSLocalizedString(
         "instruction.break_apart",
         comment:
@@ -676,24 +666,38 @@ struct ContentView: View {
                 .help(Tooltips.copyToClipboard)
                 .keyboardShortcut("c", modifiers: [.command, .shift])
                 .disabled(appState.svgString.isEmpty || isConverting)
+
+                let isSending = appState.keynoteSendStatus == .sending
+                Button {
+                    appState.keynoteSendStatus = .sending
+                    localStatus = NSLocalizedString(
+                        "status.keynote.sending",
+                        comment: "Status: SVG is being placed into Keynote")
+                    sendSVGToKeynote(svgData: appState.svgString) { error in
+                        if let error = error {
+                            appState.keynoteSendStatus = .failed
+                            localStatus = error.localizedDescription
+                        } else {
+                            appState.keynoteSendStatus = .succeeded
+                            localStatus = NSLocalizedString(
+                                "status.keynote.success",
+                                comment: "Status: SVG was placed in Keynote successfully")
+                        }
+                    }
+                } label: {
+                    Text(
+                        NSLocalizedString(
+                            "button.place_in_keynote",
+                            comment: "Button: places the loaded SVG directly into the current Keynote slide")
+                    )
+                    .frame(maxWidth: .infinity)
+                }
+                .help(Tooltips.placeInKeynote)
+                .disabled(appState.svgString.isEmpty || isConverting || isSending)
             }
             .padding(.horizontal, 16)
-            .padding(.bottom, 8)
+            .padding(.bottom, 16)
 
-            Divider()
-
-            // ── Footer ────────────────────────────────────────────────────
-            Text(
-                String(
-                    format: NSLocalizedString(
-                        "footer.build_date",
-                        comment: "Footer label showing the app build date; %@ is the date string"),
-                    Self.buildDate)
-            )
-            .font(.caption)
-            .foregroundColor(.secondary)
-            .frame(maxWidth: .infinity, alignment: .center)
-            .padding()
         }
     }
 

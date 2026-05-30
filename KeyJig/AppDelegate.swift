@@ -592,7 +592,13 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             withTitle: NSLocalizedString(
                 "dialog.about.button",
                 comment: "About dialog dismiss button"))
-        alert.runModal()
+        alert.addButton(
+            withTitle: NSLocalizedString(
+                "dialog.about.website",
+                comment: "About dialog button that opens the project website"))
+        if alert.runModal() == .alertSecondButtonReturn {
+            openKeyJigWebsite()
+        }
     }
 
     @objc func showHelp() {

@@ -17,6 +17,8 @@ class AppState: ObservableObject {
     @Published var conversionStatus: ConversionStatus = .idle
     /// Tracks Inkscape installation status and all available paths.
     @Published var inkscapeStatus: InkscapeStatus = .checking
+    /// Tracks in-progress / result state for the "Place in Keynote" action.
+    @Published var keynoteSendStatus: KeynoteSendStatus = .idle
 
     init() {
         checkInkscapeStatus()
@@ -41,6 +43,13 @@ class AppState: ObservableObject {
 enum ConversionStatus: Equatable {
     case idle
     case converting
+    case failed
+}
+
+enum KeynoteSendStatus: Equatable {
+    case idle
+    case sending
+    case succeeded
     case failed
 }
 

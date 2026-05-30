@@ -6,6 +6,7 @@
 /* ── Tooltips ───────────────────────────────────────────────────────── */
 "tooltip.open_file" = "Carga un archivo SVG desde tu ordenador. También puedes arrastrar y soltar archivos SVG directamente en el área de vista previa.";
 "tooltip.copy_to_clipboard" = "Copia el SVG cargado al portapapeles para pegarlo en Keynote con ⌘V, luego usa «Separar» y «Hacer editable».";
+"tooltip.place_in_keynote" = "Coloca el SVG directamente en la diapositiva actual de Keynote. Keynote debe estar abierto. Requiere acceso de accesibilidad.";
 "tooltip.status_ready" = "El SVG está listo. Arrástralo a Keynote o haz clic en «Copiar al portapapeles».";
 "tooltip.preview_loaded" = "Arrastra este SVG directamente a Keynote o cualquier app que acepte archivos SVG. El portapapeles no se modifica al arrastrar.";
 "tooltip.preview_empty" = "Suelta un archivo SVG aquí, ábrelo con el botón de abajo o copia ilustración y haz clic en «Copiar al portapapeles».";
@@ -31,11 +32,20 @@
 "status.ready" = "Listo — arrastra la vista previa a Keynote o usa Copiar al portapapeles.";
 "status.no_svg_on_clipboard" = "No se encontró ningún SVG en el portapapeles.";
 "status.copied" = "¡Copiado al portapapeles!";
+"status.keynote.sending" = "Insertando en Keynote…";
+"status.keynote.success" = "Insertado en Keynote — selecciona el objeto y usa Formato ▸ Formas y líneas ▸ Separar.";
 "instruction.break_apart" = "Una vez en Keynote, selecciona el objeto y elige Formato ‣ Formas y líneas ‣ Separar.";
 
 /* ── Buttons ────────────────────────────────────────────────────────── */
 "button.open_svg_file" = "Abrir archivo SVG…";
 "button.copy_to_clipboard" = "Copiar al portapapeles";
+"button.place_in_keynote" = "Insertar en Keynote";
+
+/* ── Keynote errors ─────────────────────────────────────────────────── */
+"error.keynote.not_running" = "Keynote no está abierto o no tiene ningún documento activo.";
+"error.keynote.no_document" = "Keynote no tiene ningún documento abierto. Abre una presentación e inténtalo de nuevo.";
+"error.keynote.accessibility" = "Se requiere acceso de accesibilidad. Activa KeyJig en Configuración del Sistema ▸ Privacidad y seguridad ▸ Accesibilidad e inténtalo de nuevo.";
+"error.keynote.paste_failed" = "No se pudo insertar el SVG en Keynote.";
 
 /* ── Footer ─────────────────────────────────────────────────────────── */
 "footer.build_date" = "Fecha de compilación: %@";
@@ -94,6 +104,7 @@
 "dialog.about.title" = "KeyJig";
 "dialog.about.info" = "Una utilidad para convertir gráficos vectoriales a formatos compatibles con Keynote.\n\nVersión %@\n\nCopyright © 2026 KeyJig Contributors\nCopyright © 2021–2026 Jonathan Lampérth\n\nThe Noun Project con licencia CC-BY-3.0 US:\nhttps://thenounproject.com/legal/terms-of-use/#icon-licenses";
 "dialog.about.button" = "Entendido";
+"dialog.about.website" = "Sitio web del proyecto";
 
 /* ── Help dialog ────────────────────────────────────────────────────── */
 "dialog.help.title" = "Ayuda";
