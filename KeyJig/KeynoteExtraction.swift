@@ -74,6 +74,11 @@ func pullFromKeynote(
         //    collect selection geometry. Using object identity (not `slide number`)
         //    handles grouped/child slides whose display number can match a parent.
         //    Returned shape: "arrayIndex|x,y,w,h,r\nx,y,w,h,r\n…"
+        //
+        //    Batch property reads (position/width/height/rotation of the whole
+        //    selection list at once) cut Apple Event round-trips from 4×N to 4,
+        //    eliminating the per-item flicker on large selections. A per-item
+        //    fallback handles Keynote versions that reject list property access.
         let probeScript = """
             tell application "Keynote"
                 if not (exists front document) then error number -1728
@@ -88,19 +93,40 @@ func pullFromKeynote(
                         end if
                     end repeat
                     set sel to selection
+                    set selCount to count of sel
                     set bboxLines to ""
-                    repeat with itm in sel
+                    if selCount > 0 then
                         try
-                            set p to position of itm
-                            set w to width of itm
-                            set h to height of itm
-                            set r to 0
+                            set posList to position of sel
+                            set widList to width of sel
+                            set htList to height of sel
+                            set rotList to {}
                             try
-                                set r to rotation of itm
+                                set rotList to rotation of sel
+                            on error
+                                repeat selCount times
+                                    set rotList to rotList & {0}
+                                end repeat
                             end try
-                            set bboxLines to bboxLines & (item 1 of p) & "," & (item 2 of p) & "," & w & "," & h & "," & r & linefeed
+                            repeat with i from 1 to selCount
+                                set p to item i of posList
+                                set bboxLines to bboxLines & (item 1 of p) & "," & (item 2 of p) & "," & (item i of widList) & "," & (item i of htList) & "," & (item i of rotList) & linefeed
+                            end repeat
+                        on error
+                            repeat with itm in sel
+                                try
+                                    set p to position of itm
+                                    set w to width of itm
+                                    set h to height of itm
+                                    set r to 0
+                                    try
+                                        set r to rotation of itm
+                                    end try
+                                    set bboxLines to bboxLines & (item 1 of p) & "," & (item 2 of p) & "," & w & "," & h & "," & r & linefeed
+                                end try
+                            end repeat
                         end try
-                    end repeat
+                    end if
                     return (slideIdx as string) & "|" & bboxLines
                 end tell
             end tell
@@ -142,23 +168,32 @@ func pullFromKeynote(
         }()
         log.info("slide index \(slideIndex, privacy: .public), \(selectionBoxes.count, privacy: .public) selected item(s)")
 
-        // 3a. Clipboard fast path: when nothing is selected and the caller
-        //     snapshotted a PDF from the pasteboard (e.g. after the user copied
-        //     a slide from Keynote's navigator), use it directly. No export
-        //     needed, no document modification.
-        if selectionBoxes.isEmpty, let data = clipboardPDFData {
-            let outURL = makeTempKeynotePDFURL()
+        // 3a. Clipboard fast path: if the caller snapshotted a PDF from the
+        //     pasteboard, use it as the source and apply any selection crop.
+        //     No export, no document modification. This is the only viable path
+        //     for large or complex Keynote files that fail or time out during
+        //     the skipped-slide export.
+        if let data = clipboardPDFData {
+            let srcURL = URL(fileURLWithPath: NSTemporaryDirectory())
+                .appendingPathComponent("KeyJig-clipboard-\(UUID().uuidString).pdf")
+            var srcWritten = false
             do {
-                try data.write(to: outURL)
-                try FileManager.default.setAttributes(
-                    [.posixPermissions: 0o600], ofItemAtPath: outURL.path)
-                log.info("clipboard PDF fast path — no export needed")
-                DispatchQueue.main.async { completion(.success(outURL)) }
+                try data.write(to: srcURL)
+                srcWritten = true
             } catch {
                 log.info("clipboard PDF write failed, falling back to export: \(error.localizedDescription, privacy: .public)")
-                // fall through to export below
             }
-            if FileManager.default.fileExists(atPath: outURL.path) { return }
+            if srcWritten {
+                log.info("clipboard PDF fast path — no export needed")
+                let result = extractSlidePDF(
+                    from: srcURL,
+                    pageNumber: 1,
+                    selectionBoxes: selectionBoxes,
+                    padding: 8.0)
+                try? FileManager.default.removeItem(at: srcURL)
+                DispatchQueue.main.async { completion(result) }
+                return
+            }
         }
 
         // 3b. Export only the current slide via the skipped-slide trick:
