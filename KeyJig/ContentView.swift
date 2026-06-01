@@ -821,9 +821,6 @@ struct ContentView: View {
                 .help(Tooltips.placeInKeynote)
                 .disabled(appState.svgString.isEmpty || isConverting || isSending)
 
-                if isPDFMode {
-                    pdfModeButtons
-                }
             }
             .padding(.horizontal, 16)
             .padding(.bottom, 16)
@@ -840,63 +837,6 @@ struct ContentView: View {
                 NSEvent.removeMonitor(monitor)
                 flagsMonitor = nil
             }
-        }
-    }
-
-    // MARK: Sub-views — button groups
-
-    @ViewBuilder
-    private var pdfModeButtons: some View {
-        Button {
-            guard let url = appState.previewPDFURL else { return }
-            savePDF(sourceURL: url)
-        } label: {
-            Text(
-                NSLocalizedString(
-                    "button.save_pdf",
-                    comment: "Button: save the pulled PDF to a chosen location")
-            )
-            .frame(maxWidth: .infinity)
-        }
-        .help(Tooltips.savePDF)
-
-        Button {
-            guard let url = appState.previewPDFURL else { return }
-            if pdfToClipboard(url: url) {
-                localStatus = NSLocalizedString(
-                    "status.pdf.copied",
-                    comment: "Status: PDF was copied to the clipboard")
-            }
-        } label: {
-            Text(
-                NSLocalizedString(
-                    "button.copy_pdf",
-                    comment: "Button: copy the pulled PDF to the clipboard")
-            )
-            .frame(maxWidth: .infinity)
-        }
-        .help(Tooltips.copyPDF)
-        .keyboardShortcut("c", modifiers: [.command, .shift])
-    }
-
-    /// Presents a save panel and copies the temp PDF to the chosen destination.
-    private func savePDF(sourceURL: URL) {
-        let panel = NSSavePanel()
-        if #available(macOS 11.0, *) {
-            panel.allowedContentTypes = [.pdf]
-        }
-        panel.nameFieldStringValue = sourceURL.lastPathComponent
-        guard panel.runModal() == .OK, let dest = panel.url else { return }
-        do {
-            if FileManager.default.fileExists(atPath: dest.path) {
-                try FileManager.default.removeItem(at: dest)
-            }
-            try FileManager.default.copyItem(at: sourceURL, to: dest)
-            localStatus = NSLocalizedString(
-                "status.pdf.saved",
-                comment: "Status: PDF was saved to disk")
-        } catch {
-            localStatus = error.localizedDescription
         }
     }
 
