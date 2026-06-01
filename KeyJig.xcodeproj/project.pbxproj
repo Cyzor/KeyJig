@@ -25,6 +25,7 @@
 		AA10010000000000000000B0 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = AA10010000000000000000A0 /* Localizable.strings */; };
 		AA10010000000000000000C0 /* Localizable.stringsdict in Resources */ = {isa = PBXBuildFile; fileRef = AA10010000000000000000B1 /* Localizable.stringsdict */; };
 		BB942CF682F473477D8EF06C /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0CCA99F0817B45088BB121 /* SettingsView.swift */; };
+		AA1001010000000000000002 /* HelpView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA1001010000000000000001 /* HelpView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -47,6 +48,7 @@
 		459A279A23AA910B003D50EC /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
 		459A279C23AA910B003D50EC /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		AA0CCA99F0817B45088BB121 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
+		AA1001010000000000000001 /* HelpView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HelpView.swift; sourceTree = "<group>"; };
 		AA100100000000000000001 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/Localizable.strings; sourceTree = "<group>"; };
 		AA100100000000000000002 /* de */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = de; path = de.lproj/Localizable.strings; sourceTree = "<group>"; };
 		AA100100000000000000003 /* es */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = es; path = es.lproj/Localizable.strings; sourceTree = "<group>"; };
@@ -96,6 +98,7 @@
 				459A279223AA910B003D50EC /* ContentView.swift */,
 				05F1951A2F65DE4C008DEF94 /* ScriptingCommands.swift */,
 				AA0CCA99F0817B45088BB121 /* SettingsView.swift */,
+				AA1001010000000000000001 /* HelpView.swift */,
 				459A279423AA910B003D50EC /* Assets.xcassets */,
 				459A279923AA910B003D50EC /* Main.storyboard */,
 				459A279C23AA910B003D50EC /* Info.plist */,
@@ -210,6 +213,7 @@
 				459A279123AA910B003D50EC /* AppDelegate.swift in Sources */,
 				05F195192F65DE4C008DEF94 /* ScriptingCommands.swift in Sources */,
 				BB942CF682F473477D8EF06C /* SettingsView.swift in Sources */,
+				AA1001010000000000000002 /* HelpView.swift in Sources */,
 				05FB65882FA5BC1F00C7674D /* SettingsWindowController.swift in Sources */,
 				05FB65872FA5BC1F00C7674D /* AppState.swift in Sources */,
 				05FB65842FA5BC1F00C7674D /* ClipboardHelpers.swift in Sources */,

@@ -121,10 +121,14 @@
 "dialog.about.button" = "閉じる";
 "dialog.about.website" = "プロジェクトサイト";
 
-/* ── Help dialog ────────────────────────────────────────────────────── */
+/* ── Help window ────────────────────────────────────────────────────── */
 "dialog.help.title" = "ヘルプ";
-"dialog.help.info" = "KeyJigはApple Keynote向けにベクターグラフィックを変換します。\n\n• Illustrator / Affinity Designer / Inkscapeでアートワークをコピー（⌘C）。\n• KeyJigがクリップボードのSVGを自動検出します。\n• 「クリップボードにコピー」を押してKeynote用に変換します。\n• Keynoteに切り替えて貼り付け（⌘V）。\n\nSVGファイルをプレビューエリアにドラッグするか、\nファイル > SVGファイルを開く… で選択することもできます。";
-"dialog.help.button" = "OK";
+"help.section.import.title" = "SVGを読み込む";
+"help.section.import.body" = "• SVGファイルをプレビューエリアにドロップします。\n• Illustrator・Affinity・Inkscapeでアートワークをコピー（⌘C）すると、KeyJigが自動で検出します。\n• ファイル ▸ SVGファイルを開く…（⌘O）でファイルを開きます。\n• Inkscapeがインストールされていれば、PDFや.aiファイルも開けます。";
+"help.section.keynote.title" = "Keynoteに送る";
+"help.section.keynote.body" = "• クリップボードにコピー（⌘⇧C）でSVGをKeynote用に変換します。Keynoteで貼り付け（⌘V）後、フォーマット ▸ 図形と線 ▸ 分割でパスを編集できます。\n• Keynoteに配置でSVGを現在のスライドに直接配置します。アクセシビリティアクセスが必要です（システム設定 ▸ プライバシーとセキュリティ）。";
+"help.section.pull.title" = "Keynoteから取り出す";
+"help.section.pull.body" = "• 「Keynoteから取り出す」をクリックして現在のスライドをPDFとして取得します。\n• Optionキーを押しながらクリックすると、選択したオブジェクトのみを切り抜きます。\n• PDFプレビューをAffinity・Illustrator・Figmaなどのアプリにドラッグするか、下のボタンで保存またはコピーしてください。";
 
 /* ── Settings ───────────────────────────────────────────────────────── */
 "settings.window.title" = "設定";

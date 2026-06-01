@@ -122,10 +122,14 @@
 "dialog.about.button" = "OK";
 "dialog.about.website" = "Project Website";
 
-/* ── Help dialog ────────────────────────────────────────────────────── */
+/* ── Help window ────────────────────────────────────────────────────── */
 "dialog.help.title" = "Help";
-"dialog.help.info" = "KeyJig helps to convert vector graphics for Apple Keynote.\n\n• Copy artwork in Illustrator / Affinity Designer / Inkscape (⌘C).\n• KeyJig detects the SVG on your clipboard automatically.\n• Press \"Copy to Clipboard\" to re-encode it for Keynote.\n• Switch to Keynote and paste (⌘V).\n\nYou can also drag an SVG file onto the preview well, or use\nFile > Open SVG File… to browse for one.";
-"dialog.help.button" = "OK";
+"help.section.import.title" = "Import an SVG";
+"help.section.import.body" = "• Drop an SVG file onto the preview area.\n• Copy artwork in Illustrator, Affinity, or Inkscape (⌘C) — KeyJig picks it up automatically.\n• Open a file via File > Open SVG File… (⌘O).\n• With Inkscape installed, KeyJig also opens PDF and .ai files.";
+"help.section.keynote.title" = "Send to Keynote";
+"help.section.keynote.body" = "• Copy to Clipboard (⌘⇧C) encodes the SVG for Keynote. Paste in Keynote (⌘V), then use Format > Shapes & Lines > Break Apart to edit individual paths.\n• Place in Keynote drops the SVG directly onto the current slide. Needs Accessibility permission (System Settings ▸ Privacy & Security).";
+"help.section.pull.title" = "Pull from Keynote";
+"help.section.pull.body" = "• Click Pull from Keynote to capture the current slide as a PDF.\n• Hold Option while clicking to crop to selected objects only.\n• Drag the PDF preview to Affinity, Illustrator, Figma, or any PDF-capable app — or save or copy it from the buttons below.";
 
 /* ── Settings ───────────────────────────────────────────────────────── */
 "settings.window.title" = "Settings";

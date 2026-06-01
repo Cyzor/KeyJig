@@ -121,10 +121,14 @@
 "dialog.about.button" = "Entendido";
 "dialog.about.website" = "Sitio web del proyecto";
 
-/* ── Help dialog ────────────────────────────────────────────────────── */
+/* ── Help window ────────────────────────────────────────────────────── */
 "dialog.help.title" = "Ayuda";
-"dialog.help.info" = "KeyJig ayuda a convertir gráficos vectoriales para Apple Keynote.\n\n• Copia ilustración en Illustrator / Affinity Designer / Inkscape (⌘C).\n• KeyJig detecta el SVG en tu portapapeles automáticamente.\n• Pulsa «Copiar al portapapeles» para recodificarlo para Keynote.\n• Ve a Keynote y pega (⌘V).\n\nTambién puedes arrastrar un archivo SVG al área de vista previa o usar\nArchivo > Abrir archivo SVG… para buscarlo.";
-"dialog.help.button" = "OK";
+"help.section.import.title" = "Importar SVG";
+"help.section.import.body" = "• Arrastra un archivo SVG al área de vista previa.\n• Copia ilustración en Illustrator, Affinity o Inkscape (⌘C) — KeyJig lo detecta automáticamente.\n• Abre un archivo con Archivo > Abrir archivo SVG… (⌘O).\n• Con Inkscape instalado, KeyJig también abre archivos PDF y .ai.";
+"help.section.keynote.title" = "Enviar a Keynote";
+"help.section.keynote.body" = "• Copiar al portapapeles (⌘⇧C) codifica el SVG para Keynote. Pega en Keynote (⌘V) y usa Formato > Formas y líneas > Separar para editar trayectos individuales.\n• Insertar en Keynote coloca el SVG directamente en la diapositiva actual. Requiere permiso de accesibilidad (Configuración del Sistema ▸ Privacidad y seguridad).";
+"help.section.pull.title" = "Extraer de Keynote";
+"help.section.pull.body" = "• Haz clic en Extraer de Keynote para capturar la diapositiva actual como PDF.\n• Mantén pulsada Opción para recortar al área de objetos seleccionados.\n• Arrastra la vista previa del PDF a Affinity, Illustrator, Figma u otra app — o guárdalo o cópialo desde los botones de abajo.";
 
 /* ── Settings ───────────────────────────────────────────────────────── */
 "settings.window.title" = "Ajustes";

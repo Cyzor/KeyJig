@@ -1,0 +1,109 @@
+import AppKit
+import SwiftUI
+
+// MARK: - Help Window Controller
+
+class HelpWindowController: NSWindowController {
+
+    init() {
+        let window = NSWindow(
+            contentRect: NSRect(x: 0, y: 0, width: 460, height: 480),
+            styleMask: [.titled, .closable],
+            backing: .buffered,
+            defer: false
+        )
+        window.title = NSLocalizedString(
+            "dialog.help.title",
+            comment: "Help window title")
+        window.isReleasedWhenClosed = false
+
+        let didRestore = window.setFrameUsingName("HelpWindow")
+        if !didRestore { window.center() }
+        window.setFrameAutosaveName("HelpWindow")
+
+        let host = NSHostingController(rootView: HelpView())
+        window.contentViewController = host
+
+        super.init(window: window)
+    }
+
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+
+    func showWindow() {
+        window?.makeKeyAndOrderFront(nil)
+        NSApp.activate(ignoringOtherApps: true)
+    }
+}
+
+// MARK: - Help View
+
+struct HelpView: View {
+    var body: some View {
+        VStack(alignment: .leading, spacing: 20) {
+            HelpSection(
+                symbol: "arrow.down.doc.fill",
+                color: .blue,
+                title: NSLocalizedString(
+                    "help.section.import.title",
+                    comment: "Help: Import section heading"),
+                content: NSLocalizedString(
+                    "help.section.import.body",
+                    comment: "Help: Import section bullet points")
+            )
+            Divider()
+            HelpSection(
+                symbol: "arrow.down.square.fill",
+                color: .green,
+                title: NSLocalizedString(
+                    "help.section.keynote.title",
+                    comment: "Help: Send to Keynote section heading"),
+                content: NSLocalizedString(
+                    "help.section.keynote.body",
+                    comment: "Help: Send to Keynote section bullet points")
+            )
+            Divider()
+            HelpSection(
+                symbol: "arrow.up.square.fill",
+                color: .orange,
+                title: NSLocalizedString(
+                    "help.section.pull.title",
+                    comment: "Help: Pull from Keynote section heading"),
+                content: NSLocalizedString(
+                    "help.section.pull.body",
+                    comment: "Help: Pull from Keynote section bullet points")
+            )
+        }
+        .padding(24)
+        .frame(minWidth: 420, idealWidth: 460)
+    }
+}
+
+private struct HelpSection: View {
+    let symbol: String
+    let color: Color
+    let title: String
+    let content: String
+
+    var body: some View {
+        HStack(alignment: .top, spacing: 14) {
+            Image(systemName: symbol)
+                .font(.system(size: 22))
+                .foregroundColor(color)
+                .frame(width: 28, alignment: .center)
+            VStack(alignment: .leading, spacing: 6) {
+                Text(title)
+                    .font(.headline)
+                Text(content)
+                    .font(.body)
+                    .foregroundColor(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+        }
+    }
+}
+
+#Preview {
+    HelpView()
+}

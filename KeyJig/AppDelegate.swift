@@ -313,6 +313,9 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     /// Settings window controller (created lazily when user opens preferences).
     var settingsWindowController: SettingsWindowController?
 
+    /// Help window controller (created lazily on first open).
+    var helpWindowController: HelpWindowController?
+
     // MARK: Scriptable properties for Explorer visibility
 
     /// Returns the SVG content from the frontmost window.
@@ -635,19 +638,10 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     @objc func showHelp() {
-        let alert = NSAlert()
-        alert.messageText = NSLocalizedString(
-            "dialog.help.title",
-            comment: "Help dialog title")
-        alert.informativeText = NSLocalizedString(
-            "dialog.help.info",
-            comment: "Help dialog body text explaining the app workflow")
-        alert.alertStyle = .informational
-        alert.addButton(
-            withTitle: NSLocalizedString(
-                "dialog.help.button",
-                comment: "Help dialog dismiss button"))
-        alert.runModal()
+        if helpWindowController == nil {
+            helpWindowController = HelpWindowController()
+        }
+        helpWindowController?.showWindow()
     }
 
     @objc func openKeyJigWebsite() {
