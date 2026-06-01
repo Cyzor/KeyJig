@@ -8,7 +8,15 @@ import SwiftUI
 /// Each window owns its own AppState — changes in one window never affect another.
 class AppState: ObservableObject {
     @Published var svgURL: String = ""
-    @Published var svgString: String = ""
+    @Published var svgString: String = "" {
+        didSet {
+            // Loading any SVG content takes over the preview — clear any
+            // active "Pull from Keynote" PDF so the two modes don't coexist.
+            if !svgString.isEmpty && previewPDFURL != nil {
+                previewPDFURL = nil
+            }
+        }
+    }
     /// The last temp file written by svgToClipboard() or an outbound drag.
     /// Stored here so the proxy icon can find it even though each write now
     /// produces a uniquely-named file.
@@ -19,6 +27,21 @@ class AppState: ObservableObject {
     @Published var inkscapeStatus: InkscapeStatus = .checking
     /// Tracks in-progress / result state for the "Place in Keynote" action.
     @Published var keynoteSendStatus: KeynoteSendStatus = .idle
+    /// When non-nil, the preview shows this PDF instead of an SVG. Set by
+    /// "Pull from Keynote"; setting it clears `svgString`, and vice versa.
+    @Published var previewPDFURL: URL? = nil {
+        didSet {
+            if previewPDFURL != nil && !svgString.isEmpty {
+                svgString = ""
+                svgURL = ""
+            }
+        }
+    }
+    /// Tracks in-progress / result state for the "Pull from Keynote" action.
+    @Published var keynotePullStatus: KeynotePullStatus = .idle
+    /// Change count of the last pasteboard snapshot we acted on. Used by
+    /// checkAndLoadClipboardSVG to skip re-processing an unchanged clipboard.
+    var lastLoadedClipboardChangeCount: Int = -1
 
     init() {
         checkInkscapeStatus()
@@ -49,6 +72,13 @@ enum ConversionStatus: Equatable {
 enum KeynoteSendStatus: Equatable {
     case idle
     case sending
+    case succeeded
+    case failed
+}
+
+enum KeynotePullStatus: Equatable {
+    case idle
+    case pulling
     case succeeded
     case failed
 }

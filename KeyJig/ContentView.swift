@@ -1,4 +1,5 @@
 import AppKit
+import PDFKit
 import SwiftUI
 import UniformTypeIdentifiers
 import WebKit
@@ -20,6 +21,22 @@ struct Tooltips {
     static let placeInKeynote = NSLocalizedString(
         "tooltip.place_in_keynote",
         comment: "Tooltip for the Place in Keynote button")
+
+    static let pullFromKeynote = NSLocalizedString(
+        "tooltip.pull_from_keynote",
+        comment: "Tooltip for the Pull from Keynote button")
+
+    static let savePDF = NSLocalizedString(
+        "tooltip.save_pdf",
+        comment: "Tooltip for the Save PDF button")
+
+    static let copyPDF = NSLocalizedString(
+        "tooltip.copy_pdf",
+        comment: "Tooltip for the Copy PDF button")
+
+    static let previewPDFLoaded = NSLocalizedString(
+        "tooltip.preview_pdf_loaded",
+        comment: "Tooltip for the preview area when a PDF is loaded")
 
     static let readyStatus = NSLocalizedString(
         "tooltip.status_ready",
@@ -100,6 +117,8 @@ class SVGInteractionView: NSView {
     }
 
     // MARK: Outbound drag (NSDraggingSource)
+
+    override func acceptsFirstMouse(for event: NSEvent?) -> Bool { true }
 
     override func mouseDown(with event: NSEvent) {
         // If there is no drag payload, fall through to default behaviour
@@ -449,6 +468,40 @@ struct ResponsiveSVGWebView: NSViewRepresentable {
     }
 }
 
+// MARK: - PDF preview
+
+/// PDFKit-backed renderer for the "Pull from Keynote" result. Auto-scales the
+/// page to fit the view, scroll/zoom disabled — interaction goes through the
+/// SVGInteractionView overlay (drag-out, drop-replace).
+struct PDFPreviewView: NSViewRepresentable {
+
+    let url: URL
+
+    func makeNSView(context: Context) -> PDFView {
+        let view = PDFView()
+        view.autoScales = true
+        view.displayMode = .singlePage
+        view.displaysPageBreaks = false
+        view.backgroundColor = .clear
+        // Disable the built-in scroll/scale gestures so the overlay handles
+        // mouse events cleanly.
+        view.acceptsDraggedFiles = false
+        if let scrollView = view.subviews.first as? NSScrollView {
+            scrollView.hasVerticalScroller = false
+            scrollView.hasHorizontalScroller = false
+            scrollView.scrollerStyle = .overlay
+        }
+        view.document = PDFDocument(url: url)
+        return view
+    }
+
+    func updateNSView(_ view: PDFView, context: Context) {
+        if view.document?.documentURL != url {
+            view.document = PDFDocument(url: url)
+        }
+    }
+}
+
 // MARK: - Metadata overlay
 
 struct MetadataOverlay: View {
@@ -536,6 +589,16 @@ struct ContentView: View {
         return String.localizedStringWithFormat(format, dims, size)
     }
 
+    /// True when either an SVG or a pulled PDF is loaded into the preview.
+    private var hasContent: Bool {
+        !appState.svgString.isEmpty || appState.previewPDFURL != nil
+    }
+
+    /// True when the preview holds a PDF pulled from Keynote.
+    private var isPDFMode: Bool {
+        appState.previewPDFURL != nil
+    }
+
     var statusMessage: String {
         switch appState.conversionStatus {
         case .converting:
@@ -549,18 +612,22 @@ struct ContentView: View {
         case .idle:
             break
         }
-        let hasContent = !appState.svgString.isEmpty
         let base: String
         if !localStatus.isEmpty {
             base = localStatus
-        } else if hasContent {
+        } else if hasContent && !isPDFMode {
             base = NSLocalizedString(
                 "status.ready",
                 comment: "Status: SVG is loaded and ready to use")
+        } else if hasContent && isPDFMode {
+            base = NSLocalizedString(
+                "status.keynote.pulled",
+                comment: "Status: PDF was pulled from Keynote successfully")
         } else {
             return ""
         }
-        return hasContent ? base + "\n\n" + Self.breakApartInstruction : base
+        // The Break Apart hint only applies to SVG content destined for Keynote.
+        return (hasContent && !isPDFMode) ? base + "\n\n" + Self.breakApartInstruction : base
     }
 
     var body: some View {
@@ -568,7 +635,9 @@ struct ContentView: View {
 
             // ── Preview / drop well ───────────────────────────────────────
             Group {
-                if !appState.svgString.isEmpty {
+                if let pdfURL = appState.previewPDFURL {
+                    loadedPDFPreview(url: pdfURL)
+                } else if !appState.svgString.isEmpty {
                     loadedPreview
                 } else {
                     emptyWell
@@ -586,14 +655,13 @@ struct ContentView: View {
             // ── Status ────────────────────────────────────────────────────
             if !statusMessage.isEmpty {
                 HStack(spacing: 6) {
-                    if appState.conversionStatus == .converting {
+                    if appState.conversionStatus == .converting || appState.keynotePullStatus == .pulling {
                         if #available(macOS 11.0, *) {
                             ProgressView()
                                 .progressViewStyle(.circular)
                                 .scaleEffect(0.6)
                                 .frame(width: 14, height: 14)
                         } else {
-                            // Fallback: animated ellipsis is handled in statusMessage
                             EmptyView()
                         }
                     }
@@ -621,10 +689,9 @@ struct ContentView: View {
 
             // ── Action buttons ────────────────────────────────────────────
             let isConverting = appState.conversionStatus == .converting
+            let isPulling = appState.keynotePullStatus == .pulling
             VStack(spacing: 8) {
                 Button {
-                    // For .converting, conversionStatus drives the message
-                    // until the background work finishes — don't overwrite it.
                     if case .loaded = browseFile(into: appState) {
                         localStatus = ""
                         appState.conversionStatus = .idle
@@ -642,58 +709,47 @@ struct ContentView: View {
                 .disabled(isConverting)
 
                 Button {
-                    let svg = convertClipboardToSVG()
-                    if !svg.isEmpty {
-                        appState.svgString = svg
-                        appState.conversionStatus = .idle
-                        if svgToClipboard(svgData: svg, appState: appState) != nil {
-                            localStatus = ""
-                        }
-                    } else {
-                        localStatus = NSLocalizedString(
-                            "status.no_svg_on_clipboard",
-                            comment: "Error message when no SVG is found on the clipboard")
-                    }
-                } label: {
-                    Text(
-                        NSLocalizedString(
-                            "button.copy_to_clipboard",
-                            comment:
-                                "Button: copies the loaded SVG to the clipboard in Keynote format")
-                    )
-                    .frame(maxWidth: .infinity)
-                }
-                .help(Tooltips.copyToClipboard)
-                .keyboardShortcut("c", modifiers: [.command, .shift])
-                .disabled(appState.svgString.isEmpty || isConverting)
-
-                let isSending = appState.keynoteSendStatus == .sending
-                Button {
-                    appState.keynoteSendStatus = .sending
+                    appState.keynotePullStatus = .pulling
                     localStatus = NSLocalizedString(
-                        "status.keynote.sending",
-                        comment: "Status: SVG is being placed into Keynote")
-                    sendSVGToKeynote(svgData: appState.svgString) { error in
-                        if let error = error {
-                            appState.keynoteSendStatus = .failed
+                        "status.keynote.pulling",
+                        comment: "Status: PDF export from Keynote in progress")
+                    // Snapshot any PDF on the clipboard now, while on the main
+                    // thread. pullFromKeynote uses this as a fast path when
+                    // nothing is selected — avoids the export entirely.
+                    let pb = NSPasteboard.general
+                    let clipboardPDF: Data? = [
+                        "com.adobe.pdf",
+                        "Apple PDF pasteboard type",
+                    ].lazy
+                        .compactMap { pb.data(forType: NSPasteboard.PasteboardType($0)) }
+                        .first { !$0.isEmpty }
+                    pullFromKeynote(clipboardPDFData: clipboardPDF) { result in
+                        switch result {
+                        case .success(let url):
+                            appState.previewPDFURL = url
+                            appState.keynotePullStatus = .succeeded
+                            localStatus = ""
+                        case .failure(let error):
+                            appState.keynotePullStatus = .failed
                             localStatus = error.localizedDescription
-                        } else {
-                            appState.keynoteSendStatus = .succeeded
-                            localStatus = NSLocalizedString(
-                                "status.keynote.success",
-                                comment: "Status: SVG was placed in Keynote successfully")
                         }
                     }
                 } label: {
                     Text(
                         NSLocalizedString(
-                            "button.place_in_keynote",
-                            comment: "Button: places the loaded SVG directly into the current Keynote slide")
+                            "button.pull_from_keynote",
+                            comment: "Button: pulls a PDF of the current Keynote slide / selection")
                     )
                     .frame(maxWidth: .infinity)
                 }
-                .help(Tooltips.placeInKeynote)
-                .disabled(appState.svgString.isEmpty || isConverting || isSending)
+                .help(Tooltips.pullFromKeynote)
+                .disabled(isConverting || isPulling)
+
+                if isPDFMode {
+                    pdfModeButtons
+                } else {
+                    svgModeButtons(isConverting: isConverting)
+                }
             }
             .padding(.horizontal, 16)
             .padding(.bottom, 16)
@@ -701,7 +757,143 @@ struct ContentView: View {
         }
     }
 
-    // MARK: Sub-views
+    // MARK: Sub-views — button groups
+
+    @ViewBuilder
+    private func svgModeButtons(isConverting: Bool) -> some View {
+        Button {
+            let svg = convertClipboardToSVG()
+            if !svg.isEmpty {
+                appState.svgString = svg
+                appState.conversionStatus = .idle
+                if svgToClipboard(svgData: svg, appState: appState) != nil {
+                    localStatus = ""
+                }
+            } else {
+                localStatus = NSLocalizedString(
+                    "status.no_svg_on_clipboard",
+                    comment: "Error message when no SVG is found on the clipboard")
+            }
+        } label: {
+            Text(
+                NSLocalizedString(
+                    "button.copy_to_clipboard",
+                    comment: "Button: copies the loaded SVG to the clipboard in Keynote format")
+            )
+            .frame(maxWidth: .infinity)
+        }
+        .help(Tooltips.copyToClipboard)
+        .keyboardShortcut("c", modifiers: [.command, .shift])
+        .disabled(appState.svgString.isEmpty || isConverting)
+
+        let isSending = appState.keynoteSendStatus == .sending
+        Button {
+            appState.keynoteSendStatus = .sending
+            localStatus = NSLocalizedString(
+                "status.keynote.sending",
+                comment: "Status: SVG is being placed into Keynote")
+            sendSVGToKeynote(svgData: appState.svgString) { error in
+                if let error = error {
+                    appState.keynoteSendStatus = .failed
+                    localStatus = error.localizedDescription
+                } else {
+                    appState.keynoteSendStatus = .succeeded
+                    localStatus = NSLocalizedString(
+                        "status.keynote.success",
+                        comment: "Status: SVG was placed in Keynote successfully")
+                }
+            }
+        } label: {
+            Text(
+                NSLocalizedString(
+                    "button.place_in_keynote",
+                    comment: "Button: places the loaded SVG directly into the current Keynote slide")
+            )
+            .frame(maxWidth: .infinity)
+        }
+        .help(Tooltips.placeInKeynote)
+        .disabled(appState.svgString.isEmpty || isConverting || isSending)
+    }
+
+    @ViewBuilder
+    private var pdfModeButtons: some View {
+        Button {
+            guard let url = appState.previewPDFURL else { return }
+            savePDF(sourceURL: url)
+        } label: {
+            Text(
+                NSLocalizedString(
+                    "button.save_pdf",
+                    comment: "Button: save the pulled PDF to a chosen location")
+            )
+            .frame(maxWidth: .infinity)
+        }
+        .help(Tooltips.savePDF)
+
+        Button {
+            guard let url = appState.previewPDFURL else { return }
+            if pdfToClipboard(url: url) {
+                localStatus = NSLocalizedString(
+                    "status.pdf.copied",
+                    comment: "Status: PDF was copied to the clipboard")
+            }
+        } label: {
+            Text(
+                NSLocalizedString(
+                    "button.copy_pdf",
+                    comment: "Button: copy the pulled PDF to the clipboard")
+            )
+            .frame(maxWidth: .infinity)
+        }
+        .help(Tooltips.copyPDF)
+        .keyboardShortcut("c", modifiers: [.command, .shift])
+    }
+
+    /// Presents a save panel and copies the temp PDF to the chosen destination.
+    private func savePDF(sourceURL: URL) {
+        let panel = NSSavePanel()
+        if #available(macOS 11.0, *) {
+            panel.allowedContentTypes = [.pdf]
+        }
+        panel.nameFieldStringValue = sourceURL.lastPathComponent
+        guard panel.runModal() == .OK, let dest = panel.url else { return }
+        do {
+            if FileManager.default.fileExists(atPath: dest.path) {
+                try FileManager.default.removeItem(at: dest)
+            }
+            try FileManager.default.copyItem(at: sourceURL, to: dest)
+            localStatus = NSLocalizedString(
+                "status.pdf.saved",
+                comment: "Status: PDF was saved to disk")
+        } catch {
+            localStatus = error.localizedDescription
+        }
+    }
+
+    // MARK: Sub-views — preview wells
+
+    /// Shown when a PDF was pulled from Keynote. Drag-out delivers the PDF;
+    /// dropping an SVG switches back to SVG mode automatically.
+    private func loadedPDFPreview(url: URL) -> some View {
+        ZStack {
+            Color(NSColor.windowBackgroundColor)
+
+            PDFPreviewView(url: url)
+
+            SVGInteractionViewWrapper(
+                onDragStart: { url },
+                onSVGDropped: { svg in
+                    appState.svgString = svg
+                    localStatus = ""
+                },
+                onClear: {
+                    appState.previewPDFURL = nil
+                    localStatus = ""
+                }
+            )
+        }
+        .help(Tooltips.previewPDFLoaded)
+    }
 
     /// Shown when an SVG is loaded: renders the graphic and supports both
     /// outbound drag to Keynote and inbound replacement drops.

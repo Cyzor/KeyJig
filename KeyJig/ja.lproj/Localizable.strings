@@ -7,6 +7,10 @@
 "tooltip.open_file" = "コンピュータからSVGファイルを読み込みます。SVGファイルをプレビューエリアに直接ドラッグ＆ドロップすることもできます。";
 "tooltip.copy_to_clipboard" = "読み込んだSVGをクリップボードにコピーし、⌘VでKeynoteに貼り付けます。その後「分割」と「編集可能にする」を使用してください。";
 "tooltip.place_in_keynote" = "SVGを現在のKeynoteスライドに直接配置します。Keynoteを開いておく必要があります。アクセシビリティアクセスが必要です。";
+"tooltip.pull_from_keynote" = "現在のKeynoteスライドからベクターグラフィックをPDFとして取り出します。オブジェクトが選択されている場合は、その領域のみが取得されます。";
+"tooltip.save_pdf" = "取り出したPDFを任意の場所に保存します。";
+"tooltip.copy_pdf" = "取り出したPDFをクリップボードにコピーし、他のアプリに貼り付けられるようにします。";
+"tooltip.preview_pdf_loaded" = "このPDFをAffinity、Illustrator、Figma、その他PDFを受け付けるアプリに直接ドラッグします。";
 "tooltip.status_ready" = "SVGの準備ができました。Keynoteにドラッグするか「クリップボードにコピー」をクリックしてください。";
 "tooltip.preview_loaded" = "このSVGをKeynoteまたはSVGファイルを受け付けるアプリに直接ドラッグします。ドラッグ中はクリップボードは変更されません。";
 "tooltip.preview_empty" = "SVGファイルをここにドロップするか、下のボタンで開くか、アートワークをコピーして「クリップボードにコピー」をクリックしてください。";
@@ -34,18 +38,27 @@
 "status.copied" = "クリップボードにコピーしました！";
 "status.keynote.sending" = "Keynoteに配置中…";
 "status.keynote.success" = "Keynoteに配置しました — オブジェクトを選択し、フォーマット ▸ 図形と線 ▸ 分割を選択してください。";
+"status.keynote.pulling" = "Keynoteからエクスポート中…";
+"status.keynote.pulled" = "Keynoteから取り出しました — プレビューをドラッグするか、PDFをコピー／保存してください。";
+"status.pdf.copied" = "PDFをクリップボードにコピーしました。";
+"status.pdf.saved" = "PDFを保存しました。";
 "instruction.break_apart" = "Keynoteに配置後、オブジェクトを選択し、フォーマット ‣ 図形と線 ‣ 分割を選択してください。";
 
 /* ── Buttons ────────────────────────────────────────────────────────── */
 "button.open_svg_file" = "SVGファイルを開く…";
 "button.copy_to_clipboard" = "クリップボードにコピー";
 "button.place_in_keynote" = "Keynoteに配置";
+"button.pull_from_keynote" = "Keynoteから取り出す";
+"button.save_pdf" = "PDFを保存…";
+"button.copy_pdf" = "PDFをコピー";
 
 /* ── Keynote errors ─────────────────────────────────────────────────── */
 "error.keynote.not_running" = "Keynoteが起動していないか、ドキュメントが開かれていません。";
 "error.keynote.no_document" = "Keynoteにドキュメントが開かれていません。プレゼンテーションを開いて再度お試しください。";
 "error.keynote.accessibility" = "アクセシビリティアクセスが必要です。システム設定 ▸ プライバシーとセキュリティ ▸ アクセシビリティ でKeyJigを有効にして、再度お試しください。";
 "error.keynote.paste_failed" = "KeynoteにSVGを配置できませんでした。";
+"error.keynote.export_failed" = "Keynoteのエクスポートに失敗しました: %@";
+"error.keynote.page_missing" = "エクスポートされたPDFに現在のスライドが含まれていません。";
 
 /* ── Footer ─────────────────────────────────────────────────────────── */
 "footer.build_date" = "ビルド日: %@";

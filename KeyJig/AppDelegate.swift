@@ -410,17 +410,49 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
     // MARK: Clipboard helper
 
-    /// Pushes clipboard SVG content into `state` only if the clipboard has
-    /// something new — avoids stomping content the user loaded via file/drop.
+    /// Pushes clipboard content into `state` when the clipboard has changed.
     ///
-    /// Fast path: checks for native SVG types synchronously.
-    /// Slow path: if no SVG is found but PDF/AICB is present and Inkscape is
-    /// installed, converts asynchronously and updates state on completion.
+    /// Priority order:
+    ///   1. Keynote slide — `com.apple.iWork.TSPNativeData` co-present with
+    ///      `com.adobe.pdf` is an unambiguous Keynote fingerprint. The PDF is
+    ///      used directly in PDF-preview mode; Inkscape is not involved, which
+    ///      avoids the color-fidelity issues its SVG output causes in InDesign.
+    ///      This path fires regardless of current well state.
+    ///   2. Native SVG — fast, synchronous.
+    ///   3. PDF/AI via Inkscape — slow, async; only when well is empty.
     private func checkAndLoadClipboardSVG(into state: AppState) {
+        let pasteboard = NSPasteboard.general
+        let currentChangeCount = pasteboard.changeCount
+        guard currentChangeCount != state.lastLoadedClipboardChangeCount else { return }
+
+        let pasteboardTypes = Set(pasteboard.types ?? [])
+        let iWorkType = NSPasteboard.PasteboardType("com.apple.iWork.TSPNativeData")
+
+        if pasteboardTypes.contains(iWorkType) {
+            let pdfData = pasteboard.data(
+                forType: NSPasteboard.PasteboardType("com.adobe.pdf"))
+                ?? pasteboard.data(
+                    forType: NSPasteboard.PasteboardType("Apple PDF pasteboard type"))
+            if let data = pdfData, !data.isEmpty {
+                let outURL = makeTempKeynotePDFURL()
+                do {
+                    try data.write(to: outURL)
+                    try FileManager.default.setAttributes(
+                        [.posixPermissions: 0o600], ofItemAtPath: outURL.path)
+                    state.previewPDFURL = outURL
+                    state.lastLoadedClipboardChangeCount = currentChangeCount
+                } catch {
+                    log.error("Keynote clipboard PDF write failed: \(error.localizedDescription, privacy: .public)")
+                }
+                return
+            }
+        }
+
         // Fast path — native SVG, completes instantly.
         let svg = convertClipboardToSVG()
         if !svg.isEmpty, svg != state.svgString {
             state.svgString = svg
+            state.lastLoadedClipboardChangeCount = currentChangeCount
             return
         }
 
@@ -432,6 +464,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         else { return }
 
         state.conversionStatus = .converting
+        state.lastLoadedClipboardChangeCount = currentChangeCount
         convertClipboardPDFToSVG { [weak state] result in
             guard let state = state else { return }
             if let svg = result, !svg.isEmpty {

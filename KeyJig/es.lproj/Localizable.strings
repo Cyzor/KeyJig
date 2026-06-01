@@ -7,6 +7,10 @@
 "tooltip.open_file" = "Carga un archivo SVG desde tu ordenador. También puedes arrastrar y soltar archivos SVG directamente en el área de vista previa.";
 "tooltip.copy_to_clipboard" = "Copia el SVG cargado al portapapeles para pegarlo en Keynote con ⌘V, luego usa «Separar» y «Hacer editable».";
 "tooltip.place_in_keynote" = "Coloca el SVG directamente en la diapositiva actual de Keynote. Keynote debe estar abierto. Requiere acceso de accesibilidad.";
+"tooltip.pull_from_keynote" = "Extrae gráficos vectoriales de la diapositiva actual de Keynote como PDF. Si hay elementos seleccionados, solo se captura esa zona.";
+"tooltip.save_pdf" = "Guardar el PDF extraído en la ubicación elegida.";
+"tooltip.copy_pdf" = "Copia el PDF extraído al portapapeles para pegarlo en otra app.";
+"tooltip.preview_pdf_loaded" = "Arrastra este PDF directamente a Affinity, Illustrator, Figma o cualquier app que acepte PDF.";
 "tooltip.status_ready" = "El SVG está listo. Arrástralo a Keynote o haz clic en «Copiar al portapapeles».";
 "tooltip.preview_loaded" = "Arrastra este SVG directamente a Keynote o cualquier app que acepte archivos SVG. El portapapeles no se modifica al arrastrar.";
 "tooltip.preview_empty" = "Suelta un archivo SVG aquí, ábrelo con el botón de abajo o copia ilustración y haz clic en «Copiar al portapapeles».";
@@ -34,18 +38,27 @@
 "status.copied" = "¡Copiado al portapapeles!";
 "status.keynote.sending" = "Insertando en Keynote…";
 "status.keynote.success" = "Insertado en Keynote — selecciona el objeto y usa Formato ▸ Formas y líneas ▸ Separar.";
+"status.keynote.pulling" = "Exportando desde Keynote…";
+"status.keynote.pulled" = "Extraído de Keynote — arrastra la vista previa, copia o guarda el PDF.";
+"status.pdf.copied" = "PDF copiado al portapapeles.";
+"status.pdf.saved" = "PDF guardado.";
 "instruction.break_apart" = "Una vez en Keynote, selecciona el objeto y elige Formato ‣ Formas y líneas ‣ Separar.";
 
 /* ── Buttons ────────────────────────────────────────────────────────── */
 "button.open_svg_file" = "Abrir archivo SVG…";
 "button.copy_to_clipboard" = "Copiar al portapapeles";
 "button.place_in_keynote" = "Insertar en Keynote";
+"button.pull_from_keynote" = "Extraer de Keynote";
+"button.save_pdf" = "Guardar PDF…";
+"button.copy_pdf" = "Copiar PDF";
 
 /* ── Keynote errors ─────────────────────────────────────────────────── */
 "error.keynote.not_running" = "Keynote no está abierto o no tiene ningún documento activo.";
 "error.keynote.no_document" = "Keynote no tiene ningún documento abierto. Abre una presentación e inténtalo de nuevo.";
 "error.keynote.accessibility" = "Se requiere acceso de accesibilidad. Activa KeyJig en Configuración del Sistema ▸ Privacidad y seguridad ▸ Accesibilidad e inténtalo de nuevo.";
 "error.keynote.paste_failed" = "No se pudo insertar el SVG en Keynote.";
+"error.keynote.export_failed" = "Error de exportación de Keynote: %@";
+"error.keynote.page_missing" = "El PDF exportado no contenía la diapositiva actual.";
 
 /* ── Footer ─────────────────────────────────────────────────────────── */
 "footer.build_date" = "Fecha de compilación: %@";

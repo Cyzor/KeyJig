@@ -8,6 +8,10 @@
 "tooltip.open_file" = "Load an SVG file from your computer. You can also drag and drop SVG files directly onto the preview area.";
 "tooltip.copy_to_clipboard" = "Copy the loaded SVG to your clipboard for pasting into Keynote with ⌘V, then use 'Break Apart' and 'Make Editable'.";
 "tooltip.place_in_keynote" = "Place the SVG directly onto the current Keynote slide. Keynote must be running with a presentation open. Requires Accessibility access.";
+"tooltip.pull_from_keynote" = "Pull vector graphics from the current Keynote slide as a PDF. If items are selected, only that region is captured.";
+"tooltip.save_pdf" = "Save the pulled PDF to a chosen location.";
+"tooltip.copy_pdf" = "Copy the pulled PDF to the clipboard so you can paste it into another app.";
+"tooltip.preview_pdf_loaded" = "Drag this PDF directly into Affinity, Illustrator, Figma, or any app that accepts PDF.";
 "tooltip.status_ready" = "The SVG is ready. Drag it into Keynote or click 'Copy to Clipboard'.";
 "tooltip.preview_loaded" = "Drag this SVG directly into Keynote or any app that accepts SVG files. Your clipboard is not modified during dragging.";
 "tooltip.preview_empty" = "Drop an SVG file here, open one with the button below, or copy artwork and click 'Copy to Clipboard'.";
@@ -35,6 +39,10 @@
 "status.copied" = "Copied to clipboard!";
 "status.keynote.sending" = "Placing in Keynote…";
 "status.keynote.success" = "Placed in Keynote — select it and use Format ▸ Shapes and Lines ▸ Break Apart.";
+"status.keynote.pulling" = "Exporting from Keynote…";
+"status.keynote.pulled" = "Pulled from Keynote — drag the preview, copy, or save the PDF.";
+"status.pdf.copied" = "PDF copied to clipboard.";
+"status.pdf.saved" = "PDF saved.";
 "instruction.break_apart" = "Once placed in Keynote, select the object and choose Format ‣ Shapes and Lines ‣ Break Apart.";
 
 /* ── Keynote errors ─────────────────────────────────────────────────── */
@@ -42,11 +50,16 @@
 "error.keynote.no_document" = "Keynote has no document open. Open a presentation and try again.";
 "error.keynote.accessibility" = "Accessibility access is required. Enable KeyJig in System Settings ▸ Privacy & Security ▸ Accessibility, then try again.";
 "error.keynote.paste_failed" = "Could not place the SVG in Keynote.";
+"error.keynote.export_failed" = "Keynote export failed: %@";
+"error.keynote.page_missing" = "The exported PDF did not contain the current slide.";
 
 /* ── Buttons ────────────────────────────────────────────────────────── */
 "button.open_svg_file" = "Open SVG File…";
 "button.copy_to_clipboard" = "Copy to Clipboard";
 "button.place_in_keynote" = "Place in Keynote";
+"button.pull_from_keynote" = "Pull from Keynote";
+"button.save_pdf" = "Save PDF…";
+"button.copy_pdf" = "Copy PDF";
 
 /* ── Footer ─────────────────────────────────────────────────────────── */
 "footer.build_date" = "App Build Date: %@";
