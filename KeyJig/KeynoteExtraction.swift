@@ -42,26 +42,27 @@ enum KeynotePullError: LocalizedError {
 
 /// Pulls vector graphics from the current Keynote slide as a PDF.
 ///
-/// If the user has items selected on the slide, the page is cropped to the
-/// union of their bounding boxes (with rotation expanded to an AABB) plus a
-/// small padding. Otherwise the full slide page is returned.
+/// `wantSelection` — when `true`, the probe runs to read the current
+/// selection geometry and the result is cropped to the union of the selected
+/// items' bounding boxes. When `false` (default), the current slide is always
+/// freshly exported via the skipped-slide trick; `clipboardPDFData` is only
+/// used as a last-resort fallback if that export fails (e.g. large files).
 ///
 /// `clipboardPDFData` — caller should snapshot `NSPasteboard.general` on the
-/// main thread before calling and pass any `com.adobe.pdf` data here. When
-/// there is no selection, this data is used directly (no Keynote export needed),
-/// which is instantaneous and leaves the document untouched. If nil or if a
-/// selection is present, the function falls back to the skipped-slide export.
+/// main thread before calling. When `wantSelection` is true it is used as the
+/// crop source (avoiding a slow export); when `wantSelection` is false it is
+/// held in reserve and only used if the export fails.
 ///
-/// Calls completion on the main thread. The caller need not be on the main
-/// thread; all AppleScript and PDF work runs on a private background queue so
-/// the main thread remains free to update the UI during the export.
+/// Calls completion on the main thread.
 func pullFromKeynote(
+    wantSelection: Bool = false,
     clipboardPDFData: Data? = nil,
     completion: @escaping (Result<URL, KeynotePullError>) -> Void
 ) {
     // Serial queue keeps NSAppleScript calls non-concurrent.
     let queue = DispatchQueue(label: "com.cyzor.KeyJig.keynotePull", qos: .userInitiated)
     queue.async {
+
         // 1. Verify Keynote is running.
         guard NSRunningApplication
             .runningApplications(withBundleIdentifier: "com.apple.iWork.Keynote").first != nil
@@ -70,110 +71,116 @@ func pullFromKeynote(
             return
         }
 
-        // 2. Probe: find the current slide's array index by object identity, and
-        //    collect selection geometry. Using object identity (not `slide number`)
-        //    handles grouped/child slides whose display number can match a parent.
-        //    Returned shape: "arrayIndex|x,y,w,h,r\nx,y,w,h,r\n…"
+        // 2. Probe: collect selection geometry. Skipped when `wantSelection` is
+        //    false — for a full-slide pull the export script works from
+        //    `current slide` directly with no geometry needed.
         //
         //    Batch property reads (position/width/height/rotation of the whole
         //    selection list at once) cut Apple Event round-trips from 4×N to 4,
-        //    eliminating the per-item flicker on large selections. A per-item
+        //    eliminating per-item flicker on large selections. A per-item
         //    fallback handles Keynote versions that reject list property access.
-        let probeScript = """
-            tell application "Keynote"
-                if not (exists front document) then error number -1728
-                tell front document
-                    set targetSlide to current slide
-                    set nSlides to count of slides
-                    set slideIdx to 0
-                    repeat with i from 1 to nSlides
-                        if slide i is targetSlide then
-                            set slideIdx to i
-                            exit repeat
-                        end if
-                    end repeat
-                    set sel to selection
-                    set selCount to count of sel
-                    set bboxLines to ""
-                    if selCount > 0 then
-                        try
-                            set posList to position of sel
-                            set widList to width of sel
-                            set htList to height of sel
-                            set rotList to {}
+        let selectionBoxes: [SelectionBox]
+        if wantSelection {
+            let probeScript = """
+                tell application "Keynote"
+                    if not (exists front document) then error number -1728
+                    tell front document
+                        set targetSlide to current slide
+                        set nSlides to count of slides
+                        set slideIdx to 0
+                        repeat with i from 1 to nSlides
+                            if slide i is targetSlide then
+                                set slideIdx to i
+                                exit repeat
+                            end if
+                        end repeat
+                        set sel to selection
+                        set selCount to count of sel
+                        set bboxLines to ""
+                        if selCount > 0 then
                             try
-                                set rotList to rotation of sel
+                                set posList to position of sel
+                                set widList to width of sel
+                                set htList to height of sel
+                                set rotList to {}
+                                try
+                                    set rotList to rotation of sel
+                                on error
+                                    repeat selCount times
+                                        set rotList to rotList & {0}
+                                    end repeat
+                                end try
+                                repeat with i from 1 to selCount
+                                    set p to item i of posList
+                                    set bboxLines to bboxLines & (item 1 of p) & "," & (item 2 of p) & "," & (item i of widList) & "," & (item i of htList) & "," & (item i of rotList) & linefeed
+                                end repeat
                             on error
-                                repeat selCount times
-                                    set rotList to rotList & {0}
+                                repeat with itm in sel
+                                    try
+                                        set p to position of itm
+                                        set w to width of itm
+                                        set h to height of itm
+                                        set r to 0
+                                        try
+                                            set r to rotation of itm
+                                        end try
+                                        set bboxLines to bboxLines & (item 1 of p) & "," & (item 2 of p) & "," & w & "," & h & "," & r & linefeed
+                                    end try
                                 end repeat
                             end try
-                            repeat with i from 1 to selCount
-                                set p to item i of posList
-                                set bboxLines to bboxLines & (item 1 of p) & "," & (item 2 of p) & "," & (item i of widList) & "," & (item i of htList) & "," & (item i of rotList) & linefeed
-                            end repeat
-                        on error
-                            repeat with itm in sel
-                                try
-                                    set p to position of itm
-                                    set w to width of itm
-                                    set h to height of itm
-                                    set r to 0
-                                    try
-                                        set r to rotation of itm
-                                    end try
-                                    set bboxLines to bboxLines & (item 1 of p) & "," & (item 2 of p) & "," & w & "," & h & "," & r & linefeed
-                                end try
-                            end repeat
-                        end try
-                    end if
-                    return (slideIdx as string) & "|" & bboxLines
+                        end if
+                        return (slideIdx as string) & "|" & bboxLines
+                    end tell
                 end tell
-            end tell
-            """
-        var probeError: NSDictionary?
-        let probeResult = NSAppleScript(source: probeScript)!
-            .executeAndReturnError(&probeError)
-        if let err = probeError {
-            let code = err["NSAppleScriptErrorNumber"] as? Int ?? 0
-            if code == -1728 {
-                DispatchQueue.main.async { completion(.failure(.noDocumentOpen)) }
-            } else {
-                let detail = err["NSAppleScriptErrorMessage"] as? String ?? "AppleScript error \(code)"
-                log.error("probe failed: \(detail, privacy: .public)")
-                DispatchQueue.main.async { completion(.failure(.exportFailed(detail))) }
-            }
-            return
-        }
-        guard let probeString = probeResult.stringValue else {
-            DispatchQueue.main.async { completion(.failure(.exportFailed("empty probe result"))) }
-            return
-        }
-
-        let parts = probeString.components(separatedBy: "|")
-        guard let slideIndex = Int(parts.first ?? ""), slideIndex > 0 else {
-            DispatchQueue.main.async { completion(.failure(.exportFailed("could not determine slide position"))) }
-            return
-        }
-        let selectionBoxes: [SelectionBox] = {
-            guard parts.count > 1 else { return [] }
-            return parts[1]
-                .split(whereSeparator: \.isNewline)
-                .compactMap { line in
-                    let nums = line.split(separator: ",")
-                        .compactMap { Double($0.trimmingCharacters(in: .whitespaces)) }
-                    guard nums.count == 5 else { return nil }
-                    return SelectionBox(x: nums[0], y: nums[1], w: nums[2], h: nums[3], rotation: nums[4])
+                """
+            var probeError: NSDictionary?
+            let probeResult = NSAppleScript(source: probeScript)!
+                .executeAndReturnError(&probeError)
+            if let err = probeError {
+                let code = err["NSAppleScriptErrorNumber"] as? Int ?? 0
+                if code == -1728 {
+                    DispatchQueue.main.async { completion(.failure(.noDocumentOpen)) }
+                } else {
+                    let detail = err["NSAppleScriptErrorMessage"] as? String ?? "AppleScript error \(code)"
+                    log.error("probe failed: \(detail, privacy: .public)")
+                    DispatchQueue.main.async { completion(.failure(.exportFailed(detail))) }
                 }
-        }()
-        log.info("slide index \(slideIndex, privacy: .public), \(selectionBoxes.count, privacy: .public) selected item(s)")
+                return
+            }
+            guard let probeString = probeResult.stringValue else {
+                DispatchQueue.main.async { completion(.failure(.exportFailed("empty probe result"))) }
+                return
+            }
+            let parts = probeString.components(separatedBy: "|")
+            guard let slideIndex = Int(parts.first ?? ""), slideIndex > 0 else {
+                DispatchQueue.main.async {
+                    completion(.failure(.exportFailed("could not determine slide position")))
+                }
+                return
+            }
+            selectionBoxes = {
+                guard parts.count > 1 else { return [] }
+                return parts[1]
+                    .split(whereSeparator: \.isNewline)
+                    .compactMap { line in
+                        let nums = line.split(separator: ",")
+                            .compactMap { Double($0.trimmingCharacters(in: .whitespaces)) }
+                        guard nums.count == 5 else { return nil }
+                        return SelectionBox(x: nums[0], y: nums[1], w: nums[2], h: nums[3], rotation: nums[4])
+                    }
+            }()
+            log.info("slide index \(slideIndex, privacy: .public), \(selectionBoxes.count, privacy: .public) selected item(s)")
+        } else {
+            selectionBoxes = []
+        }
 
-        // 3a. Clipboard fast path: if the caller snapshotted a PDF from the
-        //     pasteboard, use it as the source and apply any selection crop.
-        //     No export, no document modification. This is the only viable path
-        //     for large or complex Keynote files that fail or time out during
-        //     the skipped-slide export.
-        if let data = clipboardPDFData {
+        // 3a. Clipboard fast path (selection mode only): if the caller
+        //     snapshotted a Keynote PDF, use it as the crop source directly.
+        //     No export, no document modification. This is the only viable
+        //     path for large or complex files that fail during export.
+        //     For the default full-slide pull this block is skipped so the
+        //     export always fetches a fresh copy of the current slide.
+        if wantSelection, let data = clipboardPDFData {
             let srcURL = URL(fileURLWithPath: NSTemporaryDirectory())
                 .appendingPathComponent("KeyJig-clipboard-\(UUID().uuidString).pdf")
             var srcWritten = false
@@ -184,7 +191,7 @@ func pullFromKeynote(
                 log.info("clipboard PDF write failed, falling back to export: \(error.localizedDescription, privacy: .public)")
             }
             if srcWritten {
-                log.info("clipboard PDF fast path — no export needed")
+                log.info("clipboard PDF fast path (selection) — no export needed")
                 let result = extractSlidePDF(
                     from: srcURL,
                     pageNumber: 1,
@@ -196,7 +203,76 @@ func pullFromKeynote(
             }
         }
 
-        // 3b. Export only the current slide via the skipped-slide trick:
+        // 3b. GUI scripting path (default full-slide pull only):
+        //     Activate Keynote and send two Escape presses followed by ⌘C.
+        //     First Escape exits text editing or deselects any selected object;
+        //     second Escape moves focus to the navigator with the current slide
+        //     selected. ⌘C then copies the whole slide (PDF + native data) to
+        //     the clipboard — identical to the user clicking the thumbnail and
+        //     pressing ⌘C. Falls through to the export path below if
+        //     Accessibility permission is not granted or the script fails.
+        if !wantSelection {
+            let guiScript = """
+                tell application "Keynote"
+                    if not (exists front document) then error number -1728
+                    activate
+                end tell
+                tell application "System Events"
+                    tell process "Keynote"
+                        set frontmost to true
+                        key code 53
+                        delay 0.05
+                        key code 53
+                        delay 0.15
+                        keystroke "c" using {command down}
+                    end tell
+                end tell
+                """
+            // Snapshot change count before scripting so we can confirm ⌘C fired.
+            let priorChangeCount: Int = DispatchQueue.main.sync {
+                NSPasteboard.general.changeCount
+            }
+            var guiError: NSDictionary?
+            NSAppleScript(source: guiScript)!.executeAndReturnError(&guiError)
+            if guiError == nil {
+                // Keynote needs a moment to finish writing the clipboard.
+                Thread.sleep(forTimeInterval: 0.3)
+                // Read on main thread; reject if the change count didn't move
+                // (means ⌘C landed somewhere other than the slide navigator).
+                let guiClipData: Data? = DispatchQueue.main.sync {
+                    let pb = NSPasteboard.general
+                    guard pb.changeCount != priorChangeCount else {
+                        log.info("clipboard unchanged after GUI script — ⌘C did not fire on slide")
+                        return nil
+                    }
+                    return ["com.adobe.pdf", "Apple PDF pasteboard type"]
+                        .lazy
+                        .compactMap { pb.data(forType: NSPasteboard.PasteboardType($0)) }
+                        .first { !$0.isEmpty }
+                }
+                if let data = guiClipData {
+                    let srcURL = URL(fileURLWithPath: NSTemporaryDirectory())
+                        .appendingPathComponent("KeyJig-clipboard-\(UUID().uuidString).pdf")
+                    if (try? data.write(to: srcURL)) != nil {
+                        log.info("GUI scripting path succeeded")
+                        let result = extractSlidePDF(
+                            from: srcURL,
+                            pageNumber: 1,
+                            selectionBoxes: [],
+                            padding: 8.0)
+                        try? FileManager.default.removeItem(at: srcURL)
+                        DispatchQueue.main.async { completion(result) }
+                        return
+                    }
+                }
+                log.info("GUI scripting ran but clipboard had no PDF, falling through to export")
+            } else {
+                let detail = guiError!["NSAppleScriptErrorMessage"] as? String ?? "unknown"
+                log.info("GUI scripting failed (\(detail, privacy: .public)), falling through to export")
+            }
+        }
+
+        // 3c. Export only the current slide via the skipped-slide trick:
         //     mark all other slides as skipped, export, restore. The target
         //     slide is identified by object reference so sub-slides (whose
         //     display number can match a parent) are handled correctly.
@@ -236,6 +312,30 @@ func pullFromKeynote(
         if let err = exportError {
             let detail = err["NSAppleScriptErrorMessage"] as? String ?? "unknown"
             log.error("export failed: \(detail, privacy: .public)")
+            // For the full-slide path, read the current clipboard fresh as a
+            // last resort (covers large/complex files that Keynote can't export).
+            // Reading fresh here rather than using a pre-snapshotted value avoids
+            // showing stale data from a previous session.
+            if !wantSelection {
+                let fallbackData: Data? = DispatchQueue.main.sync {
+                    let pb = NSPasteboard.general
+                    return ["com.adobe.pdf", "Apple PDF pasteboard type"]
+                        .lazy
+                        .compactMap { pb.data(forType: NSPasteboard.PasteboardType($0)) }
+                        .first { !$0.isEmpty }
+                }
+                if let data = fallbackData {
+                    let srcURL = URL(fileURLWithPath: NSTemporaryDirectory())
+                        .appendingPathComponent("KeyJig-clipboard-\(UUID().uuidString).pdf")
+                    if (try? data.write(to: srcURL)) != nil {
+                        log.info("export failed; using current clipboard PDF as fallback")
+                        let result = extractSlidePDF(from: srcURL, pageNumber: 1, selectionBoxes: [], padding: 8.0)
+                        try? FileManager.default.removeItem(at: srcURL)
+                        DispatchQueue.main.async { completion(result) }
+                        return
+                    }
+                }
+            }
             DispatchQueue.main.async { completion(.failure(.exportFailed(detail))) }
             return
         }

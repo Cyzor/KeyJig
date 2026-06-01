@@ -22,6 +22,7 @@
 
 /* ── Preview area ───────────────────────────────────────────────────── */
 "preview.drag_label" = "Keynoteへドラッグ";
+"preview.drag_label_pdf" = "ドラッグして移動";
 "context_menu.copy_for_keynote" = "変換してKeynoteにコピー";
 "context_menu.clear" = "クリア";
 
@@ -49,6 +50,7 @@
 "button.copy_to_clipboard" = "クリップボードにコピー";
 "button.place_in_keynote" = "Keynoteに配置";
 "button.pull_from_keynote" = "Keynoteから取り出す";
+"button.import_selection_from_keynote" = "Keynoteの選択範囲を読み込む";
 "button.save_pdf" = "PDFを保存…";
 "button.copy_pdf" = "PDFをコピー";
 

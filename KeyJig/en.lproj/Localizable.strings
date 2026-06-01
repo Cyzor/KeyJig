@@ -23,6 +23,7 @@
 
 /* ── Preview area ───────────────────────────────────────────────────── */
 "preview.drag_label" = "Drag into Keynote";
+"preview.drag_label_pdf" = "Drag to Destination";
 "context_menu.copy_for_keynote" = "Convert and Copy for Keynote";
 "context_menu.clear" = "Clear";
 
@@ -58,6 +59,7 @@
 "button.copy_to_clipboard" = "Copy to Clipboard";
 "button.place_in_keynote" = "Place in Keynote";
 "button.pull_from_keynote" = "Pull from Keynote";
+"button.import_selection_from_keynote" = "Import Selection from Keynote";
 "button.save_pdf" = "Save PDF…";
 "button.copy_pdf" = "Copy PDF";
 

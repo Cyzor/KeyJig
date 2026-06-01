@@ -23,6 +23,7 @@
 
 /* ── Preview area ───────────────────────────────────────────────────── */
 "preview.drag_label" = "In Keynote ziehen";
+"preview.drag_label_pdf" = "Zum Ziel ziehen";
 "context_menu.copy_for_keynote" = "Konvertieren und für Keynote kopieren";
 "context_menu.clear" = "Löschen";
 
@@ -50,6 +51,7 @@
 "button.copy_to_clipboard" = "In Zwischenablage kopieren";
 "button.place_in_keynote" = "In Keynote einfügen";
 "button.pull_from_keynote" = "Aus Keynote abrufen";
+"button.import_selection_from_keynote" = "Auswahl aus Keynote importieren";
 "button.save_pdf" = "PDF sichern…";
 "button.copy_pdf" = "PDF kopieren";
 
