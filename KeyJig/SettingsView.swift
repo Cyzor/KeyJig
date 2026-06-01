@@ -1,6 +1,7 @@
 import SwiftUI
 
 private let inkscapeDownloadURL = URL(string: "https://inkscape.org/release/")!
+private let accessibilitySettingsURL = URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility")!
 
 // MARK: - Tooltip Text Constants for Settings
 
@@ -12,6 +13,10 @@ struct SettingsTooltips {
     static let downloadInkscape = NSLocalizedString(
         "tooltip.settings.download",
         comment: "Tooltip for the Download button when Inkscape is not installed")
+
+    static let accessibilityOpen = NSLocalizedString(
+        "tooltip.settings.accessibility_open",
+        comment: "Tooltip for the Open Settings button in the Accessibility row")
 }
 
 // MARK: - Settings View
@@ -19,6 +24,7 @@ struct SettingsTooltips {
 struct SettingsView: View {
     @ObservedObject var appState: AppState
     @State private var showingInkscapeDetails = false
+    @State private var accessibilityTrusted: Bool = AXIsProcessTrusted()
 
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
@@ -186,9 +192,81 @@ struct SettingsView: View {
                     .buttonStyle(PlainButtonStyle())
                 }
             }
+            Divider()
+
+            // Accessibility Section
+            VStack(alignment: .leading, spacing: 8) {
+                Text(NSLocalizedString(
+                    "settings.section.permissions",
+                    comment: "Settings section heading for OS permissions"))
+                    .font(.headline)
+
+                HStack(spacing: 12) {
+                    if accessibilityTrusted {
+                        Image(systemName: "checkmark.circle.fill")
+                            .foregroundColor(.green)
+                            .font(.title3)
+                            .accessibilityLabel(NSLocalizedString(
+                                "accessibility.accessibility_granted",
+                                comment: "VoiceOver label when Accessibility permission is granted"))
+                    } else {
+                        Image(systemName: "exclamationmark.triangle.fill")
+                            .foregroundColor(.orange)
+                            .font(.title3)
+                            .accessibilityLabel(NSLocalizedString(
+                                "accessibility.accessibility_needed",
+                                comment: "VoiceOver label when Accessibility permission is not granted"))
+                    }
+
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(NSLocalizedString(
+                            "settings.accessibility.name",
+                            comment: "Accessibility permission row label"))
+                            .font(.body)
+                            .fontWeight(.semibold)
+                        Text(accessibilityTrusted
+                            ? NSLocalizedString(
+                                "settings.accessibility.granted",
+                                comment: "Status when Accessibility permission is granted")
+                            : NSLocalizedString(
+                                "settings.accessibility.needed",
+                                comment: "Status when Accessibility permission is not granted"))
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                    }
+
+                    Spacer()
+
+                    if !accessibilityTrusted {
+                        Button(NSLocalizedString(
+                            "settings.accessibility.open_settings",
+                            comment: "Button that opens System Settings to grant Accessibility permission")) {
+                            NSWorkspace.shared.open(accessibilitySettingsURL)
+                        }
+                        .font(.caption)
+                        .help(SettingsTooltips.accessibilityOpen)
+                    }
+                }
+                .padding(12)
+                .background(Color(.controlBackgroundColor))
+                .cornerRadius(6)
+            }
+
+            Text(NSLocalizedString(
+                "settings.accessibility.description",
+                comment: "Explanatory text about why Accessibility permission is needed"))
+                .font(.caption)
+                .foregroundColor(.secondary)
+                .fixedSize(horizontal: false, vertical: true)
         }
         .padding(24)
         .frame(minWidth: 400)
+        .onAppear {
+            accessibilityTrusted = AXIsProcessTrusted()
+        }
+        .onReceive(NotificationCenter.default.publisher(for: NSApplication.didBecomeActiveNotification)) { _ in
+            accessibilityTrusted = AXIsProcessTrusted()
+        }
         .sheet(isPresented: $showingInkscapeDetails) {
             InkscapeDetailsView(appState: appState, isPresented: $showingInkscapeDetails)
         }

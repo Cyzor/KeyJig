@@ -133,6 +133,15 @@
 
 /* ── Settings ───────────────────────────────────────────────────────── */
 "settings.window.title" = "Einstellungen";
+"settings.section.permissions" = "Berechtigungen";
+"settings.accessibility.name" = "Bedienungshilfen";
+"settings.accessibility.granted" = "Zugriff erlaubt";
+"settings.accessibility.needed" = "Zugriff erforderlich fur \"In Keynote einfugen\"";
+"settings.accessibility.open_settings" = "Einstellungen öffnen";
+"settings.accessibility.description" = "Bedienungshilfenzugriff ermöglicht KeyJig, SVGs direkt auf Keynote-Folien zu platzieren. Ohne ihn bitte \"In Zwischenablage kopieren\" verwenden und manuell einsetzen.";
+"accessibility.accessibility_granted" = "Bedienungshilfenzugriff erlaubt";
+"accessibility.accessibility_needed" = "Bedienungshilfenzugriff nicht erlaubt";
+"tooltip.settings.accessibility_open" = "Systemeinstellungen öffnen, um KeyJig Bedienungshilfenzugriff zu gewähren";
 "settings.section.integration" = "Integration";
 "settings.external_deps" = "Externe Abhängigkeiten";
 "settings.inkscape.checking" = "Wird geprüft…";

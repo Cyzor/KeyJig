@@ -132,6 +132,15 @@
 
 /* ── Settings ───────────────────────────────────────────────────────── */
 "settings.window.title" = "設定";
+"settings.section.permissions" = "権限";
+"settings.accessibility.name" = "アクセシビリティ";
+"settings.accessibility.granted" = "アクセスが許可されています";
+"settings.accessibility.needed" = "「Keynoteに配置」にはアクセスが必要です";
+"settings.accessibility.open_settings" = "設定を開く";
+"settings.accessibility.description" = "アクセシビリティアクセスを許可すると、KeyJigがSVGを直接Keynoteのスライドに配置できます。許可がない場合は、「クリップボードにコピー」を使用して手動で貼り付けてください。";
+"accessibility.accessibility_granted" = "アクセシビリティアクセスが許可されています";
+"accessibility.accessibility_needed" = "アクセシビリティアクセスが許可されていません";
+"tooltip.settings.accessibility_open" = "システム設定を開いてKeyJigにアクセシビリティアクセスを許可する";
 "settings.section.integration" = "連携";
 "settings.external_deps" = "外部依存関係";
 "settings.inkscape.checking" = "確認中…";

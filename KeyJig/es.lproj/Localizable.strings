@@ -132,6 +132,15 @@
 
 /* ── Settings ───────────────────────────────────────────────────────── */
 "settings.window.title" = "Ajustes";
+"settings.section.permissions" = "Permisos";
+"settings.accessibility.name" = "Accesibilidad";
+"settings.accessibility.granted" = "Acceso concedido";
+"settings.accessibility.needed" = "Acceso necesario para Insertar en Keynote";
+"settings.accessibility.open_settings" = "Abrir Ajustes";
+"settings.accessibility.description" = "El permiso de accesibilidad permite a KeyJig colocar SVGs directamente en las diapositivas de Keynote. Sin él, usa Copiar al portapapeles y pega manualmente.";
+"accessibility.accessibility_granted" = "Permiso de accesibilidad concedido";
+"accessibility.accessibility_needed" = "Permiso de accesibilidad no concedido";
+"tooltip.settings.accessibility_open" = "Abrir Configuración del Sistema para conceder permiso de accesibilidad a KeyJig";
 "settings.section.integration" = "Integración";
 "settings.external_deps" = "Dependencias externas";
 "settings.inkscape.checking" = "Comprobando…";
