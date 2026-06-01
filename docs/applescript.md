@@ -117,7 +117,9 @@ end tell
 
 ### Window Commands
 
-**`show main window`**, **`show popover`**, **`new floating window`**, **`show about`**, **`show help`** — All return `true`. Use these to surface the app UI from a script.
+**`show main window`**, **`show popover`**, **`new floating window`**, **`show help`** — All return `true`. Use these to surface the app UI from a script.
+
+**`show about`** — Returns `true`, but presents a modal alert. All subsequent Apple Events block until the user dismisses it. Don't call this in unattended scripts or test loops.
 
 ---
 
