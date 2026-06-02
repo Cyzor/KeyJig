@@ -33,15 +33,15 @@
 "metadata.source" = "Quelle";
 
 /* ── Status messages ────────────────────────────────────────────────── */
-"status.converting" = "Konvertierung via Inkscape…";
+"status.converting" = "Konvertierung mit Inkscape…";
 "status.failed" = "Konvertierung fehlgeschlagen – keine SVG- oder konvertierbaren Daten gefunden.";
 "status.ready" = "Bereit – Vorschau in Keynote ziehen oder In Zwischenablage kopieren.";
-"status.no_svg_on_clipboard" = "Keine SVG in der Zwischenablage gefunden.";
+"status.no_svg_on_clipboard" = "Kein SVG in der Zwischenablage gefunden.";
 "status.copied" = "In Zwischenablage kopiert!";
 "status.keynote.sending" = "Wird in Keynote eingefügt…";
 "status.keynote.success" = "In Keynote eingefügt – Objekt auswählen und Format ▸ Formen und Linien ▸ Aufteilen wählen.";
 "status.keynote.pulling" = "Wird aus Keynote exportiert…";
-"status.keynote.pulled" = "Aus Keynote abgerufen – Vorschau ziehen, kopieren oder das PDF sichern.";
+"status.keynote.pulled" = "Aus Keynote abgerufen – Vorschau ziehen oder das PDF kopieren.";
 "status.pdf.copied" = "PDF in Zwischenablage kopiert.";
 "status.pdf.saved" = "PDF gesichert.";
 "instruction.break_apart" = "Nach dem Einsetzen in Keynote das Objekt auswählen und Format ‣ Formen und Linien ‣ Aufteilen wählen.";
@@ -68,7 +68,7 @@
 
 /* ── Empty state ────────────────────────────────────────────────────── */
 "empty_state.title" = "Kein SVG geladen";
-"empty_state.body" = "SVG-Datei hierher ziehen, über die Schaltfläche öffnen oder Grafik kopieren und *In Zwischenablage kopieren* klicken.";
+"empty_state.body" = "SVG-Datei hierher ziehen, über die Schaltfläche öffnen oder Grafik kopieren und \"In Zwischenablage kopieren\" klicken.";
 
 /* ── File dialog ────────────────────────────────────────────────────── */
 "file_dialog.title" = "Vektordatei auswählen";
@@ -125,9 +125,9 @@
 /* ── Help window ────────────────────────────────────────────────────── */
 "dialog.help.title" = "Hilfe";
 "help.section.import.title" = "SVG importieren";
-"help.section.import.body" = "• SVG-Datei auf den Vorschaubereich ziehen.\n• Grafik in Illustrator, Affinity oder Inkscape kopieren (⌘C) – KeyJig erkennt sie automatisch.\n• Datei über Ablage > SVG-Datei öffnen… (⌘O) öffnen.\n• Mit installiertem Inkscape öffnet KeyJig auch PDF- und .ai-Dateien.";
+"help.section.import.body" = "• SVG-Datei auf den Vorschaubereich ziehen.\n• Grafik in Illustrator, Affinity oder Inkscape kopieren (⌘C) – KeyJig erkennt sie automatisch.\n• Ablage > SVG-Datei öffnen… (⌘O) verwenden.\n• Mit installiertem Inkscape öffnet KeyJig auch PDF- und .ai-Dateien.";
 "help.section.keynote.title" = "An Keynote senden";
-"help.section.keynote.body" = "• In Zwischenablage kopieren (⌘⇧C) kodiert das SVG für Keynote. In Keynote einsetzen (⌘V), dann Format > Formen und Linien > Aufteilen verwenden.\n• In Keynote einfügen platziert das SVG direkt auf die aktuelle Folie. Erfordert Bedienungshilfenzugriff (Systemeinstellungen ▸ Datenschutz & Sicherheit).";
+"help.section.keynote.body" = "• In Zwischenablage kopieren (⌘⇧C) — dann in Keynote einsetzen (⌘V) und Format > Formen und Linien > Aufteilen verwenden.\n• In Keynote einfügen platziert das SVG direkt auf die aktuelle Folie. Erfordert Bedienungshilfenzugriff (Systemeinstellungen ▸ Datenschutz & Sicherheit).";
 "help.section.pull.title" = "Aus Keynote abrufen";
 "help.section.pull.body" = "• Auf \"Aus Keynote abrufen\" klicken, um die aktuelle Folie als PDF zu erfassen.\n• Option halten, um das PDF auf ausgewählte Objekte zuzuschneiden.\n• PDF-Vorschau in Affinity, Illustrator, Figma oder eine andere App ziehen – oder über die Schaltflächen unten speichern oder kopieren.";
 
@@ -136,7 +136,7 @@
 "settings.section.permissions" = "Berechtigungen";
 "settings.accessibility.name" = "Bedienungshilfen";
 "settings.accessibility.granted" = "Zugriff erlaubt";
-"settings.accessibility.needed" = "Zugriff erforderlich fur \"In Keynote einfugen\"";
+"settings.accessibility.needed" = "Zugriff erforderlich für \"In Keynote einfügen\"";
 "settings.accessibility.open_settings" = "Einstellungen öffnen";
 "settings.accessibility.description" = "Bedienungshilfenzugriff ermöglicht KeyJig, SVGs direkt auf Keynote-Folien zu platzieren. Ohne ihn bitte \"In Zwischenablage kopieren\" verwenden und manuell einsetzen.";
 "accessibility.accessibility_granted" = "Bedienungshilfenzugriff erlaubt";

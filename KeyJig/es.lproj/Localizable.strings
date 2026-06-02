@@ -8,12 +8,12 @@
 "tooltip.copy_to_clipboard" = "Copia el SVG cargado al portapapeles para pegarlo en Keynote con ⌘V, luego usa «Separar» y «Hacer editable».";
 "tooltip.place_in_keynote" = "Coloca el SVG directamente en la diapositiva actual de Keynote. Keynote debe estar abierto. Requiere acceso de accesibilidad.";
 "tooltip.pull_from_keynote" = "Extrae gráficos vectoriales de la diapositiva actual de Keynote como PDF. Si hay elementos seleccionados, solo se captura esa zona.";
-"tooltip.save_pdf" = "Guardar el PDF extraído en la ubicación elegida.";
+"tooltip.save_pdf" = "Guarda el PDF extraído en la ubicación elegida.";
 "tooltip.copy_pdf" = "Copia el PDF extraído al portapapeles para pegarlo en otra app.";
 "tooltip.preview_pdf_loaded" = "Arrastra este PDF directamente a Affinity, Illustrator, Figma o cualquier app que acepte PDF.";
 "tooltip.status_ready" = "El SVG está listo. Arrástralo a Keynote o haz clic en «Copiar al portapapeles».";
 "tooltip.preview_loaded" = "Arrastra este SVG directamente a Keynote o cualquier app que acepte archivos SVG. El portapapeles no se modifica al arrastrar.";
-"tooltip.preview_empty" = "Suelta un archivo SVG aquí, ábrelo con el botón de abajo o copia ilustración y haz clic en «Copiar al portapapeles».";
+"tooltip.preview_empty" = "Suelta un archivo SVG aquí, ábrelo con el botón de abajo o copia una ilustración y haz clic en «Copiar al portapapeles».";
 "tooltip.settings.details" = "Ver las rutas de instalación donde se encontró Inkscape en tu sistema.";
 "tooltip.settings.download" = "Descarga e instala Inkscape desde el sitio web oficial para habilitar la conversión de respaldo en PDF.";
 "tooltip.settings.copy_path" = "Copiar la ruta de instalación de Inkscape al portapapeles";
@@ -40,7 +40,7 @@
 "status.keynote.sending" = "Insertando en Keynote…";
 "status.keynote.success" = "Insertado en Keynote — selecciona el objeto y usa Formato ▸ Formas y líneas ▸ Separar.";
 "status.keynote.pulling" = "Exportando desde Keynote…";
-"status.keynote.pulled" = "Extraído de Keynote — arrastra la vista previa, copia o guarda el PDF.";
+"status.keynote.pulled" = "Extraído de Keynote — arrastra la vista previa o copia el PDF.";
 "status.pdf.copied" = "PDF copiado al portapapeles.";
 "status.pdf.saved" = "PDF guardado.";
 "instruction.break_apart" = "Una vez en Keynote, selecciona el objeto y elige Formato ‣ Formas y líneas ‣ Separar.";
@@ -67,7 +67,7 @@
 
 /* ── Empty state ────────────────────────────────────────────────────── */
 "empty_state.title" = "Sin SVG cargado";
-"empty_state.body" = "Arrastra aquí un archivo SVG, ábrelo con el botón de abajo o copia ilustración al portapapeles y haz clic en *Copiar al portapapeles*.";
+"empty_state.body" = "Arrastra aquí un archivo SVG, ábrelo con el botón de abajo o copia una ilustración al portapapeles y haz clic en «Copiar al portapapeles».";
 
 /* ── File dialog ────────────────────────────────────────────────────── */
 "file_dialog.title" = "Seleccionar un archivo vectorial";
@@ -124,9 +124,9 @@
 /* ── Help window ────────────────────────────────────────────────────── */
 "dialog.help.title" = "Ayuda";
 "help.section.import.title" = "Importar SVG";
-"help.section.import.body" = "• Arrastra un archivo SVG al área de vista previa.\n• Copia ilustración en Illustrator, Affinity o Inkscape (⌘C) — KeyJig lo detecta automáticamente.\n• Abre un archivo con Archivo > Abrir archivo SVG… (⌘O).\n• Con Inkscape instalado, KeyJig también abre archivos PDF y .ai.";
+"help.section.import.body" = "• Arrastra un archivo SVG al área de vista previa.\n• Copia una ilustración en Illustrator, Affinity o Inkscape (⌘C) — KeyJig lo detecta automáticamente.\n• Usa Archivo > Abrir archivo SVG… (⌘O).\n• Con Inkscape instalado, KeyJig también abre archivos PDF y .ai.";
 "help.section.keynote.title" = "Enviar a Keynote";
-"help.section.keynote.body" = "• Copiar al portapapeles (⌘⇧C) codifica el SVG para Keynote. Pega en Keynote (⌘V) y usa Formato > Formas y líneas > Separar para editar trayectos individuales.\n• Insertar en Keynote coloca el SVG directamente en la diapositiva actual. Requiere permiso de accesibilidad (Configuración del Sistema ▸ Privacidad y seguridad).";
+"help.section.keynote.body" = "• Copiar al portapapeles (⌘⇧C) — pega en Keynote (⌘V) y usa Formato > Formas y líneas > Separar para editar los trayectos.\n• Insertar en Keynote coloca el SVG directamente en la diapositiva actual. Requiere permiso de accesibilidad (Configuración del Sistema ▸ Privacidad y seguridad).";
 "help.section.pull.title" = "Extraer de Keynote";
 "help.section.pull.body" = "• Haz clic en Extraer de Keynote para capturar la diapositiva actual como PDF.\n• Mantén pulsada Opción para recortar al área de objetos seleccionados.\n• Arrastra la vista previa del PDF a Affinity, Illustrator, Figma u otra app — o guárdalo o cópialo desde los botones de abajo.";
 

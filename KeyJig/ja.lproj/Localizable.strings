@@ -1,6 +1,6 @@
 /* KeyJig — 日本語 (ja) */
 /* ── Accessibility ──────────────────────────────────────────────────── */
-"accessibility.status_bar" = "KeyJigメニューーバーアイコン。クリックしてクイックパネルを開きます。";
+"accessibility.status_bar" = "KeyJigメニューバーアイコン。クリックしてクイックパネルを開きます。";
 "accessibility.placeholder_icon" = "SVGが読み込まれていないことを示す図解";
 
 /* ── Tooltips ───────────────────────────────────────────────────────── */
@@ -40,7 +40,7 @@
 "status.keynote.sending" = "Keynoteに配置中…";
 "status.keynote.success" = "Keynoteに配置しました — オブジェクトを選択し、フォーマット ▸ 図形と線 ▸ 分割を選択してください。";
 "status.keynote.pulling" = "Keynoteからエクスポート中…";
-"status.keynote.pulled" = "Keynoteから取り出しました — プレビューをドラッグするか、PDFをコピー／保存してください。";
+"status.keynote.pulled" = "Keynoteから取り出しました — プレビューをドラッグするか、PDFをコピーしてください。";
 "status.pdf.copied" = "PDFをクリップボードにコピーしました。";
 "status.pdf.saved" = "PDFを保存しました。";
 "instruction.break_apart" = "Keynoteに配置後、オブジェクトを選択し、フォーマット ‣ 図形と線 ‣ 分割を選択してください。";
@@ -67,7 +67,7 @@
 
 /* ── Empty state ────────────────────────────────────────────────────── */
 "empty_state.title" = "SVG未読み込み";
-"empty_state.body" = "SVGファイルをここにドロップするか、下のボタンで開くか、アートワークをコピーして*クリップボードにコピー*をクリックしてください。";
+"empty_state.body" = "SVGファイルをここにドロップするか、下のボタンで開くか、アートワークをコピーして「クリップボードにコピー」をクリックしてください。";
 
 /* ── File dialog ────────────────────────────────────────────────────── */
 "file_dialog.title" = "ベクターファイルを選択";
@@ -117,7 +117,7 @@
 
 /* ── About dialog ───────────────────────────────────────────────────── */
 "dialog.about.title" = "KeyJig";
-"dialog.about.info" = "Keynote互換フォーマットへのベクターグラフィック変換ユーティリティ。\n\nバージョン %@\n\nCopyright © 2026 KeyJig Contributors\nCopyright © 2021–2026 Jonathan Lampérth\n\nThe Noun Project（CC-BY-3.0 US ライセンス)：\nhttps://thenounproject.com/legal/terms-of-use/#icon-licenses";
+"dialog.about.info" = "Keynote互換フォーマットへのベクターグラフィック変換ユーティリティ。\n\nバージョン %@\n\nCopyright © 2026 KeyJig Contributors\nCopyright © 2021–2026 Jonathan Lampérth\n\nThe Noun Project（CC-BY-3.0 US ライセンス）：\nhttps://thenounproject.com/legal/terms-of-use/#icon-licenses";
 "dialog.about.button" = "閉じる";
 "dialog.about.website" = "プロジェクトサイト";
 
@@ -126,7 +126,7 @@
 "help.section.import.title" = "SVGを読み込む";
 "help.section.import.body" = "• SVGファイルをプレビューエリアにドロップします。\n• Illustrator・Affinity・Inkscapeでアートワークをコピー（⌘C）すると、KeyJigが自動で検出します。\n• ファイル ▸ SVGファイルを開く…（⌘O）でファイルを開きます。\n• Inkscapeがインストールされていれば、PDFや.aiファイルも開けます。";
 "help.section.keynote.title" = "Keynoteに送る";
-"help.section.keynote.body" = "• クリップボードにコピー（⌘⇧C）でSVGをKeynote用に変換します。Keynoteで貼り付け（⌘V）後、フォーマット ▸ 図形と線 ▸ 分割でパスを編集できます。\n• Keynoteに配置でSVGを現在のスライドに直接配置します。アクセシビリティアクセスが必要です（システム設定 ▸ プライバシーとセキュリティ）。";
+"help.section.keynote.body" = "• クリップボードにコピー（⌘⇧C）でKeynote用に変換し、Keynoteで貼り付け（⌘V）後にフォーマット ▸ 図形と線 ▸ 分割でパスを編集できます。\n• Keynoteに配置でSVGを現在のスライドに直接配置します。アクセシビリティアクセスが必要です（システム設定 ▸ プライバシーとセキュリティ）。";
 "help.section.pull.title" = "Keynoteから取り出す";
 "help.section.pull.body" = "• 「Keynoteから取り出す」をクリックして現在のスライドをPDFとして取得します。\n• Optionキーを押しながらクリックすると、選択したオブジェクトのみを切り抜きます。\n• PDFプレビューをAffinity・Illustrator・Figmaなどのアプリにドラッグするか、下のボタンで保存またはコピーしてください。";
 

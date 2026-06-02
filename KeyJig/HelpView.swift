@@ -86,6 +86,13 @@ private struct HelpSection: View {
     let title: String
     let content: String
 
+    private var bullets: [String] {
+        content.components(separatedBy: "\n").compactMap { line in
+            let text = line.hasPrefix("• ") ? String(line.dropFirst(2)) : line
+            return text.isEmpty ? nil : text
+        }
+    }
+
     var body: some View {
         HStack(alignment: .top, spacing: 14) {
             Image(systemName: symbol)
@@ -95,10 +102,18 @@ private struct HelpSection: View {
             VStack(alignment: .leading, spacing: 6) {
                 Text(title)
                     .font(.headline)
-                Text(content)
-                    .font(.body)
-                    .foregroundColor(.secondary)
-                    .fixedSize(horizontal: false, vertical: true)
+                VStack(alignment: .leading, spacing: 4) {
+                    ForEach(bullets, id: \.self) { bullet in
+                        HStack(alignment: .top, spacing: 6) {
+                            Text("•")
+                                .foregroundColor(.secondary)
+                            Text(bullet)
+                                .foregroundColor(.secondary)
+                                .fixedSize(horizontal: false, vertical: true)
+                        }
+                    }
+                }
+                .font(.body)
             }
         }
     }

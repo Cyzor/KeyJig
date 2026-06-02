@@ -41,7 +41,7 @@
 "status.keynote.sending" = "Placing in Keynote…";
 "status.keynote.success" = "Placed in Keynote — select it and use Format ▸ Shapes and Lines ▸ Break Apart.";
 "status.keynote.pulling" = "Exporting from Keynote…";
-"status.keynote.pulled" = "Pulled from Keynote — drag the preview, copy, or save the PDF.";
+"status.keynote.pulled" = "Pulled from Keynote — drag the preview or copy the PDF.";
 "status.pdf.copied" = "PDF copied to clipboard.";
 "status.pdf.saved" = "PDF saved.";
 "instruction.break_apart" = "Once placed in Keynote, select the object and choose Format ‣ Shapes and Lines ‣ Break Apart.";
@@ -125,9 +125,9 @@
 /* ── Help window ────────────────────────────────────────────────────── */
 "dialog.help.title" = "Help";
 "help.section.import.title" = "Import an SVG";
-"help.section.import.body" = "• Drop an SVG file onto the preview area.\n• Copy artwork in Illustrator, Affinity, or Inkscape (⌘C) — KeyJig picks it up automatically.\n• Open a file via File > Open SVG File… (⌘O).\n• With Inkscape installed, KeyJig also opens PDF and .ai files.";
+"help.section.import.body" = "• Drop an SVG file onto the preview area.\n• Copy artwork in Illustrator, Affinity, or Inkscape (⌘C) — KeyJig picks it up automatically.\n• Use File > Open SVG File… (⌘O).\n• With Inkscape installed, KeyJig also opens PDF and .ai files.";
 "help.section.keynote.title" = "Send to Keynote";
-"help.section.keynote.body" = "• Copy to Clipboard (⌘⇧C) encodes the SVG for Keynote. Paste in Keynote (⌘V), then use Format > Shapes & Lines > Break Apart to edit individual paths.\n• Place in Keynote drops the SVG directly onto the current slide. Needs Accessibility permission (System Settings ▸ Privacy & Security).";
+"help.section.keynote.body" = "• Copy to Clipboard (⌘⇧C) — paste into Keynote (⌘V) and use Format > Shapes & Lines > Break Apart to edit paths.\n• Place in Keynote drops the SVG directly onto the current slide. Needs Accessibility permission (System Settings ▸ Privacy & Security).";
 "help.section.pull.title" = "Pull from Keynote";
 "help.section.pull.body" = "• Click Pull from Keynote to capture the current slide as a PDF.\n• Hold Option while clicking to crop to selected objects only.\n• Drag the PDF preview to Affinity, Illustrator, Figma, or any PDF-capable app — or save or copy it from the buttons below.";
 

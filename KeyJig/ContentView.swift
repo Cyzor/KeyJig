@@ -215,15 +215,16 @@ class SVGInteractionView: NSView {
         // Only show a menu when there is loaded content to act on.
         guard onCopyForKeynote != nil || onClear != nil else { return nil }
         let menu = NSMenu()
-        let copyItem = menu.addItem(
-            withTitle: NSLocalizedString(
-                "context_menu.copy_for_keynote",
-                comment: "Context menu: convert and copy SVG to clipboard for Keynote"),
-            action: #selector(handleCopyForKeynote),
-            keyEquivalent: "")
-        copyItem.target = self
-        copyItem.isEnabled = onCopyForKeynote != nil
-        menu.addItem(NSMenuItem.separator())
+        if onCopyForKeynote != nil {
+            let copyItem = menu.addItem(
+                withTitle: NSLocalizedString(
+                    "context_menu.copy_for_keynote",
+                    comment: "Context menu: convert and copy SVG to clipboard for Keynote"),
+                action: #selector(handleCopyForKeynote),
+                keyEquivalent: "")
+            copyItem.target = self
+            menu.addItem(NSMenuItem.separator())
+        }
         let clearItem = menu.addItem(
             withTitle: NSLocalizedString(
                 "context_menu.clear",
