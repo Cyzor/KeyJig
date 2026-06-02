@@ -79,12 +79,15 @@ func pullFromKeynote(
         //    selection list at once) cut Apple Event round-trips from 4×N to 4,
         //    eliminating per-item flicker on large selections. A per-item
         //    fallback handles Keynote versions that reject list property access.
+        var probeSlideIndex: Int = 0
         let selectionBoxes: [SelectionBox]
         if wantSelection {
             let probeScript = """
                 tell application "Keynote"
                     if not (exists front document) then error number -1728
+                    set docCount to count of documents
                     tell front document
+                        set docName to name
                         set targetSlide to current slide
                         set nSlides to count of slides
                         set slideIdx to 0
@@ -129,7 +132,7 @@ func pullFromKeynote(
                                 end repeat
                             end try
                         end if
-                        return (slideIdx as string) & "|" & bboxLines
+                        return (slideIdx as string) & "|" & bboxLines & "|" & docName & "|" & (docCount as string)
                     end tell
                 end tell
                 """
@@ -169,7 +172,10 @@ func pullFromKeynote(
                         return SelectionBox(x: nums[0], y: nums[1], w: nums[2], h: nums[3], rotation: nums[4])
                     }
             }()
-            log.info("slide index \(slideIndex, privacy: .public), \(selectionBoxes.count, privacy: .public) selected item(s)")
+            probeSlideIndex = slideIndex
+            let probeDocName = parts.count > 2 ? parts[2] : "?"
+            let probeDocCount = parts.count > 3 ? parts[3] : "?"
+            log.info("probe: front document='\(probeDocName, privacy: .public)' (of \(probeDocCount, privacy: .public) open), slide index \(slideIndex, privacy: .public), \(selectionBoxes.count, privacy: .public) selected item(s)")
         } else {
             selectionBoxes = []
         }
@@ -203,7 +209,7 @@ func pullFromKeynote(
             }
         }
 
-        // 3b. GUI scripting path (default full-slide pull only):
+        // 3b. GUI scripting path (full-slide pull only):
         //     Activate Keynote and send two Escape presses followed by ⌘C.
         //     First Escape exits text editing or deselects any selected object;
         //     second Escape moves focus to the navigator with the current slide
@@ -211,11 +217,22 @@ func pullFromKeynote(
         //     the clipboard — identical to the user clicking the thumbnail and
         //     pressing ⌘C. Falls through to the export path below if
         //     Accessibility permission is not granted or the script fails.
+        //
+        //     The two Escapes deselect the user's objects as a side effect, so
+        //     the script snapshots `selection` first and re-asserts it at the
+        //     end — leaving the document as the user left it. The re-select is
+        //     deliberately delayed until after the whole-slide copy has settled
+        //     onto the clipboard; re-selecting too early would make ⌘C capture
+        //     the restored selection instead of the full slide.
         if !wantSelection {
             let guiScript = """
                 tell application "Keynote"
                     if not (exists front document) then error number -1728
                     activate
+                    tell front document
+                        set theSlide to current slide
+                        set savedSel to selection
+                    end tell
                 end tell
                 tell application "System Events"
                     tell process "Keynote"
@@ -227,6 +244,17 @@ func pullFromKeynote(
                         keystroke "c" using {command down}
                     end tell
                 end tell
+                delay 0.4
+                tell application "Keynote"
+                    try
+                        if savedSel is not {} then
+                            tell front document
+                                set current slide to theSlide
+                                set selection to savedSel
+                            end tell
+                        end if
+                    end try
+                end tell
                 """
             // Snapshot change count before scripting so we can confirm ⌘C fired.
             let priorChangeCount: Int = DispatchQueue.main.sync {
@@ -235,20 +263,36 @@ func pullFromKeynote(
             var guiError: NSDictionary?
             NSAppleScript(source: guiScript)!.executeAndReturnError(&guiError)
             if guiError == nil {
-                // Keynote needs a moment to finish writing the clipboard.
-                Thread.sleep(forTimeInterval: 0.3)
-                // Read on main thread; reject if the change count didn't move
-                // (means ⌘C landed somewhere other than the slide navigator).
-                let guiClipData: Data? = DispatchQueue.main.sync {
-                    let pb = NSPasteboard.general
-                    guard pb.changeCount != priorChangeCount else {
-                        log.info("clipboard unchanged after GUI script — ⌘C did not fire on slide")
-                        return nil
+                // Poll for Keynote to write the clipboard rather than a fixed
+                // wait: large or complex slides take longer than a flat 0.3s.
+                // Two exit conditions:
+                //   • PDF data appears → use it.
+                //   • change count never moves within an early grace window →
+                //     ⌘C did not land on the slide; bail fast to the export path.
+                let pollDeadline = Date().addingTimeInterval(2.0)
+                let bailDeadline = Date().addingTimeInterval(0.4)
+                var guiClipData: Data?
+                while Date() < pollDeadline {
+                    let (changed, data): (Bool, Data?) = DispatchQueue.main.sync {
+                        let pb = NSPasteboard.general
+                        guard pb.changeCount != priorChangeCount else { return (false, nil) }
+                        let pdf = ["com.adobe.pdf", "Apple PDF pasteboard type"]
+                            .lazy
+                            .compactMap { pb.data(forType: NSPasteboard.PasteboardType($0)) }
+                            .first { !$0.isEmpty }
+                        return (true, pdf)
                     }
-                    return ["com.adobe.pdf", "Apple PDF pasteboard type"]
-                        .lazy
-                        .compactMap { pb.data(forType: NSPasteboard.PasteboardType($0)) }
-                        .first { !$0.isEmpty }
+                    if let data = data {
+                        guiClipData = data
+                        break
+                    }
+                    // ⌘C never moved the pasteboard within the grace window —
+                    // it didn't fire on the slide navigator. Stop waiting.
+                    if !changed, Date() >= bailDeadline {
+                        log.info("clipboard unchanged after GUI script — ⌘C did not fire on slide")
+                        break
+                    }
+                    Thread.sleep(forTimeInterval: 0.05)
                 }
                 if let data = guiClipData {
                     let srcURL = URL(fileURLWithPath: NSTemporaryDirectory())
@@ -272,40 +316,61 @@ func pullFromKeynote(
             }
         }
 
-        // 3c. Export only the current slide via the skipped-slide trick:
-        //     mark all other slides as skipped, export, restore. The target
-        //     slide is identified by object reference so sub-slides (whose
-        //     display number can match a parent) are handled correctly.
-        //     The exported PDF has exactly one page, so pageNumber is always 1.
-        let exportURL = URL(fileURLWithPath: NSTemporaryDirectory())
-            .appendingPathComponent("KeyJig-export-\(UUID().uuidString).pdf")
-        let exportScript = """
-            tell application "Keynote"
-                tell front document
-                    set savedSkipped to skipped of every slide
-                    set nSlides to count of slides
-                    set targetSlide to current slide
-                    try
-                        repeat with i from 1 to nSlides
-                            if slide i is not targetSlide then
-                                if not (item i of savedSkipped) then
-                                    set skipped of slide i to true
-                                end if
-                            end if
-                        end repeat
-                        export to (POSIX file "\(exportURL.path)") as PDF with properties {skipped slides:false}
-                    on error errMsg number errNum
-                        repeat with i from 1 to nSlides
-                            set skipped of slide i to (item i of savedSkipped)
-                        end repeat
-                        error errMsg number errNum
-                    end try
-                    repeat with i from 1 to nSlides
-                        set skipped of slide i to (item i of savedSkipped)
-                    end repeat
+        // 3c. Export the current slide as PDF.
+        //
+        //     Selection pull (wantSelection=true): export the entire document
+        //     and extract page probeSlideIndex. No Keynote state is modified so
+        //     the user's selection is naturally preserved — no restore needed.
+        //     Slower for large decks, but the selection pull is already a
+        //     deliberate, targeted operation and the skipped-slide trick is what
+        //     was silently clearing the canvas selection.
+        //
+        //     Full-slide pull (wantSelection=false): use the skipped-slide trick
+        //     (mark all other slides skipped, export, restore). Fast for large
+        //     decks. Skip/restore use batch list-property assignment to avoid
+        //     O(n) Apple Events; a per-item fallback handles older Keynote.
+        let exportURL = makeTempKeynotePDFURL()
+        let exportScript: String
+        if wantSelection {
+            exportScript = """
+                tell application "Keynote"
+                    tell front document
+                        export to (POSIX file "\(exportURL.path)") as PDF
+                    end tell
                 end tell
-            end tell
-            """
+                """
+        } else {
+            exportScript = """
+                tell application "Keynote"
+                    tell front document
+                        set savedSkipped to skipped of every slide
+                        set nSlides to count of slides
+                        set targetSlide to current slide
+                        try
+                            set skipped of every slide to true
+                            set skipped of targetSlide to false
+                            export to (POSIX file "\(exportURL.path)") as PDF with properties {skipped slides:false}
+                            my restoreSkips(savedSkipped, nSlides)
+                        on error errMsg number errNum
+                            my restoreSkips(savedSkipped, nSlides)
+                            error errMsg number errNum
+                        end try
+                    end tell
+                end tell
+
+                on restoreSkips(savedSkipped, nSlides)
+                    tell front document of application "Keynote"
+                        try
+                            set skipped of every slide to savedSkipped
+                        on error
+                            repeat with i from 1 to nSlides
+                                set skipped of slide i to (item i of savedSkipped)
+                            end repeat
+                        end try
+                    end tell
+                end restoreSkips
+                """
+        }
         var exportError: NSDictionary?
         NSAppleScript(source: exportScript)!
             .executeAndReturnError(&exportError)
@@ -341,14 +406,53 @@ func pullFromKeynote(
         }
 
         // 4. Extract the slide page, optionally crop, write fresh PDF.
-        //    The skipped-slide trick above means the exported PDF contains only
-        //    one page (our target slide), so the page index is always 1.
+        //    The skipped-slide trick produces a 1-page PDF (page index always 1).
+        //    The full-document export (selection path) produces one page per slide,
+        //    so we extract by probeSlideIndex.
         let result = extractSlidePDF(
             from: exportURL,
-            pageNumber: 1,
+            pageNumber: wantSelection ? probeSlideIndex : 1,
             selectionBoxes: selectionBoxes,
             padding: 8.0)
         try? FileManager.default.removeItem(at: exportURL)
+
+        // 5. Restore the user's selection (selection pull only).
+        //    Saved specifier objects go stale after any export. Instead, build
+        //    fresh iWork item references at restore time by iterating the slide's
+        //    items and matching by position — the references in `toSelect` are
+        //    live at the exact moment `set selection` is called, matching the
+        //    pattern that is known to work.
+        if wantSelection && !selectionBoxes.isEmpty && probeSlideIndex > 0 {
+            let posChecks = selectionBoxes.map { box in
+                let x = Int(box.x.rounded())
+                let y = Int(box.y.rounded())
+                return "((item 1 of p) = \(x) and (item 2 of p) = \(y))"
+            }.joined(separator: " or ")
+            let restoreScript = """
+                tell application "Keynote"
+                    activate
+                    tell front document
+                        set current slide to slide \(probeSlideIndex)
+                        set toSelect to {}
+                        repeat with sh in iWork items of slide \(probeSlideIndex)
+                            set p to position of sh
+                            if \(posChecks) then
+                                set end of toSelect to sh
+                            end if
+                        end repeat
+                        if toSelect is not {} then set selection to toSelect
+                    end tell
+                end tell
+                """
+            var restoreError: NSDictionary?
+            NSAppleScript(source: restoreScript)!.executeAndReturnError(&restoreError)
+            if let err = restoreError {
+                log.info("selection restore failed: \(err["NSAppleScriptErrorMessage"] as? String ?? "unknown", privacy: .public)")
+            } else {
+                log.info("selection restored via position matching: \(selectionBoxes.count, privacy: .public) item(s)")
+            }
+        }
+
         DispatchQueue.main.async { completion(result) }
     }
 }
