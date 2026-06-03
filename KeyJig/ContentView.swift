@@ -148,13 +148,11 @@ class SVGInteractionView: NSView {
             roundedRect: NSRect(x: 0, y: 0, width: 180, height: 180),
             xRadius: 12, yRadius: 12
         ).fill()
-        if #available(macOS 11.0, *) {
-            if let icon = NSImage(
-                systemSymbolName: "photo.fill.on.rectangle.fill",
-                accessibilityDescription: "image"
-            ) {
-                icon.draw(in: NSRect(x: 50, y: 60, width: 80, height: 80))
-            }
+        if let icon = NSImage(
+            systemSymbolName: "photo.fill.on.rectangle.fill",
+            accessibilityDescription: "image"
+        ) {
+            icon.draw(in: NSRect(x: 50, y: 60, width: 80, height: 80))
         }
         let style = NSMutableParagraphStyle()
         style.alignment = .center
@@ -430,14 +428,10 @@ struct ResponsiveSVGWebView: NSViewRepresentable {
         let prefs = WKPreferences()
         let config = WKWebViewConfiguration()
         config.preferences = prefs
-        if #available(macOS 10.15, *) {
-            let pagePrefs = WKWebpagePreferences()
-            pagePrefs.preferredContentMode = .desktop
-            if #available(macOS 11, *) {
-                pagePrefs.allowsContentJavaScript = false
-            }
-            config.defaultWebpagePreferences = pagePrefs
-        }
+        let pagePrefs = WKWebpagePreferences()
+        pagePrefs.preferredContentMode = .desktop
+        pagePrefs.allowsContentJavaScript = false
+        config.defaultWebpagePreferences = pagePrefs
         config.allowsAirPlayForMediaPlayback = false
 
         let webView = WKWebView(frame: .zero, configuration: config)
@@ -667,14 +661,10 @@ struct ContentView: View {
             if !computedStatusMessage.isEmpty {
                 HStack(spacing: 6) {
                     if appState.conversionStatus == .converting || appState.keynotePullStatus == .pulling {
-                        if #available(macOS 11.0, *) {
-                            ProgressView()
-                                .progressViewStyle(.circular)
-                                .scaleEffect(0.6)
-                                .frame(width: 14, height: 14)
-                        } else {
-                            EmptyView()
-                        }
+                        ProgressView()
+                            .progressViewStyle(.circular)
+                            .scaleEffect(0.6)
+                            .frame(width: 14, height: 14)
                     }
                     Text(computedStatusMessage)
                         .font(.subheadline)

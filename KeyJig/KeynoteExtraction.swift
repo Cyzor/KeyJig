@@ -10,7 +10,6 @@ enum KeynotePullError: LocalizedError {
     case noDocumentOpen
     case exportFailed(String)
     case pageMissing
-    case fileWriteError(Error)
 
     var errorDescription: String? {
         switch self {
@@ -32,8 +31,6 @@ enum KeynotePullError: LocalizedError {
             return NSLocalizedString(
                 "error.keynote.page_missing",
                 comment: "Error: the exported PDF has no page for the current slide")
-        case .fileWriteError(let underlying):
-            return underlying.localizedDescription
         }
     }
 }
@@ -71,12 +68,7 @@ func pullFromKeynote(
             return
         }
 
-        // Capture the frontmost app so we can restore it after any Keynote
-        // activation. Only relevant for the selection pull — the slide pull
-        // leaves you in Keynote intentionally.
-        // Always capture the frontmost app so it can be restored after any
-        // Keynote activation — both the slide pull (activates Keynote for the
-        // GUI clipboard copy or export) and the selection pull need this.
+        // Capture the frontmost app so we can restore it after Keynote activates.
         let prevFrontApp: NSRunningApplication? = DispatchQueue.main.sync {
             NSWorkspace.shared.frontmostApplication
         }
@@ -240,13 +232,7 @@ func pullFromKeynote(
             // The scratch-doc round-trip drops the user's canvas selection; restore it.
             restoreKeynoteSelection(slideIndex: probeSlideIndex, selectionBoxes: selectionBoxes)
             DispatchQueue.main.async {
-                if let app = prevFrontApp {
-                    if #available(macOS 14.0, *) {
-                        app.activate()
-                    } else {
-                        app.activate(options: .activateIgnoringOtherApps)
-                    }
-                }
+                prevFrontApp?.activateFrontmost()
                 completion(.success(url))
             }
             return
@@ -279,135 +265,14 @@ func pullFromKeynote(
                     slideIndex: pdfSlideIndex)
                 try? FileManager.default.removeItem(at: srcURL)
                 DispatchQueue.main.async {
-                    if let app = prevFrontApp {
-                    if #available(macOS 14.0, *) {
-                        app.activate()
-                    } else {
-                        app.activate(options: .activateIgnoringOtherApps)
-                    }
-                }
+                    prevFrontApp?.activateFrontmost()
                     completion(result)
                 }
                 return
             }
         }
 
-        // 3b. GUI scripting path (full-slide pull only):
-        //     Activate Keynote and send two Escape presses followed by ⌘C.
-        //     First Escape exits text editing or deselects any selected object;
-        //     second Escape moves focus to the navigator with the current slide
-        //     selected. ⌘C then copies the whole slide (PDF + native data) to
-        //     the clipboard — identical to the user clicking the thumbnail and
-        //     pressing ⌘C. Falls through to the export path below if
-        //     Accessibility permission is not granted or the script fails.
-        //
-        //     The two Escapes deselect the user's objects as a side effect, so
-        //     the script snapshots `selection` first and re-asserts it at the
-        //     end — leaving the document as the user left it. The re-select is
-        //     deliberately delayed until after the whole-slide copy has settled
-        //     onto the clipboard; re-selecting too early would make ⌘C capture
-        //     the restored selection instead of the full slide.
-        if !wantSelection {
-            let guiScript = """
-                tell application "Keynote"
-                    if not (exists front document) then error number -1728
-                    activate
-                    tell front document
-                        set theSlide to current slide
-                        set savedSel to selection
-                    end tell
-                end tell
-                tell application "System Events"
-                    tell process "Keynote"
-                        set frontmost to true
-                        key code 53
-                        delay 0.05
-                        key code 53
-                        delay 0.15
-                        keystroke "c" using {command down}
-                    end tell
-                end tell
-                delay 0.4
-                tell application "Keynote"
-                    try
-                        if savedSel is not {} then
-                            tell front document
-                                set current slide to theSlide
-                                set selection to savedSel
-                            end tell
-                        end if
-                    end try
-                end tell
-                """
-            // Snapshot change count before scripting so we can confirm ⌘C fired.
-            let priorChangeCount: Int = DispatchQueue.main.sync {
-                NSPasteboard.general.changeCount
-            }
-            var guiError: NSDictionary?
-            NSAppleScript(source: guiScript)!.executeAndReturnError(&guiError)
-            if guiError == nil {
-                // Poll for Keynote to write the clipboard rather than a fixed
-                // wait: large or complex slides take longer than a flat 0.3s.
-                // Two exit conditions:
-                //   • PDF data appears → use it.
-                //   • change count never moves within an early grace window →
-                //     ⌘C did not land on the slide; bail fast to the export path.
-                let pollDeadline = Date().addingTimeInterval(2.0)
-                let bailDeadline = Date().addingTimeInterval(0.4)
-                var guiClipData: Data?
-                while Date() < pollDeadline {
-                    let (changed, data): (Bool, Data?) = DispatchQueue.main.sync {
-                        let pb = NSPasteboard.general
-                        guard pb.changeCount != priorChangeCount else { return (false, nil) }
-                        let pdf = ["com.adobe.pdf", "Apple PDF pasteboard type"]
-                            .lazy
-                            .compactMap { pb.data(forType: NSPasteboard.PasteboardType($0)) }
-                            .first { !$0.isEmpty }
-                        return (true, pdf)
-                    }
-                    if let data = data {
-                        guiClipData = data
-                        break
-                    }
-                    // ⌘C never moved the pasteboard within the grace window —
-                    // it didn't fire on the slide navigator. Stop waiting.
-                    if !changed, Date() >= bailDeadline {
-                        log.info("clipboard unchanged after GUI script — ⌘C did not fire on slide")
-                        break
-                    }
-                    Thread.sleep(forTimeInterval: 0.05)
-                }
-                if let data = guiClipData {
-                    let srcURL = URL(fileURLWithPath: NSTemporaryDirectory())
-                        .appendingPathComponent("KeyJig-clipboard-\(UUID().uuidString).pdf")
-                    if (try? data.write(to: srcURL)) != nil {
-                        log.info("GUI scripting path succeeded")
-                        let result = extractSlidePDF(
-                            from: srcURL,
-                            pageNumber: 1,
-                            selectionBoxes: [],
-                            padding: 8.0,
-                            docName: pdfDocName,
-                            slideIndex: pdfSlideIndex)
-                        try? FileManager.default.removeItem(at: srcURL)
-                        DispatchQueue.main.async {
-                            if let app = prevFrontApp {
-                                if #available(macOS 14.0, *) { app.activate() }
-                                else { app.activate(options: .activateIgnoringOtherApps) }
-                            }
-                            completion(result)
-                        }
-                        return
-                    }
-                }
-                log.info("GUI scripting ran but clipboard had no PDF, falling through to export")
-            } else {
-                let detail = guiError!["NSAppleScriptErrorMessage"] as? String ?? "unknown"
-                log.info("GUI scripting failed (\(detail, privacy: .public)), falling through to export")
-            }
-        }
-
-        // 3c. Export the current slide as PDF.
+        // 3b. Export the current slide as PDF.
         //
         //     Selection pull (wantSelection=true): export the entire document
         //     and extract page probeSlideIndex. No Keynote state is modified so
@@ -489,10 +354,7 @@ func pullFromKeynote(
                             padding: 8.0, docName: pdfDocName, slideIndex: pdfSlideIndex)
                         try? FileManager.default.removeItem(at: srcURL)
                         DispatchQueue.main.async {
-                            if let app = prevFrontApp {
-                                if #available(macOS 14.0, *) { app.activate() }
-                                else { app.activate(options: .activateIgnoringOtherApps) }
-                            }
+                            prevFrontApp?.activateFrontmost()
                             completion(result)
                         }
                         return
@@ -522,13 +384,7 @@ func pullFromKeynote(
         }
 
         DispatchQueue.main.async {
-            if let app = prevFrontApp {
-                    if #available(macOS 14.0, *) {
-                        app.activate()
-                    } else {
-                        app.activate(options: .activateIgnoringOtherApps)
-                    }
-                }
+            prevFrontApp?.activateFrontmost()
             completion(result)
         }
     }
@@ -1013,4 +869,14 @@ func pdfToClipboard(url: URL) -> Bool {
     item.setString(url.absoluteString, forType: .fileURL)
     pb.writeObjects([item])
     return true
+}
+
+// MARK: - Helpers
+
+private extension NSRunningApplication {
+    /// Activates the app, using the macOS 14 API when available.
+    func activateFrontmost() {
+        if #available(macOS 14.0, *) { activate() }
+        else { activate(options: .activateIgnoringOtherApps) }
+    }
 }

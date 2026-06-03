@@ -45,30 +45,20 @@ struct SettingsView: View {
                 HStack(spacing: 12) {
                     switch appState.inkscapeStatus {
                     case .checking:
-                        if #available(macOS 11.0, *) {
-                            ProgressView()
-                                .scaleEffect(0.8)
-                        } else {
-                            Text("…")
-                        }
+                        ProgressView()
+                            .scaleEffect(0.8)
                         Text(NSLocalizedString(
                             "settings.inkscape.checking",
                             comment: "Status shown while checking for Inkscape"))
                             .font(.body)
 
                     case .installed(let paths):
-                        if #available(macOS 11.0, *) {
-                            Image(systemName: "checkmark.circle.fill")
-                                .foregroundColor(.green)
-                                .font(.title3)
-                                .accessibilityLabel(NSLocalizedString(
-                                    "accessibility.inkscape_installed",
-                                    comment: "VoiceOver label for the green check shown when Inkscape is installed"))
-                        } else {
-                            Text("✓")
-                                .foregroundColor(.green)
-                                .font(.headline)
-                        }
+                        Image(systemName: "checkmark.circle.fill")
+                            .foregroundColor(.green)
+                            .font(.title3)
+                            .accessibilityLabel(NSLocalizedString(
+                                "accessibility.inkscape_installed",
+                                comment: "VoiceOver label for the green check shown when Inkscape is installed"))
 
                         VStack(alignment: .leading, spacing: 2) {
                             Text(NSLocalizedString(
@@ -96,18 +86,12 @@ struct SettingsView: View {
                         .help(SettingsTooltips.inkscapeDetails)
 
                     case .notInstalled:
-                        if #available(macOS 11.0, *) {
-                            Image(systemName: "exclamationmark.triangle.fill")
-                                .foregroundColor(.orange)
-                                .font(.title3)
-                                .accessibilityLabel(NSLocalizedString(
-                                    "accessibility.inkscape_missing",
-                                    comment: "VoiceOver label for the warning icon shown when Inkscape is not installed"))
-                        } else {
-                            Text("⚠")
-                                .foregroundColor(.orange)
-                                .font(.headline)
-                        }
+                        Image(systemName: "exclamationmark.triangle.fill")
+                            .foregroundColor(.orange)
+                            .font(.title3)
+                            .accessibilityLabel(NSLocalizedString(
+                                "accessibility.inkscape_missing",
+                                comment: "VoiceOver label for the warning icon shown when Inkscape is not installed"))
 
                         VStack(alignment: .leading, spacing: 2) {
                             Text(NSLocalizedString(
@@ -124,35 +108,18 @@ struct SettingsView: View {
 
                         Spacer()
 
-                        if #available(macOS 11.0, *) {
-                            Link(destination: inkscapeDownloadURL) {
-                                Text(NSLocalizedString(
-                                    "settings.inkscape.download",
-                                    comment: "Button label to download Inkscape"))
-                                    .font(.caption)
-                                    .padding(.horizontal, 12)
-                                    .padding(.vertical, 6)
-                                    .background(Color.blue)
-                                    .foregroundColor(.white)
-                                    .cornerRadius(4)
-                            }
-                            .help(SettingsTooltips.downloadInkscape)
-                        } else {
-                            Button(action: {
-                                NSWorkspace.shared.open(inkscapeDownloadURL)
-                            }) {
-                                Text(NSLocalizedString(
-                                    "settings.inkscape.download",
-                                    comment: "Button label to download Inkscape"))
-                                    .font(.caption)
-                                    .padding(.horizontal, 12)
-                                    .padding(.vertical, 6)
-                                    .background(Color.blue)
-                                    .foregroundColor(.white)
-                                    .cornerRadius(4)
-                            }
-                            .help(SettingsTooltips.downloadInkscape)
+                        Link(destination: inkscapeDownloadURL) {
+                            Text(NSLocalizedString(
+                                "settings.inkscape.download",
+                                comment: "Button label to download Inkscape"))
+                                .font(.caption)
+                                .padding(.horizontal, 12)
+                                .padding(.vertical, 6)
+                                .background(Color.blue)
+                                .foregroundColor(.white)
+                                .cornerRadius(4)
                         }
+                        .help(SettingsTooltips.downloadInkscape)
                     }
                 }
                 .padding(12)
@@ -200,20 +167,10 @@ struct SettingsView: View {
                     .foregroundColor(.secondary)
                     .fontWeight(.semibold)
 
-                if #available(macOS 11.0, *) {
-                    Link("https://inkscape.org/",
-                         destination: URL(string: "https://inkscape.org/")!)
-                    .font(.caption)
-                    .foregroundColor(.blue)
-                } else {
-                    Button(action: {
-                        NSWorkspace.shared.open(URL(string: "https://inkscape.org/")!)
-                    }) {
-                        Text("https://inkscape.org/")
-                            .font(.caption).foregroundColor(.blue)
-                    }
-                    .buttonStyle(PlainButtonStyle())
-                }
+                Link("https://inkscape.org/",
+                     destination: URL(string: "https://inkscape.org/")!)
+                .font(.caption)
+                .foregroundColor(.blue)
 
                 if case .notInstalled = appState.ghostscriptStatus {
                     Text(NSLocalizedString(
@@ -336,32 +293,20 @@ private struct CommandLineToolRow: View {
             // Status icon
             switch status {
             case .checking:
-                if #available(macOS 11.0, *) {
-                    ProgressView().scaleEffect(0.8)
-                } else {
-                    Text("…")
-                }
+                ProgressView().scaleEffect(0.8)
                 Text("…")
 
             case .installed:
-                if #available(macOS 11.0, *) {
-                    Image(systemName: "checkmark.circle.fill")
-                        .foregroundColor(.green)
-                        .font(.title3)
-                        .accessibilityLabel(accessibilityInstalledLabel)
-                } else {
-                    Text("✓").foregroundColor(.green).font(.headline)
-                }
+                Image(systemName: "checkmark.circle.fill")
+                    .foregroundColor(.green)
+                    .font(.title3)
+                    .accessibilityLabel(accessibilityInstalledLabel)
 
             case .notInstalled:
-                if #available(macOS 11.0, *) {
-                    Image(systemName: "minus.circle")
-                        .foregroundColor(.secondary)
-                        .font(.title3)
-                        .accessibilityLabel(accessibilityMissingLabel)
-                } else {
-                    Text("–").foregroundColor(.secondary).font(.headline)
-                }
+                Image(systemName: "minus.circle")
+                    .foregroundColor(.secondary)
+                    .font(.title3)
+                    .accessibilityLabel(accessibilityMissingLabel)
             }
 
             // Name + subtitle
