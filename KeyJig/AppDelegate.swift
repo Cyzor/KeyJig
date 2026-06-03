@@ -138,6 +138,20 @@ class MainWindowController: NSWindowController, NSWindowDelegate {
     func windowWillClose(_ notification: Notification) {
         AppDelegate.shared?.floatingWindows.removeAll { $0 === self }
     }
+
+    /// Enforces the minimum width during user drag-resize.
+    /// NSHostingController can override contentMinSize by propagating the
+    /// SwiftUI content's own compressed size, but it cannot override a value
+    /// returned from this delegate method.
+    /// appState.minimumButtonAreaWidth is set by ContentView's invisible probe
+    /// during layout; outerPadding matches VStack .padding(.horizontal, 16).
+    func windowWillResize(_ sender: NSWindow, to frameSize: NSSize) -> NSSize {
+        let outerPadding: CGFloat = 16 * 2
+        let minW = appState.minimumButtonAreaWidth > 0
+            ? (appState.minimumButtonAreaWidth + outerPadding).rounded(.up)
+            : 320  // safe fallback until the first layout fires
+        return NSSize(width: max(frameSize.width, minW), height: frameSize.height)
+    }
 }
 
 // MARK: - App Menu
