@@ -7,7 +7,8 @@
 "tooltip.open_file" = "コンピュータからSVGファイルを読み込みます。SVGファイルをプレビューエリアに直接ドラッグ＆ドロップすることもできます。";
 "tooltip.copy_to_clipboard" = "読み込んだSVGをクリップボードにコピーし、⌘VでKeynoteに貼り付けます。その後「分割」と「編集可能にする」を使用してください。";
 "tooltip.place_in_keynote" = "SVGを現在のKeynoteスライドに直接配置します。Keynoteを開いておく必要があります。アクセシビリティアクセスが必要です。";
-"tooltip.pull_from_keynote" = "現在のKeynoteスライドからベクターグラフィックをPDFとして取り出します。オブジェクトが選択されている場合は、その領域のみが取得されます。";
+"tooltip.pull_from_keynote" = "現在のKeynoteスライドをベクターPDFに変換します。";
+"tooltip.import_selection_from_keynote" = "先にKeynoteで選択範囲をコピー（⌘C）してからクリックすると、その選択オブジェクトだけをベクターPDFに変換します。非連続選択にも対応。コピーなしの場合は囲み矩形で取得します。";
 "tooltip.save_pdf" = "取り出したPDFを任意の場所に保存します。";
 "tooltip.copy_pdf" = "取り出したPDFをクリップボードにコピーし、他のアプリに貼り付けられるようにします。";
 "tooltip.preview_pdf_loaded" = "このPDFをAffinity、Illustrator、Figma、その他PDFを受け付けるアプリに直接ドラッグします。";
@@ -49,8 +50,8 @@
 "button.open_svg_file" = "SVGファイルを開く…";
 "button.copy_to_clipboard" = "クリップボードにコピー";
 "button.place_in_keynote" = "Keynoteに配置";
-"button.pull_from_keynote" = "Keynoteから取り出す";
-"button.import_selection_from_keynote" = "Keynoteの選択範囲を読み込む";
+"button.pull_from_keynote" = "KeynoteスライドをPDFに変換";
+"button.import_selection_from_keynote" = "KeynoteクリップボードをPDFに変換";
 "button.save_pdf" = "PDFを保存…";
 "button.copy_pdf" = "PDFをコピー";
 
@@ -127,7 +128,7 @@
 "help.section.import.body" = "• SVGファイルをプレビューエリアにドロップします。\n• Illustrator・Affinity・Inkscapeでアートワークをコピー（⌘C）すると、KeyJigが自動で検出します。\n• ファイル ▸ SVGファイルを開く…（⌘O）でファイルを開きます。\n• Inkscapeがインストールされていれば、PDFや.aiファイルも開けます。";
 "help.section.keynote.title" = "Keynoteに送る";
 "help.section.keynote.body" = "• クリップボードにコピー（⌘⇧C）でKeynote用に変換し、Keynoteで貼り付け（⌘V）後にフォーマット ▸ 図形と線 ▸ 分割でパスを編集できます。\n• Keynoteに配置でSVGを現在のスライドに直接配置します。アクセシビリティアクセスが必要です（システム設定 ▸ プライバシーとセキュリティ）。";
-"help.section.pull.title" = "Keynoteから取り出す";
+"help.section.pull.title" = "KeynoteをPDFに変換";
 "help.section.pull.body" = "• 「Keynoteから取り出す」をクリックして現在のスライドをPDFとして取得します。\n• Optionキーを押しながらクリックすると、選択したオブジェクトのみを切り抜きます。\n• PDFプレビューをAffinity・Illustrator・Figmaなどのアプリにドラッグするか、下のボタンで保存またはコピーしてください。";
 
 /* ── Settings ───────────────────────────────────────────────────────── */

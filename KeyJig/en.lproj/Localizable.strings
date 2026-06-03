@@ -8,7 +8,8 @@
 "tooltip.open_file" = "Load an SVG file from your computer. You can also drag and drop SVG files directly onto the preview area.";
 "tooltip.copy_to_clipboard" = "Copy the loaded SVG to your clipboard for pasting into Keynote with ⌘V, then use 'Break Apart' and 'Make Editable'.";
 "tooltip.place_in_keynote" = "Place the SVG directly onto the current Keynote slide. Keynote must be running with a presentation open. Requires Accessibility access.";
-"tooltip.pull_from_keynote" = "Pull vector graphics from the current Keynote slide as a PDF. If items are selected, only that region is captured.";
+"tooltip.pull_from_keynote" = "Convert the current Keynote slide to a vector PDF.";
+"tooltip.import_selection_from_keynote" = "Copy your selection in Keynote first (⌘C), then click to convert it to a vector PDF of exactly those objects — non-contiguous selections included. Without a prior copy, falls back to capturing the bounding rectangle.";
 "tooltip.save_pdf" = "Save the pulled PDF to a chosen location.";
 "tooltip.copy_pdf" = "Copy the pulled PDF to the clipboard so you can paste it into another app.";
 "tooltip.preview_pdf_loaded" = "Drag this PDF directly into Affinity, Illustrator, Figma, or any app that accepts PDF.";
@@ -58,8 +59,8 @@
 "button.open_svg_file" = "Open SVG File…";
 "button.copy_to_clipboard" = "Copy to Clipboard";
 "button.place_in_keynote" = "Place in Keynote";
-"button.pull_from_keynote" = "Pull from Keynote";
-"button.import_selection_from_keynote" = "Import Selection from Keynote";
+"button.pull_from_keynote" = "Convert Keynote Slide to PDF";
+"button.import_selection_from_keynote" = "Convert Keynote Clipboard to PDF";
 "button.save_pdf" = "Save PDF…";
 "button.copy_pdf" = "Copy PDF";
 
@@ -128,8 +129,8 @@
 "help.section.import.body" = "• Drop an SVG file onto the preview area.\n• Copy artwork in Illustrator, Affinity, or Inkscape (⌘C) — KeyJig picks it up automatically.\n• Use File > Open SVG File… (⌘O).\n• With Inkscape installed, KeyJig also opens PDF and .ai files.";
 "help.section.keynote.title" = "Send to Keynote";
 "help.section.keynote.body" = "• Copy to Clipboard (⌘⇧C) — paste into Keynote (⌘V) and use Format > Shapes & Lines > Break Apart to edit paths.\n• Place in Keynote drops the SVG directly onto the current slide. Needs Accessibility permission (System Settings ▸ Privacy & Security).";
-"help.section.pull.title" = "Pull from Keynote";
-"help.section.pull.body" = "• Click Pull from Keynote to capture the current slide as a PDF.\n• Hold Option while clicking to crop to selected objects only.\n• Drag the PDF preview to Affinity, Illustrator, Figma, or any PDF-capable app — or save or copy it from the buttons below.";
+"help.section.pull.title" = "Convert Keynote to PDF";
+"help.section.pull.body" = "• Click Convert Keynote Slide to PDF to capture the current slide as a vector PDF.\n• Hold Option and click to convert exactly the objects you copied (⌘C in Keynote) — non-contiguous selections included. Without a prior copy, captures the bounding rectangle instead.\n• Drag the PDF preview to Affinity, Illustrator, Figma, or any PDF-capable app — or save or copy it from the buttons below.";
 
 /* ── Settings ───────────────────────────────────────────────────────── */
 "settings.window.title" = "Settings";

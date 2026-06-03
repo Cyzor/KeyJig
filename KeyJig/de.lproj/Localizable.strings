@@ -8,7 +8,8 @@
 "tooltip.open_file" = "SVG-Datei vom Computer laden. SVG-Dateien können auch direkt auf den Vorschaubereich gezogen werden.";
 "tooltip.copy_to_clipboard" = "Das geladene SVG in die Zwischenablage kopieren, um es mit ⌘V in Keynote einzufügen. Dann „Aufteilen\" und „Bearbeitbar machen\" verwenden.";
 "tooltip.place_in_keynote" = "SVG direkt auf die aktuelle Keynote-Folie einfügen. Keynote muss geöffnet sein. Erfordert Bedienungshilfenzugriff.";
-"tooltip.pull_from_keynote" = "Vektorgrafik von der aktuellen Keynote-Folie als PDF abrufen. Bei vorhandener Auswahl wird nur dieser Bereich erfasst.";
+"tooltip.pull_from_keynote" = "Die aktuelle Keynote-Folie als Vektor-PDF konvertieren.";
+"tooltip.import_selection_from_keynote" = "Auswahl zuerst in Keynote kopieren (⌘C), dann klicken, um genau diese Objekte als Vektor-PDF zu konvertieren — auch nicht zusammenhängende Auswahlen. Ohne vorherigen Kopiervorgang wird stattdessen das umschließende Rechteck erfasst.";
 "tooltip.save_pdf" = "Das abgerufene PDF an einem gewählten Speicherort sichern.";
 "tooltip.copy_pdf" = "Das abgerufene PDF in die Zwischenablage kopieren, um es in eine andere App einzufügen.";
 "tooltip.preview_pdf_loaded" = "Dieses PDF direkt in Affinity, Illustrator, Figma oder eine andere App ziehen, die PDF akzeptiert.";
@@ -50,8 +51,8 @@
 "button.open_svg_file" = "SVG-Datei öffnen…";
 "button.copy_to_clipboard" = "In Zwischenablage kopieren";
 "button.place_in_keynote" = "In Keynote einfügen";
-"button.pull_from_keynote" = "Aus Keynote abrufen";
-"button.import_selection_from_keynote" = "Auswahl aus Keynote importieren";
+"button.pull_from_keynote" = "Keynote-Folie als PDF konvertieren";
+"button.import_selection_from_keynote" = "Keynote-Zwischenablage als PDF konvertieren";
 "button.save_pdf" = "PDF sichern…";
 "button.copy_pdf" = "PDF kopieren";
 
@@ -128,7 +129,7 @@
 "help.section.import.body" = "• SVG-Datei auf den Vorschaubereich ziehen.\n• Grafik in Illustrator, Affinity oder Inkscape kopieren (⌘C) – KeyJig erkennt sie automatisch.\n• Ablage > SVG-Datei öffnen… (⌘O) verwenden.\n• Mit installiertem Inkscape öffnet KeyJig auch PDF- und .ai-Dateien.";
 "help.section.keynote.title" = "An Keynote senden";
 "help.section.keynote.body" = "• In Zwischenablage kopieren (⌘⇧C) — dann in Keynote einsetzen (⌘V) und Format > Formen und Linien > Aufteilen verwenden.\n• In Keynote einfügen platziert das SVG direkt auf die aktuelle Folie. Erfordert Bedienungshilfenzugriff (Systemeinstellungen ▸ Datenschutz & Sicherheit).";
-"help.section.pull.title" = "Aus Keynote abrufen";
+"help.section.pull.title" = "Keynote als PDF konvertieren";
 "help.section.pull.body" = "• Auf \"Aus Keynote abrufen\" klicken, um die aktuelle Folie als PDF zu erfassen.\n• Option halten, um das PDF auf ausgewählte Objekte zuzuschneiden.\n• PDF-Vorschau in Affinity, Illustrator, Figma oder eine andere App ziehen – oder über die Schaltflächen unten speichern oder kopieren.";
 
 /* ── Settings ───────────────────────────────────────────────────────── */

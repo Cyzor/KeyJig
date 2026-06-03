@@ -24,7 +24,11 @@ struct Tooltips {
 
     static let pullFromKeynote = NSLocalizedString(
         "tooltip.pull_from_keynote",
-        comment: "Tooltip for the Pull from Keynote button")
+        comment: "Tooltip for the Convert Keynote Slide to PDF button")
+
+    static let importSelectionFromKeynote = NSLocalizedString(
+        "tooltip.import_selection_from_keynote",
+        comment: "Tooltip for the Convert Keynote Clipboard to PDF button (Option-held variant)")
 
     static let savePDF = NSLocalizedString(
         "tooltip.save_pdf",
@@ -753,7 +757,7 @@ struct ContentView: View {
                     }
                     .padding(.vertical, 6)
                 }
-                .help(Tooltips.pullFromKeynote)
+                .help(optionHeld ? Tooltips.importSelectionFromKeynote : Tooltips.pullFromKeynote)
                 .disabled(isConverting || isPulling)
 
                 Button {
