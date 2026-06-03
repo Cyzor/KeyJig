@@ -152,7 +152,7 @@ private func restoreGeneralPasteboard(_ snapshot: [[PasteboardEntry]]) {
 /// keyboard shortcut character matches `char` with no extra modifiers (i.e.
 /// Command-only, since Command is implicit for menu shortcuts).
 /// Returns true if the item was found and pressed.
-private func pressMenuItemWithCmdChar(_ char: String, appPID: pid_t) -> Bool {
+func pressMenuItemWithCmdChar(_ char: String, appPID: pid_t) -> Bool {
     let app = AXUIElementCreateApplication(appPID)
 
     var menuBarRef: AnyObject?

@@ -180,6 +180,23 @@ func pullFromKeynote(
             selectionBoxes = []
         }
 
+        // 3a-paste. Vector selection-only via a throwaway document (preferred for
+        //     a selection pull). Requires the user to have copied their selection
+        //     (⌘C); pastes the native objects into a scratch doc, exports vector,
+        //     crops to content. Interloper-free even for non-contiguous selections;
+        //     never touches the user's deck/selection/clipboard. Falls through when
+        //     the clipboard doesn't match the live selection or paste/export fails.
+        if wantSelection, !selectionBoxes.isEmpty,
+           let kpid = NSRunningApplication
+               .runningApplications(withBundleIdentifier: "com.apple.iWork.Keynote")
+               .first?.processIdentifier,
+           let url = extractSelectionViaPaste(selectionBoxes: selectionBoxes, keynotePID: kpid) {
+            // The scratch-doc round-trip drops the user's canvas selection; restore it.
+            restoreKeynoteSelection(slideIndex: probeSlideIndex, selectionBoxes: selectionBoxes)
+            DispatchQueue.main.async { completion(.success(url)) }
+            return
+        }
+
         // 3a. Clipboard fast path (selection mode only): if the caller
         //     snapshotted a Keynote PDF, use it as the crop source directly.
         //     No export, no document modification. This is the only viable
@@ -417,43 +434,201 @@ func pullFromKeynote(
         try? FileManager.default.removeItem(at: exportURL)
 
         // 5. Restore the user's selection (selection pull only).
-        //    Saved specifier objects go stale after any export. Instead, build
-        //    fresh iWork item references at restore time by iterating the slide's
-        //    items and matching by position — the references in `toSelect` are
-        //    live at the exact moment `set selection` is called, matching the
-        //    pattern that is known to work.
-        if wantSelection && !selectionBoxes.isEmpty && probeSlideIndex > 0 {
-            let posChecks = selectionBoxes.map { box in
-                let x = Int(box.x.rounded())
-                let y = Int(box.y.rounded())
-                return "((item 1 of p) = \(x) and (item 2 of p) = \(y))"
-            }.joined(separator: " or ")
-            let restoreScript = """
-                tell application "Keynote"
-                    activate
-                    tell front document
-                        set current slide to slide \(probeSlideIndex)
-                        set toSelect to {}
-                        repeat with sh in iWork items of slide \(probeSlideIndex)
-                            set p to position of sh
-                            if \(posChecks) then
-                                set end of toSelect to sh
-                            end if
-                        end repeat
-                        if toSelect is not {} then set selection to toSelect
-                    end tell
-                end tell
-                """
-            var restoreError: NSDictionary?
-            NSAppleScript(source: restoreScript)!.executeAndReturnError(&restoreError)
-            if let err = restoreError {
-                log.info("selection restore failed: \(err["NSAppleScriptErrorMessage"] as? String ?? "unknown", privacy: .public)")
-            } else {
-                log.info("selection restored via position matching: \(selectionBoxes.count, privacy: .public) item(s)")
-            }
+        if wantSelection {
+            restoreKeynoteSelection(slideIndex: probeSlideIndex, selectionBoxes: selectionBoxes)
         }
 
         DispatchQueue.main.async { completion(result) }
+    }
+}
+
+/// Re-asserts the user's canvas selection by position-matching.
+///
+/// Saved specifier objects go stale after any export or scratch-doc round-trip,
+/// so this builds fresh `iWork item` references at restore time by iterating the
+/// slide's items and matching by position — the references in `toSelect` are live
+/// at the exact moment `set selection` is called, the only pattern that works.
+private func restoreKeynoteSelection(slideIndex: Int, selectionBoxes: [SelectionBox]) {
+    guard slideIndex > 0, !selectionBoxes.isEmpty else { return }
+    let posChecks = selectionBoxes.map { box in
+        let x = Int(box.x.rounded())
+        let y = Int(box.y.rounded())
+        return "((item 1 of p) = \(x) and (item 2 of p) = \(y))"
+    }.joined(separator: " or ")
+    let restoreScript = """
+        tell application "Keynote"
+            activate
+            tell front document
+                set current slide to slide \(slideIndex)
+                set toSelect to {}
+                repeat with sh in iWork items of slide \(slideIndex)
+                    set p to position of sh
+                    if \(posChecks) then
+                        set end of toSelect to sh
+                    end if
+                end repeat
+                if toSelect is not {} then set selection to toSelect
+            end tell
+        end tell
+        """
+    var restoreError: NSDictionary?
+    NSAppleScript(source: restoreScript)!.executeAndReturnError(&restoreError)
+    if let err = restoreError {
+        log.info("selection restore failed: \(err["NSAppleScriptErrorMessage"] as? String ?? "unknown", privacy: .public)")
+    } else {
+        log.info("selection restored via position matching: \(selectionBoxes.count, privacy: .public) item(s)")
+    }
+}
+
+// MARK: - Vector selection-only extraction via a throwaway document
+//
+// The user copies their Keynote selection (⌘C) — the *native* object data on the
+// clipboard, which Keynote-to-Keynote paste reconstructs as real vector objects
+// (unlike the rasterized PDF flavor other apps see). KeyJig makes a scratch doc
+// sized to the source slide, blanks its theme placeholders, AX-pastes the
+// selection (AXPress, immune to keyboard focus / Dvorak / German menus), exports
+// it as vector, crops to the pasted content, then discards the scratch doc.
+//
+// Because the scratch slide holds ONLY the selected objects, the result is
+// interloper-free even for a non-contiguous selection — the limitation of the
+// bounding-box crop. The user's deck, slide, selection, and clipboard are never
+// touched, so no selection restore is needed.
+//
+// Guard against a clipboard that doesn't match the live selection (user didn't
+// copy, or copied something else): the pasted item count and bounding-box extent
+// must match the probe's selection. On any mismatch — or a paste/export failure —
+// returns nil so the caller falls through to the export+crop tier (which reads
+// live geometry and is always current, just bounding-box-limited). The scratch
+// doc is always closed unsaved, even on the failure path, so Keynote never pops a
+// save dialog that would hang subsequent Apple Events.
+private func extractSelectionViaPaste(
+    selectionBoxes: [SelectionBox],
+    keynotePID: pid_t
+) -> URL? {
+    guard !selectionBoxes.isEmpty else { return nil }
+    let selN = selectionBoxes.count
+    let selExtent = selectionBoxes.dropFirst().reduce(selectionBoxes[0].aabb) { $0.union($1.aabb) }
+
+    // The user must have copied the selection (⌘C) — the native object data on the
+    // clipboard is what we paste. Fully-automatic copy is unreachable: AppleScript's
+    // `selection` model holds all N items, but after KeyJig takes focus the canvas
+    // only hands Copy what is live (often 1), and re-asserting the selection via
+    // AppleScript doesn't stick without human key events on the canvas (see
+    // CLAUDE.md). So we rely on the human's ⌘C and validate it matched below.
+
+    // Source slide size, so pasted objects keep their proportions and don't clip.
+    let sizeScript = """
+        tell application "Keynote"
+            if not (exists front document) then error number -1728
+            tell front document to return (width as string) & "," & (height as string)
+        end tell
+        """
+    var eSize: NSDictionary?
+    let rSize = NSAppleScript(source: sizeScript)!.executeAndReturnError(&eSize)
+    guard eSize == nil, let szStr = rSize.stringValue else { return nil }
+    let szs = szStr.split(separator: ",").compactMap { Int(Double($0) ?? 0) }
+    let w = szs.count == 2 ? szs[0] : 1024
+    let h = szs.count == 2 ? szs[1] : 768
+
+    // Scratch doc → match size → blank placeholders → activate.
+    let setupScript = """
+        tell application "Keynote"
+            set d to make new document
+            tell d
+                set its width to \(w)
+                set its height to \(h)
+                try
+                    delete every iWork item of slide 1
+                end try
+            end tell
+            activate
+        end tell
+        """
+    var eSetup: NSDictionary?
+    NSAppleScript(source: setupScript)!.executeAndReturnError(&eSetup)
+    if let e = eSetup {
+        log.info("paste tier: scratch-doc setup failed: \(e["NSAppleScriptErrorMessage"] as? String ?? "?", privacy: .public)")
+        return nil
+    }
+    Thread.sleep(forTimeInterval: 0.3)
+
+    // AX-paste the user's copied selection into the scratch doc.
+    _ = pressMenuItemWithCmdChar("v", appPID: keynotePID)
+    Thread.sleep(forTimeInterval: 0.4)
+
+    // Read pasted count + geometry, export (failure-proof), ALWAYS close unsaved.
+    let exportURL = makeTempKeynotePDFURL()
+    let finishScript = """
+        tell application "Keynote"
+            set m to 0
+            set okExport to false
+            set geo to ""
+            try
+                tell front document
+                    set itms to iWork items of slide 1
+                    set m to count of itms
+                    repeat with itm in itms
+                        set p to position of itm
+                        set r to 0
+                        try
+                            set r to rotation of itm
+                        end try
+                        set geo to geo & (item 1 of p) & "," & (item 2 of p) & "," & (width of itm) & "," & (height of itm) & "," & r & ";"
+                    end repeat
+                    export to (POSIX file "\(exportURL.path)") as PDF
+                    set okExport to true
+                end tell
+            end try
+            try
+                close front document saving no
+            end try
+            return (m as string) & "|" & (okExport as string) & "|" & geo
+        end tell
+        """
+    var eFinish: NSDictionary?
+    let rFinish = NSAppleScript(source: finishScript)!.executeAndReturnError(&eFinish)
+    guard eFinish == nil, let out = rFinish.stringValue else {
+        try? FileManager.default.removeItem(at: exportURL)
+        return nil
+    }
+    let parts = out.components(separatedBy: "|")
+    let m = Int(parts.first ?? "") ?? 0
+    let okExport = parts.count > 1 && parts[1] == "true"
+    let scratchBoxes: [SelectionBox] = (parts.count > 2 ? parts[2] : "")
+        .split(separator: ";")
+        .compactMap { line in
+            let n = line.split(separator: ",").compactMap { Double($0) }
+            guard n.count == 5 else { return nil }
+            return SelectionBox(x: n[0], y: n[1], w: n[2], h: n[3], rotation: n[4])
+        }
+
+    // Validate the clipboard actually held the live selection.
+    guard okExport, m == selN, !scratchBoxes.isEmpty else {
+        log.info("paste tier: clipboard didn't match selection (pasted \(m, privacy: .public) vs \(selN, privacy: .public), export=\(okExport, privacy: .public)) — falling back to export+crop")
+        try? FileManager.default.removeItem(at: exportURL)
+        return nil
+    }
+    let scratchExtent = scratchBoxes.dropFirst().reduce(scratchBoxes[0].aabb) { $0.union($1.aabb) }
+    let tol: CGFloat = 6
+    guard abs(scratchExtent.width - selExtent.width) < tol,
+          abs(scratchExtent.height - selExtent.height) < tol else {
+        log.info("paste tier: extent mismatch (\(scratchExtent.width, privacy: .public)x\(scratchExtent.height, privacy: .public) vs \(selExtent.width, privacy: .public)x\(selExtent.height, privacy: .public)) — stale clipboard, falling back")
+        try? FileManager.default.removeItem(at: exportURL)
+        return nil
+    }
+
+    // Crop the scratch export to the pasted content (read fresh from the scratch
+    // doc — paste may offset positions). Only selected objects exist here, so the
+    // bounding-box crop is interloper-free.
+    let result = extractSlidePDF(from: exportURL, pageNumber: 1, selectionBoxes: scratchBoxes, padding: 8.0)
+    try? FileManager.default.removeItem(at: exportURL)
+    switch result {
+    case .success(let url):
+        log.info("paste tier: ✅ vector selection-only — \(m, privacy: .public) item(s) via scratch doc")
+        return url
+    case .failure(let err):
+        log.info("paste tier: crop failed (\(err.localizedDescription, privacy: .public)) — falling back")
+        return nil
     }
 }
 
