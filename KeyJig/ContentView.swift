@@ -574,9 +574,6 @@ struct MetadataRow: View {
 struct ContentView: View {
     @ObservedObject var appState: AppState
     @State private var localStatus: String = ""
-    @State private var optionHeld: Bool = false
-    @State private var flagsMonitor: Any? = nil
-
     init(appState: AppState = AppState()) {
         self.appState = appState
     }
@@ -705,51 +702,14 @@ struct ContentView: View {
             let isConverting = appState.conversionStatus == .converting
             let isPulling = appState.keynotePullStatus == .pulling
             VStack(spacing: 8) {
+                // ── Convert Keynote Slide to PDF ──────────────────────────
                 Button {
-                    appState.keynotePullStatus = .pulling
-                    localStatus = NSLocalizedString(
-                        "status.keynote.pulling",
-                        comment: "Status: PDF export from Keynote in progress")
-                    let pullSelection = optionHeld
-                    // Clear the well immediately for the default (full-slide) pull
-                    // so the UI reflects the refresh intent.
-                    if !pullSelection {
-                        appState.previewPDFURL = nil
-                    }
-                    // For the selection path, snapshot the clipboard now on the
-                    // main thread — it's used as a fast-path crop source.
-                    // For the default full-slide pull, pass nil so we never
-                    // accidentally use a pre-existing stale clipboard PDF;
-                    // pullFromKeynote reads the clipboard itself after scripting.
-                    let clipboardPDF: Data? = pullSelection ? {
-                        let pb = NSPasteboard.general
-                        return ["com.adobe.pdf", "Apple PDF pasteboard type"]
-                            .lazy
-                            .compactMap { pb.data(forType: NSPasteboard.PasteboardType($0)) }
-                            .first { !$0.isEmpty }
-                    }() : nil
-                    pullFromKeynote(wantSelection: pullSelection, clipboardPDFData: clipboardPDF) { result in
-                        switch result {
-                        case .success(let url):
-                            appState.previewPDFURL = url
-                            appState.keynotePullStatus = .succeeded
-                            localStatus = ""
-                        case .failure(let error):
-                            appState.keynotePullStatus = .failed
-                            localStatus = error.localizedDescription
-                        }
-                    }
+                    triggerKeynoteSlide(appState: appState) { localStatus = $0 }
                 } label: {
                     Label {
-                        Text(
-                            optionHeld
-                                ? NSLocalizedString(
-                                    "button.import_selection_from_keynote",
-                                    comment: "Button: pulls a cropped PDF of the current Keynote selection (Option-held variant)")
-                                : NSLocalizedString(
-                                    "button.pull_from_keynote",
-                                    comment: "Button: pulls a PDF of the current Keynote slide")
-                        )
+                        Text(NSLocalizedString(
+                            "button.pull_from_keynote",
+                            comment: "Button: converts the current Keynote slide to a vector PDF"))
                         .frame(maxWidth: .infinity)
                     } icon: {
                         Image(systemName: "arrow.up.square.fill")
@@ -757,7 +717,30 @@ struct ContentView: View {
                     }
                     .padding(.vertical, 6)
                 }
-                .help(optionHeld ? Tooltips.importSelectionFromKeynote : Tooltips.pullFromKeynote)
+                .help(Tooltips.pullFromKeynote)
+                .disabled(isConverting || isPulling)
+
+                // ── Convert Keynote Clipboard to PDF ──────────────────────
+                // Option or Shift also triggers this from the floating window
+                // (modifier-key shortcut for power users), but the explicit
+                // button makes the feature discoverable and works in both the
+                // floating window and the menu-bar popover without any modifier.
+                Button {
+                    triggerKeynoteClipboard(appState: appState) { localStatus = $0 }
+                } label: {
+                    Label {
+                        Text(NSLocalizedString(
+                            "button.import_selection_from_keynote",
+                            comment: "Button: converts the user's copied Keynote selection to a vector PDF"))
+                        .frame(maxWidth: .infinity)
+                    } icon: {
+                        Image(systemName: "rectangle.dashed")
+                            .font(.system(size: 20))
+                            .padding(.leading, 2)
+                    }
+                    .padding(.vertical, 6)
+                }
+                .help(Tooltips.importSelectionFromKeynote)
                 .disabled(isConverting || isPulling)
 
                 Button {
@@ -830,18 +813,6 @@ struct ContentView: View {
             .padding(.horizontal, 16)
             .padding(.bottom, 16)
 
-        }
-        .onAppear {
-            flagsMonitor = NSEvent.addLocalMonitorForEvents(matching: .flagsChanged) { event in
-                optionHeld = event.modifierFlags.contains(.option)
-                return event
-            }
-        }
-        .onDisappear {
-            if let monitor = flagsMonitor {
-                NSEvent.removeMonitor(monitor)
-                flagsMonitor = nil
-            }
         }
     }
 
@@ -1056,6 +1027,52 @@ func announceToVoiceOver(_ message: String) {
             .priority: NSAccessibilityPriorityLevel.medium.rawValue,
         ]
     )
+}
+
+// MARK: - Keynote pull actions
+
+/// Shared action: convert the current Keynote slide to a vector PDF.
+private func triggerKeynoteSlide(appState: AppState, setStatus: @escaping (String) -> Void) {
+    appState.keynotePullStatus = .pulling
+    setStatus(NSLocalizedString("status.keynote.pulling",
+        comment: "Status: PDF export from Keynote in progress"))
+    appState.previewPDFURL = nil
+    pullFromKeynote(wantSelection: false, clipboardPDFData: nil) { result in
+        switch result {
+        case .success(let url):
+            appState.previewPDFURL = url
+            appState.keynotePullStatus = .succeeded
+            setStatus("")
+        case .failure(let error):
+            appState.keynotePullStatus = .failed
+            setStatus(error.localizedDescription)
+        }
+    }
+}
+
+/// Shared action: convert the user's copied Keynote selection to a vector PDF.
+private func triggerKeynoteClipboard(appState: AppState, setStatus: @escaping (String) -> Void) {
+    appState.keynotePullStatus = .pulling
+    setStatus(NSLocalizedString("status.keynote.pulling",
+        comment: "Status: PDF export from Keynote in progress"))
+    let clipboardPDF: Data? = {
+        let pb = NSPasteboard.general
+        return ["com.adobe.pdf", "Apple PDF pasteboard type"]
+            .lazy
+            .compactMap { pb.data(forType: NSPasteboard.PasteboardType($0)) }
+            .first { !$0.isEmpty }
+    }()
+    pullFromKeynote(wantSelection: true, clipboardPDFData: clipboardPDF) { result in
+        switch result {
+        case .success(let url):
+            appState.previewPDFURL = url
+            appState.keynotePullStatus = .succeeded
+            setStatus("")
+        case .failure(let error):
+            appState.keynotePullStatus = .failed
+            setStatus(error.localizedDescription)
+        }
+    }
 }
 
 // MARK: - File browser helper
