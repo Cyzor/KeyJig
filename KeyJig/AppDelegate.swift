@@ -17,46 +17,46 @@ class MainWindowController: NSWindowController, NSWindowDelegate {
     /// Retains the Combine subscription that keeps the proxy icon current.
     private var representedURLCancellable: AnyCancellable?
 
-    /// Computes the minimum window content width from the localized button labels
-    /// so the window never clips text regardless of the active language or the
-    /// user's accessibility font size.
+    /// Computes the minimum window content width by measuring the four action
+    /// button rows with SwiftUI's own layout engine — the same one that renders
+    /// the actual buttons. fixedSize() forces each probe view to its ideal
+    /// (minimum) width; fittingSize reads it back without the view ever
+    /// appearing on screen. This sidesteps AppKit font-measurement timing
+    /// issues and ensures the result is accurate for every locale and text-size
+    /// accessibility setting.
     ///
-    /// Every constant used here has a named counterpart in ContentView:
-    ///   • label font   → NSFont.systemFont at the system size (matches SwiftUI body)
-    ///   • shortcut font → NSFont.smallSystemFontSize (matches buttonRow's 11 pt)
-    ///   • iconPt       → 24  (.font(.system(size: 24)) on the largest button icon)
-    ///   • rowSpacing   → 4   (buttonRow HStack(spacing: 4))
-    ///   • outerPadding → 32  (VStack .padding(.horizontal, 16), both sides)
-    ///   • buttonChrome → SwiftUI Label icon-to-title gap (~8 pt) plus the default
-    ///                    NSButton bezel insets (~8 pt per side) — the one value
-    ///                    we cannot measure without rendering.
+    /// The only non-SwiftUI constant is outerPadding, which directly
+    /// corresponds to the .padding(.horizontal, 16) applied to the button VStack.
     static func minimumContentWidth() -> CGFloat {
-        // Active-state labels (the longer of each dynamic pair).
-        let labels = [
-            NSLocalizedString("button.pull_from_keynote", comment: ""),
-            NSLocalizedString("button.import_selection_from_keynote", comment: ""),
-            NSLocalizedString("button.copy_svg_to_clipboard", comment: ""),
-            NSLocalizedString("button.place_svg_in_keynote", comment: ""),
+        // Mirror the active-state labels (the longer of each dynamic pair)
+        // and the shortcut column from ContentView's buttonRow.
+        let rows: [(title: String, shortcut: String)] = [
+            (NSLocalizedString("button.pull_from_keynote", comment: ""), "⌘1"),
+            (NSLocalizedString("button.import_selection_from_keynote", comment: ""), "⌘2"),
+            (NSLocalizedString("button.copy_svg_to_clipboard", comment: ""), "⌘3"),
+            (NSLocalizedString("button.place_svg_in_keynote", comment: ""), "⌘4"),
         ]
-        let shortcuts = ["⌘1", "⌘2", "⌘3", "⌘4"]
 
-        let labelFont    = NSFont.systemFont(ofSize: NSFont.systemFontSize)
-        let shortcutFont = NSFont.systemFont(ofSize: NSFont.smallSystemFontSize)
+        let outerPadding: CGFloat = 16 * 2  // VStack .padding(.horizontal, 16), both sides
 
-        func textWidth(_ s: String, _ font: NSFont) -> CGFloat {
-            (s as NSString).size(withAttributes: [.font: font]).width
-        }
+        let widest = rows.map { row -> CGFloat in
+            // Build a probe that mirrors the real button label structure exactly.
+            let probe = Label {
+                HStack(spacing: 4) {          // buttonRow HStack(spacing: 4)
+                    Text(row.title)
+                    Text(row.shortcut)
+                        .font(.system(size: 11))  // buttonRow shortcut font
+                }
+            } icon: {
+                Image(systemName: "arrow.up.square.fill")
+                    .font(.system(size: 24))  // largest icon in the button set
+            }
+            .fixedSize()  // tells SwiftUI to use the view's ideal/minimum width
 
-        let widestLabel    = labels   .map { textWidth($0, labelFont)    }.max() ?? 0
-        let widestShortcut = shortcuts.map { textWidth($0, shortcutFont) }.max() ?? 0
+            return NSHostingView(rootView: probe).fittingSize.width
+        }.max() ?? 380
 
-        let iconPt:        CGFloat = 24   // largest SF Symbol size used in buttons
-        let rowSpacing:    CGFloat = 4    // buttonRow HStack(spacing:)
-        let outerPadding:  CGFloat = 16 * 2  // VStack .padding(.horizontal, 16)
-        let buttonChrome:  CGFloat = 24   // Label icon-to-title gap + button bezel
-
-        return (widestLabel + rowSpacing + widestShortcut
-              + iconPt + outerPadding + buttonChrome).rounded(.up)
+        return (widest + outerPadding).rounded(.up)
     }
 
     init(appState: AppState = AppState(), isPrimary: Bool = false) {
