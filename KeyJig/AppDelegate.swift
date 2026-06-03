@@ -16,55 +16,14 @@ class MainWindowController: NSWindowController, NSWindowDelegate {
 
     /// Retains the Combine subscription that keeps the proxy icon current.
     private var representedURLCancellable: AnyCancellable?
-
-    /// Computes the minimum window content width by measuring the four action
-    /// button rows with SwiftUI's own layout engine — the same one that renders
-    /// the actual buttons. fixedSize() forces each probe view to its ideal
-    /// (minimum) width; fittingSize reads it back without the view ever
-    /// appearing on screen. This sidesteps AppKit font-measurement timing
-    /// issues and ensures the result is accurate for every locale and text-size
-    /// accessibility setting.
-    ///
-    /// The only non-SwiftUI constant is outerPadding, which directly
-    /// corresponds to the .padding(.horizontal, 16) applied to the button VStack.
-    static func minimumContentWidth() -> CGFloat {
-        // Mirror the active-state labels (the longer of each dynamic pair)
-        // and the shortcut column from ContentView's buttonRow.
-        let rows: [(title: String, shortcut: String)] = [
-            (NSLocalizedString("button.pull_from_keynote", comment: ""), "⌘1"),
-            (NSLocalizedString("button.import_selection_from_keynote", comment: ""), "⌘2"),
-            (NSLocalizedString("button.copy_svg_to_clipboard", comment: ""), "⌘3"),
-            (NSLocalizedString("button.place_svg_in_keynote", comment: ""), "⌘4"),
-        ]
-
-        let outerPadding: CGFloat = 16 * 2  // VStack .padding(.horizontal, 16), both sides
-
-        let widest = rows.map { row -> CGFloat in
-            // Build a probe that mirrors the real button label structure exactly.
-            let probe = Label {
-                HStack(spacing: 4) {          // buttonRow HStack(spacing: 4)
-                    Text(row.title)
-                    Text(row.shortcut)
-                        .font(.system(size: 11))  // buttonRow shortcut font
-                }
-            } icon: {
-                Image(systemName: "arrow.up.square.fill")
-                    .font(.system(size: 24))  // largest icon in the button set
-            }
-            .fixedSize()  // tells SwiftUI to use the view's ideal/minimum width
-
-            return NSHostingView(rootView: probe).fittingSize.width
-        }.max() ?? 380
-
-        return (widest + outerPadding).rounded(.up)
-    }
+    /// Retains the subscription that applies the measured minimum content width.
+    private var minWidthCancellable: AnyCancellable?
 
     init(appState: AppState = AppState(), isPrimary: Bool = false) {
         self.appState = appState
 
-        let minW = MainWindowController.minimumContentWidth()
         let window = NSWindow(
-            contentRect: NSRect(x: 0, y: 0, width: max(400, minW), height: 640),
+            contentRect: NSRect(x: 0, y: 0, width: 400, height: 640),
             styleMask: [.titled, .closable, .miniaturizable, .resizable],
             backing: .buffered,
             defer: false
@@ -74,7 +33,7 @@ class MainWindowController: NSWindowController, NSWindowDelegate {
         window.title = NSLocalizedString(
             "window.title.default",
             comment: "Default window title when no file is loaded")
-        window.minSize = NSSize(width: minW, height: 520)
+        window.minSize = NSSize(width: 0, height: 520)
         window.maxSize = NSSize(width: 900, height: 1200)
 
         super.init(window: window)
@@ -82,6 +41,26 @@ class MainWindowController: NSWindowController, NSWindowDelegate {
         window.delegate = self
         window.contentViewController = NSHostingController(
             rootView: ContentView(appState: appState))
+
+        // After ContentView's first layout pass its invisible button probe fires
+        // ButtonAreaMinWidthKey, which ContentView writes to appState.minimumButtonAreaWidth.
+        // Apply it here as the window's content minimum width (adding the outer
+        // padding that the probe sits inside of). Using .first() so we only set
+        // it once — button labels don't change at runtime.
+        minWidthCancellable = appState.$minimumButtonAreaWidth
+            .filter { $0 > 0 }
+            .first()
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] buttonAreaWidth in
+                guard let win = self?.window else { return }
+                let outerPadding: CGFloat = 16 * 2  // VStack .padding(.horizontal, 16)
+                let minW = (buttonAreaWidth + outerPadding).rounded(.up)
+                win.contentMinSize = NSSize(width: minW, height: 0)
+                if win.frame.width < minW {
+                    var f = win.frame; f.size.width = minW
+                    win.setFrame(f, display: true, animate: false)
+                }
+            }
 
         // Enable the proxy icon. representedURL will be kept current below.
         window.isExcludedFromWindowsMenu = false

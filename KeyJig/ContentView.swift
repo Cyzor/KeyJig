@@ -815,6 +815,29 @@ struct ContentView: View {
                 .disabled(appState.svgString.isEmpty || isConverting || isSending)
 
             }
+            .background(
+                // Invisible probe: all four button rows at their natural (ideal) width.
+                // fixedSize() prevents SwiftUI from expanding them to fill the VStack;
+                // the widest row wins via ButtonAreaMinWidthKey's reduce function.
+                // Placed on the inner VStack (before outer padding) so the reported
+                // width is just the button content — the window controller adds padding.
+                VStack(spacing: 0) {
+                    buttonRow(NSLocalizedString("button.pull_from_keynote",              comment: ""), shortcut: "⌘1")
+                    buttonRow(NSLocalizedString("button.import_selection_from_keynote",  comment: ""), shortcut: "⌘2")
+                    buttonRow(NSLocalizedString("button.copy_svg_to_clipboard",          comment: ""), shortcut: "⌘3")
+                    buttonRow(NSLocalizedString("button.place_svg_in_keynote",           comment: ""), shortcut: "⌘4")
+                }
+                .fixedSize()
+                .hidden()
+                .background(GeometryReader { geo in
+                    Color.clear.preference(key: ButtonAreaMinWidthKey.self,
+                                           value: geo.size.width)
+                })
+            )
+            .onPreferenceChange(ButtonAreaMinWidthKey.self) { width in
+                guard width > 0 else { return }
+                appState.minimumButtonAreaWidth = width
+            }
             .padding(.horizontal, 16)
             .padding(.bottom, 16)
 
@@ -1032,6 +1055,18 @@ func announceToVoiceOver(_ message: String) {
             .priority: NSAccessibilityPriorityLevel.medium.rawValue,
         ]
     )
+}
+
+// MARK: - Minimum button area width preference
+
+/// Collects the maximum natural (unconstrained) width of any button row.
+/// MainWindowController observes this via AppState and applies it as the
+/// window's content minimum width (plus outer padding) after the first layout.
+struct ButtonAreaMinWidthKey: PreferenceKey {
+    static var defaultValue: CGFloat = 0
+    static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) {
+        value = max(value, nextValue())
+    }
 }
 
 // MARK: - Button label helpers

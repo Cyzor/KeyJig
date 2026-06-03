@@ -44,6 +44,11 @@ class AppState: ObservableObject {
     /// checkAndLoadClipboardSVG to skip re-processing an unchanged clipboard.
     var lastLoadedClipboardChangeCount: Int = -1
 
+    /// The minimum width needed to display the button area without truncation,
+    /// measured by ContentView's invisible probe during its first layout pass.
+    /// MainWindowController observes this and applies it as contentMinSize.width.
+    @Published var minimumButtonAreaWidth: CGFloat = 0
+
     /// The transient status/error string shown below the preview. Updated by
     /// button actions and menu commands alike. Empty means "show default state".
     @Published var statusMessage: String = ""
