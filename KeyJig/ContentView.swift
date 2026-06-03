@@ -718,7 +718,7 @@ struct ContentView: View {
                     .padding(.vertical, 6)
                 }
                 .help(Tooltips.pullFromKeynote)
-                .disabled(isConverting || isPulling)
+                .disabled(isConverting || isPulling || !appState.keynoteRunning)
 
                 // ── Convert Keynote Clipboard to PDF ──────────────────────
                 // Option or Shift also triggers this from the floating window
@@ -741,7 +741,7 @@ struct ContentView: View {
                     .padding(.vertical, 6)
                 }
                 .help(Tooltips.importSelectionFromKeynote)
-                .disabled(isConverting || isPulling)
+                .disabled(isConverting || isPulling || !appState.keynoteClipboardReady)
 
                 Button {
                     let svg = convertClipboardToSVG()

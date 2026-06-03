@@ -1,6 +1,7 @@
 import Combine
 import Foundation
 import SwiftUI
+import AppKit
 
 // MARK: - App State
 
@@ -43,8 +44,81 @@ class AppState: ObservableObject {
     /// checkAndLoadClipboardSVG to skip re-processing an unchanged clipboard.
     var lastLoadedClipboardChangeCount: Int = -1
 
+    /// True when the clipboard contains Keynote-native object data (the type
+    /// written by Keynote when you ⌘C canvas objects). Drives the enabled
+    /// state of the "Convert Keynote Clipboard to PDF" button.
+    @Published var keynoteClipboardReady: Bool = false
+
+    /// True when Keynote is running. Drives the enabled state of the
+    /// "Convert Keynote Slide to PDF" button. Does not check for open
+    /// documents — the existing error message handles that case.
+    @Published var keynoteRunning: Bool = false
+
+    private var clipboardTimer: Timer?
+    private var workspaceObservers: [Any] = []
+    private var lastSeenClipboardChangeCount: Int = -1
+
     init() {
         checkInkscapeStatus()
+        startKeynoteMonitoring()
+    }
+
+    deinit {
+        clipboardTimer?.invalidate()
+        workspaceObservers.forEach { NSWorkspace.shared.notificationCenter.removeObserver($0) }
+    }
+
+    private func startKeynoteMonitoring() {
+        // ── Keynote running state ─────────────────────────────────────────
+        // Seed current state, then track via workspace notifications (zero
+        // polling cost).
+        keynoteRunning = NSRunningApplication
+            .runningApplications(withBundleIdentifier: "com.apple.iWork.Keynote")
+            .first != nil
+
+        let nc = NSWorkspace.shared.notificationCenter
+        workspaceObservers.append(nc.addObserver(
+            forName: NSWorkspace.didLaunchApplicationNotification,
+            object: nil, queue: .main) { [weak self] note in
+                guard let app = note.userInfo?[NSWorkspace.applicationUserInfoKey]
+                    as? NSRunningApplication,
+                    app.bundleIdentifier == "com.apple.iWork.Keynote" else { return }
+                self?.keynoteRunning = true
+        })
+        workspaceObservers.append(nc.addObserver(
+            forName: NSWorkspace.didTerminateApplicationNotification,
+            object: nil, queue: .main) { [weak self] note in
+                guard let app = note.userInfo?[NSWorkspace.applicationUserInfoKey]
+                    as? NSRunningApplication,
+                    app.bundleIdentifier == "com.apple.iWork.Keynote" else { return }
+                self?.keynoteRunning = false
+        })
+
+        // ── Clipboard monitoring ──────────────────────────────────────────
+        // Poll changeCount every 0.5 s — only evaluates pasteboard types when
+        // the count has actually moved, so the steady-state cost is one int
+        // comparison per tick.
+        checkClipboardForKeynoteData()   // seed immediately
+        clipboardTimer = Timer.scheduledTimer(withTimeInterval: 0.5, repeats: true) { [weak self] _ in
+            self?.checkClipboardForKeynoteData()
+        }
+    }
+
+    private func checkClipboardForKeynoteData() {
+        let pb = NSPasteboard.general
+        let count = pb.changeCount
+        guard count != lastSeenClipboardChangeCount else { return }
+        lastSeenClipboardChangeCount = count
+        // Keynote writes types containing "keynote" or "iWork" when canvas
+        // objects are copied. This excludes plain PDFs, images, and text that
+        // other apps write — those don't round-trip as native vector objects.
+        let ready = (pb.types ?? []).contains { t in
+            t.rawValue.localizedCaseInsensitiveContains("keynote") ||
+            t.rawValue.localizedCaseInsensitiveContains("iWork")
+        }
+        if keynoteClipboardReady != ready {
+            keynoteClipboardReady = ready
+        }
     }
 
     private func checkInkscapeStatus() {
