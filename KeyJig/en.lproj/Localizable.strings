@@ -134,9 +134,9 @@
 "help.section.import.title" = "Import an SVG";
 "help.section.import.body" = "• Drop an SVG file onto the preview area.\n• Copy artwork in Illustrator, Affinity, or Inkscape (⌘C) — KeyJig picks it up automatically.\n• Use File > Open SVG File… (⌘O).\n• With Inkscape installed, KeyJig also opens PDF and .ai files.";
 "help.section.keynote.title" = "Send to Keynote";
-"help.section.keynote.body" = "• Copy for Keynote (⌘⇧C) — paste into Keynote (⌘V) and use Format > Shapes & Lines > Break Apart to edit paths.\n• Place in Keynote drops the SVG directly onto the current slide. Needs Accessibility permission (System Settings ▸ Privacy & Security).";
+"help.section.keynote.body" = "• Copy for Keynote (⌘3) — paste into Keynote (⌘V) and use Format > Shapes & Lines > Break Apart to edit paths.\n• Place SVG in Keynote (⌘4) drops it directly onto the current slide. Requires Accessibility permission (System Settings ▸ Privacy & Security).";
 "help.section.pull.title" = "Convert Keynote to PDF";
-"help.section.pull.body" = "• Click Convert Keynote Slide to PDF to capture the current slide as a vector PDF.\n• Hold Option and click to convert exactly the objects you copied (⌘C in Keynote) — non-contiguous selections included. Without a prior copy, captures the bounding rectangle instead.\n• Drag the PDF preview to Affinity, Illustrator, Figma, or any PDF-capable app — or save or copy it from the buttons below.";
+"help.section.pull.body" = "• Convert Keynote Slide to PDF (⌘1) captures the current slide as a vector PDF.\n• Convert Keynote Clipboard to PDF (⌘2) converts the objects you copied in Keynote (⌘C) — non-contiguous selections included. Without a prior copy, captures the bounding rectangle instead.\n• Drag the PDF preview to Affinity, Illustrator, Figma, or any PDF-capable app — or save or copy it with the buttons below.";
 
 /* ── Settings ───────────────────────────────────────────────────────── */
 "settings.window.title" = "Settings";

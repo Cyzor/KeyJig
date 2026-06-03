@@ -133,9 +133,9 @@
 "help.section.import.title" = "Importar SVG";
 "help.section.import.body" = "• Arrastra un archivo SVG al área de vista previa.\n• Copia una ilustración en Illustrator, Affinity o Inkscape (⌘C) — KeyJig lo detecta automáticamente.\n• Usa Archivo > Abrir archivo SVG… (⌘O).\n• Con Inkscape instalado, KeyJig también abre archivos PDF y .ai.";
 "help.section.keynote.title" = "Enviar a Keynote";
-"help.section.keynote.body" = "• Copiar para Keynote (⌘⇧C) — pega en Keynote (⌘V) y usa Formato > Formas y líneas > Separar para editar los trayectos.\n• Insertar en Keynote coloca el SVG directamente en la diapositiva actual. Requiere permiso de accesibilidad (Configuración del Sistema ▸ Privacidad y seguridad).";
+"help.section.keynote.body" = "• Copiar para Keynote (⌘3) — pega en Keynote (⌘V) y usa Formato > Formas y líneas > Separar para editar los trayectos.\n• Insertar SVG en Keynote (⌘4) lo coloca directamente en la diapositiva actual. Requiere permiso de accesibilidad (Configuración del Sistema ▸ Privacidad y seguridad).";
 "help.section.pull.title" = "Convertir Keynote a PDF";
-"help.section.pull.body" = "• Haz clic en Extraer de Keynote para capturar la diapositiva actual como PDF.\n• Mantén pulsada Opción para recortar al área de objetos seleccionados.\n• Arrastra la vista previa del PDF a Affinity, Illustrator, Figma u otra app — o guárdalo o cópialo desde los botones de abajo.";
+"help.section.pull.body" = "• Convertir diapositiva de Keynote a PDF (⌘1) captura la diapositiva actual como PDF vectorial.\n• Convertir portapapeles de Keynote a PDF (⌘2) convierte los objetos que copiaste en Keynote (⌘C) — se admiten selecciones no contiguas. Sin una copia previa, captura el rectángulo delimitador.\n• Arrastra la vista previa del PDF a Affinity, Illustrator, Figma u otra app — o guárdalo o cópialo con los botones de abajo.";
 
 /* ── Settings ───────────────────────────────────────────────────────── */
 "settings.window.title" = "Ajustes";

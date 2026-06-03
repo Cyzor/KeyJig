@@ -133,9 +133,9 @@
 "help.section.import.title" = "SVGを読み込む";
 "help.section.import.body" = "• SVGファイルをプレビューエリアにドロップします。\n• Illustrator・Affinity・Inkscapeでアートワークをコピー（⌘C）すると、KeyJigが自動で検出します。\n• ファイル ▸ SVGファイルを開く…（⌘O）でファイルを開きます。\n• Inkscapeがインストールされていれば、PDFや.aiファイルも開けます。";
 "help.section.keynote.title" = "Keynoteに送る";
-"help.section.keynote.body" = "• Keynote用にコピー（⌘⇧C）でKeynote用に変換し、Keynoteで貼り付け（⌘V）後にフォーマット ▸ 図形と線 ▸ 分割でパスを編集できます。\n• Keynoteに配置でSVGを現在のスライドに直接配置します。アクセシビリティアクセスが必要です（システム設定 ▸ プライバシーとセキュリティ）。";
+"help.section.keynote.body" = "• Keynote用にコピー（⌘3）— Keynoteで貼り付け（⌘V）後、フォーマット ▸ 図形と線 ▸ 分割でパスを編集できます。\n• SVGをKeynoteに配置（⌘4）で現在のスライドに直接配置します。アクセシビリティアクセスが必要です（システム設定 ▸ プライバシーとセキュリティ）。";
 "help.section.pull.title" = "KeynoteをPDFに変換";
-"help.section.pull.body" = "• 「Keynoteから取り出す」をクリックして現在のスライドをPDFとして取得します。\n• Optionキーを押しながらクリックすると、選択したオブジェクトのみを切り抜きます。\n• PDFプレビューをAffinity・Illustrator・Figmaなどのアプリにドラッグするか、下のボタンで保存またはコピーしてください。";
+"help.section.pull.body" = "• KeynoteスライドをPDFに変換（⌘1）で現在のスライドをベクターPDFとして取得します。\n• KeynoteクリップボードをPDFに変換（⌘2）でKeynoteでコピーしたオブジェクト（⌘C）だけを変換します。非連続選択にも対応。コピーなしの場合は囲み矩形で取得します。\n• PDFプレビューをAffinity・Illustrator・Figmaなどのアプリにドラッグするか、下のボタンで保存またはコピーしてください。";
 
 /* ── Settings ───────────────────────────────────────────────────────── */
 "settings.window.title" = "設定";

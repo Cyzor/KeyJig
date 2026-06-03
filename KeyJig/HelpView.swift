@@ -54,7 +54,7 @@ struct HelpView: View {
             )
             Divider()
             HelpSection(
-                symbol: "arrow.down.square.fill",
+                symbol: "document.on.document.fill",
                 color: .green,
                 title: NSLocalizedString(
                     "help.section.keynote.title",
@@ -65,7 +65,7 @@ struct HelpView: View {
             )
             Divider()
             HelpSection(
-                symbol: "arrow.up.square.fill",
+                symbol: "document.badge.ellipsis.fill",
                 color: .orange,
                 title: NSLocalizedString(
                     "help.section.pull.title",
