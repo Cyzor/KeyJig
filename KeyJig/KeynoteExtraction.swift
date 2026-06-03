@@ -74,9 +74,12 @@ func pullFromKeynote(
         // Capture the frontmost app so we can restore it after any Keynote
         // activation. Only relevant for the selection pull — the slide pull
         // leaves you in Keynote intentionally.
-        let prevFrontApp: NSRunningApplication? = wantSelection
-            ? DispatchQueue.main.sync { NSWorkspace.shared.frontmostApplication }
-            : nil
+        // Always capture the frontmost app so it can be restored after any
+        // Keynote activation — both the slide pull (activates Keynote for the
+        // GUI clipboard copy or export) and the selection pull need this.
+        let prevFrontApp: NSRunningApplication? = DispatchQueue.main.sync {
+            NSWorkspace.shared.frontmostApplication
+        }
 
         // Source info used to build a descriptive output filename.
         // Populated by the probe (selection pull) or the name-fetch block below (full-slide pull).
@@ -387,7 +390,13 @@ func pullFromKeynote(
                             docName: pdfDocName,
                             slideIndex: pdfSlideIndex)
                         try? FileManager.default.removeItem(at: srcURL)
-                        DispatchQueue.main.async { completion(result) }
+                        DispatchQueue.main.async {
+                            if let app = prevFrontApp {
+                                if #available(macOS 14.0, *) { app.activate() }
+                                else { app.activate(options: .activateIgnoringOtherApps) }
+                            }
+                            completion(result)
+                        }
                         return
                     }
                 }
@@ -479,7 +488,13 @@ func pullFromKeynote(
                         let result = extractSlidePDF(from: srcURL, pageNumber: 1, selectionBoxes: [],
                             padding: 8.0, docName: pdfDocName, slideIndex: pdfSlideIndex)
                         try? FileManager.default.removeItem(at: srcURL)
-                        DispatchQueue.main.async { completion(result) }
+                        DispatchQueue.main.async {
+                            if let app = prevFrontApp {
+                                if #available(macOS 14.0, *) { app.activate() }
+                                else { app.activate(options: .activateIgnoringOtherApps) }
+                            }
+                            completion(result)
+                        }
                         return
                     }
                 }
