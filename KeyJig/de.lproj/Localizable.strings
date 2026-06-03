@@ -49,8 +49,10 @@
 
 /* ── Buttons ────────────────────────────────────────────────────────── */
 "button.open_svg_file" = "SVG-Datei öffnen…";
-"button.copy_to_clipboard" = "In Zwischenablage kopieren";
+"button.copy_to_clipboard" = "Für Keynote kopieren";
+"button.copy_svg_to_clipboard" = "SVG in Zwischenablage kopieren";
 "button.place_in_keynote" = "In Keynote einfügen";
+"button.place_svg_in_keynote" = "SVG in Keynote einfügen";
 "button.pull_from_keynote" = "Keynote-Folie als PDF konvertieren";
 "button.import_selection_from_keynote" = "Keynote-Zwischenablage als PDF konvertieren";
 "button.save_pdf" = "PDF sichern…";
@@ -128,7 +130,7 @@
 "help.section.import.title" = "SVG importieren";
 "help.section.import.body" = "• SVG-Datei auf den Vorschaubereich ziehen.\n• Grafik in Illustrator, Affinity oder Inkscape kopieren (⌘C) – KeyJig erkennt sie automatisch.\n• Ablage > SVG-Datei öffnen… (⌘O) verwenden.\n• Mit installiertem Inkscape öffnet KeyJig auch PDF- und .ai-Dateien.";
 "help.section.keynote.title" = "An Keynote senden";
-"help.section.keynote.body" = "• In Zwischenablage kopieren (⌘⇧C) — dann in Keynote einsetzen (⌘V) und Format > Formen und Linien > Aufteilen verwenden.\n• In Keynote einfügen platziert das SVG direkt auf die aktuelle Folie. Erfordert Bedienungshilfenzugriff (Systemeinstellungen ▸ Datenschutz & Sicherheit).";
+"help.section.keynote.body" = "• Für Keynote kopieren (⌘⇧C) — dann in Keynote einsetzen (⌘V) und Format > Formen und Linien > Aufteilen verwenden.\n• In Keynote einfügen platziert das SVG direkt auf die aktuelle Folie. Erfordert Bedienungshilfenzugriff (Systemeinstellungen ▸ Datenschutz & Sicherheit).";
 "help.section.pull.title" = "Keynote als PDF konvertieren";
 "help.section.pull.body" = "• Auf \"Aus Keynote abrufen\" klicken, um die aktuelle Folie als PDF zu erfassen.\n• Option halten, um das PDF auf ausgewählte Objekte zuzuschneiden.\n• PDF-Vorschau in Affinity, Illustrator, Figma oder eine andere App ziehen – oder über die Schaltflächen unten speichern oder kopieren.";
 

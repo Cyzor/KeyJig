@@ -48,8 +48,10 @@
 
 /* ── Buttons ────────────────────────────────────────────────────────── */
 "button.open_svg_file" = "SVGファイルを開く…";
-"button.copy_to_clipboard" = "クリップボードにコピー";
+"button.copy_to_clipboard" = "Keynote用にコピー";
+"button.copy_svg_to_clipboard" = "SVGをクリップボードにコピー";
 "button.place_in_keynote" = "Keynoteに配置";
+"button.place_svg_in_keynote" = "SVGをKeynoteに配置";
 "button.pull_from_keynote" = "KeynoteスライドをPDFに変換";
 "button.import_selection_from_keynote" = "KeynoteクリップボードをPDFに変換";
 "button.save_pdf" = "PDFを保存…";
@@ -127,7 +129,7 @@
 "help.section.import.title" = "SVGを読み込む";
 "help.section.import.body" = "• SVGファイルをプレビューエリアにドロップします。\n• Illustrator・Affinity・Inkscapeでアートワークをコピー（⌘C）すると、KeyJigが自動で検出します。\n• ファイル ▸ SVGファイルを開く…（⌘O）でファイルを開きます。\n• Inkscapeがインストールされていれば、PDFや.aiファイルも開けます。";
 "help.section.keynote.title" = "Keynoteに送る";
-"help.section.keynote.body" = "• クリップボードにコピー（⌘⇧C）でKeynote用に変換し、Keynoteで貼り付け（⌘V）後にフォーマット ▸ 図形と線 ▸ 分割でパスを編集できます。\n• Keynoteに配置でSVGを現在のスライドに直接配置します。アクセシビリティアクセスが必要です（システム設定 ▸ プライバシーとセキュリティ）。";
+"help.section.keynote.body" = "• Keynote用にコピー（⌘⇧C）でKeynote用に変換し、Keynoteで貼り付け（⌘V）後にフォーマット ▸ 図形と線 ▸ 分割でパスを編集できます。\n• Keynoteに配置でSVGを現在のスライドに直接配置します。アクセシビリティアクセスが必要です（システム設定 ▸ プライバシーとセキュリティ）。";
 "help.section.pull.title" = "KeynoteをPDFに変換";
 "help.section.pull.body" = "• 「Keynoteから取り出す」をクリックして現在のスライドをPDFとして取得します。\n• Optionキーを押しながらクリックすると、選択したオブジェクトのみを切り抜きます。\n• PDFプレビューをAffinity・Illustrator・Figmaなどのアプリにドラッグするか、下のボタンで保存またはコピーしてください。";
 

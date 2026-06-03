@@ -758,9 +758,12 @@ struct ContentView: View {
                     }
                 } label: {
                     Label {
-                        Text(
-                            NSLocalizedString(
+                        Text(appState.svgString.isEmpty
+                            ? NSLocalizedString(
                                 "button.copy_to_clipboard",
+                                comment: "Button: fallback label when no SVG is loaded")
+                            : NSLocalizedString(
+                                "button.copy_svg_to_clipboard",
                                 comment: "Button: copies the loaded SVG to the clipboard in Keynote format")
                         )
                         .frame(maxWidth: .infinity)
@@ -794,9 +797,12 @@ struct ContentView: View {
                     }
                 } label: {
                     Label {
-                        Text(
-                            NSLocalizedString(
+                        Text(appState.svgString.isEmpty
+                            ? NSLocalizedString(
                                 "button.place_in_keynote",
+                                comment: "Button: fallback label when no SVG is loaded")
+                            : NSLocalizedString(
+                                "button.place_svg_in_keynote",
                                 comment: "Button: places the loaded SVG directly into the current Keynote slide")
                         )
                         .frame(maxWidth: .infinity)
