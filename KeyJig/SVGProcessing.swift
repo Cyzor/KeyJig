@@ -1,5 +1,38 @@
 import Foundation
 
+// MARK: - File-type detection by content
+
+/// Identifies a vector file's format by examining content rather than extension.
+/// Reads at most 4 KB — enough for unambiguous magic bytes and a typical SVG preamble.
+/// Returns "svg", "pdf", or "ai"; nil when the content is unrecognised.
+///
+/// Signatures checked:
+///   %PDF-   (offset 0, 5 bytes) → PDF, including AI files saved in PDF format
+///   %!PS    (offset 0, 4 bytes) → EPS / legacy AI (PostScript)
+///   <svg    (anywhere in first 4 KB of UTF-8 text) → SVG
+func sniffVectorFileType(at url: URL) -> String? {
+    guard let handle = try? FileHandle(forReadingFrom: url) else { return nil }
+    defer { try? handle.close() }
+    let header = handle.readData(ofLength: 4096)
+    guard !header.isEmpty else { return nil }
+
+    // PDF — covers native PDF and AI saved as PDF
+    if header.count >= 5,
+       header[0] == 0x25, header[1] == 0x50, header[2] == 0x44,
+       header[3] == 0x46, header[4] == 0x2D { return "pdf" }
+
+    // EPS / legacy AI (PostScript)
+    if header.count >= 4,
+       header[0] == 0x25, header[1] == 0x21,
+       header[2] == 0x50, header[3] == 0x53 { return "ai" }
+
+    // SVG — XML text, look for the root element tag
+    if let text = String(data: header, encoding: .utf8), text.contains("<svg") { return "svg" }
+    if let text = String(data: header, encoding: .utf16), text.contains("<svg") { return "svg" }
+
+    return nil
+}
+
 // MARK: - SVG Validation
 
 /// Errors that can occur during SVG validation.

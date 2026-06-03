@@ -615,8 +615,13 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
     /// Loads a vector file (SVG, PDF, or AI) into the given AppState.
     /// Reads SVG synchronously; converts PDF/AI via Inkscape on a background queue.
+    /// For files with unknown or missing extensions, sniffs the content to determine type.
     private func loadFile(at url: URL, into state: AppState) {
-        switch url.pathExtension.lowercased() {
+        let ext = url.pathExtension.lowercased()
+        let type = ["svg", "pdf", "ai"].contains(ext) ? ext
+            : (sniffVectorFileType(at: url) ?? ext)
+
+        switch type {
         case "svg":
             do {
                 let content = try String(contentsOf: url, encoding: .utf8)
@@ -640,7 +645,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                 }
             }
         default:
-            log.error("unsupported file type: \(url.pathExtension, privacy: .public)")
+            log.error("unsupported file type: \(url.lastPathComponent, privacy: .public)")
         }
     }
 
@@ -785,9 +790,12 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     func application(_ sender: NSApplication, openFile filename: String) -> Bool {
         let url = URL(fileURLWithPath: filename)
         let ext = url.pathExtension.lowercased()
+        // Resolve type from extension; fall back to content sniffing for unknown extensions.
+        let type = ["svg", "pdf", "ai"].contains(ext) ? ext
+            : (sniffVectorFileType(at: url) ?? ext)
         // Reject PDF/AI silently if Inkscape is absent — returning false lets the
         // system surface its own "can't open" feedback to the user.
-        guard ext == "svg" || ((ext == "pdf" || ext == "ai") && inkscapeURL() != nil) else {
+        guard type == "svg" || ((type == "pdf" || type == "ai") && inkscapeURL() != nil) else {
             return false
         }
         showMainWindow()

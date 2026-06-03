@@ -263,7 +263,10 @@ class SVGInteractionView: NSView {
             options: [.urlReadingFileURLsOnly: true]) as? [URL]
         {
             for url in urls {
-                switch url.pathExtension.lowercased() {
+                let ext = url.pathExtension.lowercased()
+                let type = ["svg", "pdf", "ai"].contains(ext) ? ext
+                    : (sniffVectorFileType(at: url) ?? ext)
+                switch type {
                 case "svg":
                     if let s = try? String(contentsOf: url, encoding: .utf8),
                         s.contains("<svg")
@@ -333,19 +336,15 @@ class SVGInteractionView: NSView {
             options: [.urlReadingFileURLsOnly: true]) as? [URL]
         {
             for url in urls {
-                switch url.pathExtension.lowercased() {
-                case "svg", "pdf", "ai":
-                    // For SVG, we can verify content; for PDF/AI, just trust the extension
-                    if url.pathExtension.lowercased() == "svg" {
-                        if let s = try? String(contentsOf: url, encoding: .utf8),
-                            s.contains("<svg")
-                        {
-                            return true
-                        }
-                    } else {
-                        // PDF/AI files are convertible, return true without actually converting
-                        return true
-                    }
+                let ext = url.pathExtension.lowercased()
+                let type = ["svg", "pdf", "ai"].contains(ext) ? ext
+                    : (sniffVectorFileType(at: url) ?? ext)
+                switch type {
+                case "svg":
+                    if let s = try? String(contentsOf: url, encoding: .utf8),
+                        s.contains("<svg") { return true }
+                case "pdf", "ai":
+                    return true   // convertible; don't run Inkscape just to accept the drag
                 default:
                     break
                 }
@@ -735,7 +734,6 @@ struct ContentView: View {
                     } icon: {
                         Image(systemName: "rectangle.dashed")
                             .font(.system(size: 20))
-                            .padding(.leading, 1)
                     }
                     .padding(.vertical, 6)
                 }
@@ -806,7 +804,8 @@ struct ContentView: View {
                             shortcut: "⌘4")
                     } icon: {
                         Image(systemName: "arrow.down.square.fill")
-                            .font(.system(size: 24))
+                            .font(.system(size: 20))
+                            .padding(.leading, 2)
                     }
                     .padding(.vertical, 6)
                 }
