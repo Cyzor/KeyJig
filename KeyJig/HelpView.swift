@@ -7,7 +7,7 @@ class HelpWindowController: NSWindowController {
 
     init() {
         let window = NSWindow(
-            contentRect: NSRect(x: 0, y: 0, width: 460, height: 480),
+            contentRect: NSRect(x: 0, y: 0, width: 520, height: 480),
             styleMask: [.titled, .closable],
             backing: .buffered,
             defer: false
@@ -87,7 +87,7 @@ struct HelpView: View {
             )
         }
         .padding(24)
-        .frame(minWidth: 420, idealWidth: 460)
+        .frame(minWidth: 480, idealWidth: 520)
     }
 }
 
