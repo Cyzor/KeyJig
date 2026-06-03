@@ -12,9 +12,9 @@
 "tooltip.save_pdf" = "取り出したPDFを任意の場所に保存します。";
 "tooltip.copy_pdf" = "取り出したPDFをクリップボードにコピーし、他のアプリに貼り付けられるようにします。";
 "tooltip.preview_pdf_loaded" = "このPDFをAffinity、Illustrator、Figma、その他PDFを受け付けるアプリに直接ドラッグします。";
-"tooltip.status_ready" = "SVGの準備ができました。Keynoteにドラッグするか「クリップボードにコピー」をクリックしてください。";
+"tooltip.status_ready" = "SVGの準備ができました。Keynoteにドラッグするか「Keynote用にコピー」をクリックしてください。";
 "tooltip.preview_loaded" = "このSVGをKeynoteまたはSVGファイルを受け付けるアプリに直接ドラッグします。ドラッグ中はクリップボードは変更されません。";
-"tooltip.preview_empty" = "SVGファイルをここにドロップするか、下のボタンで開くか、アートワークをコピーして「クリップボードにコピー」をクリックしてください。";
+"tooltip.preview_empty" = "SVGファイルをここにドロップするか、下のボタンで開くか、アートワークをコピーして「Keynote用にコピー」をクリックしてください。";
 "tooltip.settings.details" = "システムでInkscapeが見つかったインストールパスを表示します。";
 "tooltip.settings.download" = "公式サイトからInkscapeをダウンロードしてインストールし、PDFフォールバック変換を有効にします。";
 "tooltip.settings.copy_path" = "Inkscapeのインストールパスをクリップボードにコピー";
@@ -35,7 +35,7 @@
 /* ── Status messages ────────────────────────────────────────────────── */
 "status.converting" = "Inkscapeで変換中…";
 "status.failed" = "変換に失敗しました — SVGまたは変換可能なデータが見つかりません。";
-"status.ready" = "準備完了 — プレビューをKeynoteにドラッグするか、クリップボードにコピーしてください。";
+"status.ready" = "準備完了 — プレビューをKeynoteにドラッグするか、Keynote用にコピーしてください。";
 "status.no_svg_on_clipboard" = "クリップボードにSVGが見つかりません。";
 "status.copied" = "クリップボードにコピーしました！";
 "status.keynote.sending" = "Keynoteに配置中…";
@@ -70,7 +70,7 @@
 
 /* ── Empty state ────────────────────────────────────────────────────── */
 "empty_state.title" = "SVG未読み込み";
-"empty_state.body" = "SVGファイルをここにドロップするか、下のボタンで開くか、アートワークをコピーして「クリップボードにコピー」をクリックしてください。";
+"empty_state.body" = "SVGファイルをここにドロップするか、下のボタンで開くか、アートワークをコピーして「Keynote用にコピー」をクリックしてください。";
 
 /* ── File dialog ────────────────────────────────────────────────────── */
 "file_dialog.title" = "ベクターファイルを選択";
@@ -144,7 +144,7 @@
 "settings.accessibility.granted" = "アクセスが許可されています";
 "settings.accessibility.needed" = "「Keynoteに配置」にはアクセスが必要です";
 "settings.accessibility.open_settings" = "設定を開く";
-"settings.accessibility.description" = "アクセシビリティアクセスを許可すると、KeyJigがSVGを直接Keynoteのスライドに配置できます。許可がない場合は、「クリップボードにコピー」を使用して手動で貼り付けてください。";
+"settings.accessibility.description" = "アクセシビリティアクセスを許可すると、KeyJigがSVGを直接Keynoteのスライドに配置できます。許可がない場合は、「Keynote用にコピー」を使用して手動で貼り付けてください。";
 "accessibility.accessibility_granted" = "アクセシビリティアクセスが許可されています";
 "accessibility.accessibility_needed" = "アクセシビリティアクセスが許可されていません";
 "tooltip.settings.accessibility_open" = "システム設定を開いてKeyJigにアクセシビリティアクセスを許可する";

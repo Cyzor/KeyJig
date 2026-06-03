@@ -102,7 +102,7 @@ All event codes are exactly 8 characters. All commands are direct children of th
 
 ## Threading
 
-`performDefaultImplementation()` is called on the main thread by the AppleScript machinery. Most commands call `AppState` directly — safe since they're already on the main thread.
+`performDefaultImplementation()` runs on the main thread (AppleScript machinery guarantees this). Most commands call `AppState` directly — safe since they're already on the main thread.
 
 `convert clipboard` is the exception: `convertClipboardPDFToSVG()` dispatches Inkscape work to a background queue and callbacks on the main queue. Blocking main while waiting for the callback would deadlock. Solution:
 

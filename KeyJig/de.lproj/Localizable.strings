@@ -13,9 +13,9 @@
 "tooltip.save_pdf" = "Das abgerufene PDF an einem gewählten Speicherort sichern.";
 "tooltip.copy_pdf" = "Das abgerufene PDF in die Zwischenablage kopieren, um es in eine andere App einzufügen.";
 "tooltip.preview_pdf_loaded" = "Dieses PDF direkt in Affinity, Illustrator, Figma oder eine andere App ziehen, die PDF akzeptiert.";
-"tooltip.status_ready" = "Das SVG ist bereit. In Keynote ziehen oder \"In Zwischenablage kopieren\" klicken.";
+"tooltip.status_ready" = "Das SVG ist bereit. In Keynote ziehen oder \"Für Keynote kopieren\" klicken.";
 "tooltip.preview_loaded" = "Dieses SVG direkt in Keynote oder eine andere App ziehen, die SVG-Dateien akzeptiert. Die Zwischenablage wird beim Ziehen nicht verändert.";
-"tooltip.preview_empty" = "SVG-Datei hierher ziehen, über die Schaltfläche öffnen oder Grafik kopieren und \"In Zwischenablage kopieren\" klicken.";
+"tooltip.preview_empty" = "SVG-Datei hierher ziehen, über die Schaltfläche öffnen oder Grafik kopieren und \"Für Keynote kopieren\" klicken.";
 "tooltip.settings.details" = "Installationspfade anzeigen, an denen Inkscape auf dem System gefunden wurde.";
 "tooltip.settings.download" = "Inkscape von der offiziellen Website herunterladen und installieren, um die PDF-Fallback-Konvertierung zu aktivieren.";
 "tooltip.settings.copy_path" = "Installationspfad von Inkscape in die Zwischenablage kopieren";
@@ -36,7 +36,7 @@
 /* ── Status messages ────────────────────────────────────────────────── */
 "status.converting" = "Konvertierung mit Inkscape…";
 "status.failed" = "Konvertierung fehlgeschlagen – keine SVG- oder konvertierbaren Daten gefunden.";
-"status.ready" = "Bereit – Vorschau in Keynote ziehen oder In Zwischenablage kopieren.";
+"status.ready" = "Bereit – Vorschau in Keynote ziehen oder Für Keynote kopieren.";
 "status.no_svg_on_clipboard" = "Kein SVG in der Zwischenablage gefunden.";
 "status.copied" = "In Zwischenablage kopiert!";
 "status.keynote.sending" = "Wird in Keynote eingefügt…";
@@ -71,7 +71,7 @@
 
 /* ── Empty state ────────────────────────────────────────────────────── */
 "empty_state.title" = "Kein SVG geladen";
-"empty_state.body" = "SVG-Datei hierher ziehen, über die Schaltfläche öffnen oder Grafik kopieren und \"In Zwischenablage kopieren\" klicken.";
+"empty_state.body" = "SVG-Datei hierher ziehen, über die Schaltfläche öffnen oder Grafik kopieren und \"Für Keynote kopieren\" klicken.";
 
 /* ── File dialog ────────────────────────────────────────────────────── */
 "file_dialog.title" = "Vektordatei auswählen";
@@ -145,7 +145,7 @@
 "settings.accessibility.granted" = "Zugriff erlaubt";
 "settings.accessibility.needed" = "Zugriff erforderlich für \"In Keynote einfügen\"";
 "settings.accessibility.open_settings" = "Einstellungen öffnen";
-"settings.accessibility.description" = "Bedienungshilfenzugriff ermöglicht KeyJig, SVGs direkt auf Keynote-Folien zu platzieren. Ohne ihn bitte \"In Zwischenablage kopieren\" verwenden und manuell einsetzen.";
+"settings.accessibility.description" = "Bedienungshilfenzugriff ermöglicht KeyJig, SVGs direkt auf Keynote-Folien zu platzieren. Ohne ihn bitte \"Für Keynote kopieren\" verwenden und manuell einsetzen.";
 "accessibility.accessibility_granted" = "Bedienungshilfenzugriff erlaubt";
 "accessibility.accessibility_needed" = "Bedienungshilfenzugriff nicht erlaubt";
 "tooltip.settings.accessibility_open" = "Systemeinstellungen öffnen, um KeyJig Bedienungshilfenzugriff zu gewähren";

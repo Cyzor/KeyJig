@@ -119,7 +119,7 @@ Not all apps export SVG to the clipboard in a recognized format. Use **File > Op
 Confirm the file is a valid SVG by opening it in a browser. If it appears broken there too, the file may be malformed.
 
 **Pull from Keynote shows an error about Accessibility**  
-Grant KeyJig Accessibility permission in **System Settings > Privacy & Security > Accessibility**, then try again. This is required for the GUI scripting path; the export fallback does not need it.
+Grant KeyJig Accessibility permission in **System Settings > Privacy & Security > Accessibility**, then try again. The GUI scripting path needs this; the export fallback does not.
 
 **Popover does not appear when clicking the menu bar icon**  
 Use **File > Show Menubar Panel** from the menu bar as an alternative. If the problem persists, check Activity Monitor to confirm the app is running and restart if needed.

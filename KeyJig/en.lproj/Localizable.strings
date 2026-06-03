@@ -13,9 +13,9 @@
 "tooltip.save_pdf" = "Save the pulled PDF to a chosen location.";
 "tooltip.copy_pdf" = "Copy the pulled PDF to the clipboard so you can paste it into another app.";
 "tooltip.preview_pdf_loaded" = "Drag this PDF directly into Affinity, Illustrator, Figma, or any app that accepts PDF.";
-"tooltip.status_ready" = "The SVG is ready. Drag it into Keynote or click 'Copy to Clipboard'.";
+"tooltip.status_ready" = "The SVG is ready. Drag it into Keynote or click 'Copy for Keynote'.";
 "tooltip.preview_loaded" = "Drag this SVG directly into Keynote or any app that accepts SVG files. Your clipboard is not modified during dragging.";
-"tooltip.preview_empty" = "Drop an SVG file here, open one with the button below, or copy artwork and click 'Copy to Clipboard'.";
+"tooltip.preview_empty" = "Drop an SVG file here, open one with the button below, or copy artwork and click 'Copy for Keynote'.";
 "tooltip.settings.details" = "View the installation paths where Inkscape was found on your system.";
 "tooltip.settings.download" = "Download and install Inkscape from the official website to enable PDF fallback conversion.";
 "tooltip.settings.copy_path" = "Copy the Inkscape installation path to clipboard";
@@ -36,7 +36,7 @@
 /* ── Status messages ────────────────────────────────────────────────── */
 "status.converting" = "Converting via Inkscape…";
 "status.failed" = "Conversion failed — no SVG or convertible data found.";
-"status.ready" = "Ready — drag the preview into Keynote, or Copy to Clipboard.";
+"status.ready" = "Ready — drag the preview into Keynote, or Copy for Keynote.";
 "status.no_svg_on_clipboard" = "No SVG found on clipboard.";
 "status.copied" = "Copied to clipboard!";
 "status.keynote.sending" = "Placing in Keynote…";
@@ -50,7 +50,7 @@
 /* ── Keynote errors ─────────────────────────────────────────────────── */
 "error.keynote.not_running" = "Keynote is not running or has no document open.";
 "error.keynote.no_document" = "Keynote has no document open. Open a presentation and try again.";
-"error.keynote.accessibility" = "Accessibility access is required. Enable KeyJig in System Settings ▸ Privacy & Security ▸ Accessibility, then try again.";
+"error.keynote.accessibility" = "Grant KeyJig Accessibility access in in System Settings ▸ Privacy & Security ▸ Accessibility, then try again.";
 "error.keynote.paste_failed" = "Could not place the SVG in Keynote.";
 "error.keynote.export_failed" = "Keynote export failed: %@";
 "error.keynote.page_missing" = "The exported PDF did not contain the current slide.";
@@ -71,7 +71,7 @@
 
 /* ── Empty state ────────────────────────────────────────────────────── */
 "empty_state.title" = "No SVG Loaded";
-"empty_state.body" = "Drop an SVG file here, open one with the button below, or copy artwork to your clipboard and click    'Copy to Clipboard'.";
+"empty_state.body" = "Drop an SVG file here, open one with the button below, or copy artwork to your clipboard and click 'Copy for Keynote'.";
 
 /* ── File dialog ────────────────────────────────────────────────────── */
 "file_dialog.title" = "Choose a vector file";
@@ -145,7 +145,7 @@
 "settings.accessibility.granted" = "Access granted";
 "settings.accessibility.needed" = "Access required for Place in Keynote";
 "settings.accessibility.open_settings" = "Open Settings";
-"settings.accessibility.description" = "Accessibility access lets KeyJig place SVGs directly onto Keynote slides. Without it, use Copy to Clipboard and paste manually.";
+"settings.accessibility.description" = "Accessibility access lets KeyJig place SVGs directly onto Keynote slides. Without it, use Copy for Keynote and paste manually.";
 "accessibility.accessibility_granted" = "Accessibility permission granted";
 "accessibility.accessibility_needed" = "Accessibility permission not granted";
 "tooltip.settings.accessibility_open" = "Open System Settings to grant KeyJig Accessibility permission";

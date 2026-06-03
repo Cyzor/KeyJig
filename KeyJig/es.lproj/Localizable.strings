@@ -12,9 +12,9 @@
 "tooltip.save_pdf" = "Guarda el PDF extraído en la ubicación elegida.";
 "tooltip.copy_pdf" = "Copia el PDF extraído al portapapeles para pegarlo en otra app.";
 "tooltip.preview_pdf_loaded" = "Arrastra este PDF directamente a Affinity, Illustrator, Figma o cualquier app que acepte PDF.";
-"tooltip.status_ready" = "El SVG está listo. Arrástralo a Keynote o haz clic en «Copiar al portapapeles».";
+"tooltip.status_ready" = "El SVG está listo. Arrástralo a Keynote o haz clic en «Copiar para Keynote».";
 "tooltip.preview_loaded" = "Arrastra este SVG directamente a Keynote o cualquier app que acepte archivos SVG. El portapapeles no se modifica al arrastrar.";
-"tooltip.preview_empty" = "Suelta un archivo SVG aquí, ábrelo con el botón de abajo o copia una ilustración y haz clic en «Copiar al portapapeles».";
+"tooltip.preview_empty" = "Suelta un archivo SVG aquí, ábrelo con el botón de abajo o copia una ilustración y haz clic en «Copiar para Keynote».";
 "tooltip.settings.details" = "Ver las rutas de instalación donde se encontró Inkscape en tu sistema.";
 "tooltip.settings.download" = "Descarga e instala Inkscape desde el sitio web oficial para habilitar la conversión de respaldo en PDF.";
 "tooltip.settings.copy_path" = "Copiar la ruta de instalación de Inkscape al portapapeles";
@@ -35,7 +35,7 @@
 /* ── Status messages ────────────────────────────────────────────────── */
 "status.converting" = "Convirtiendo con Inkscape…";
 "status.failed" = "Error de conversión — no se encontraron datos SVG ni convertibles.";
-"status.ready" = "Listo — arrastra la vista previa a Keynote o usa Copiar al portapapeles.";
+"status.ready" = "Listo — arrastra la vista previa a Keynote o usa Copiar para Keynote.";
 "status.no_svg_on_clipboard" = "No se encontró ningún SVG en el portapapeles.";
 "status.copied" = "¡Copiado al portapapeles!";
 "status.keynote.sending" = "Insertando en Keynote…";
@@ -70,7 +70,7 @@
 
 /* ── Empty state ────────────────────────────────────────────────────── */
 "empty_state.title" = "Sin SVG cargado";
-"empty_state.body" = "Arrastra aquí un archivo SVG, ábrelo con el botón de abajo o copia una ilustración al portapapeles y haz clic en «Copiar al portapapeles».";
+"empty_state.body" = "Arrastra aquí un archivo SVG, ábrelo con el botón de abajo o copia una ilustración al portapapeles y haz clic en «Copiar para Keynote».";
 
 /* ── File dialog ────────────────────────────────────────────────────── */
 "file_dialog.title" = "Seleccionar un archivo vectorial";
@@ -144,7 +144,7 @@
 "settings.accessibility.granted" = "Acceso concedido";
 "settings.accessibility.needed" = "Acceso necesario para Insertar en Keynote";
 "settings.accessibility.open_settings" = "Abrir Ajustes";
-"settings.accessibility.description" = "El permiso de accesibilidad permite a KeyJig colocar SVGs directamente en las diapositivas de Keynote. Sin él, usa Copiar al portapapeles y pega manualmente.";
+"settings.accessibility.description" = "El permiso de accesibilidad permite a KeyJig colocar SVGs directamente en las diapositivas de Keynote. Sin él, usa Copiar para Keynote y pega manualmente.";
 "accessibility.accessibility_granted" = "Permiso de accesibilidad concedido";
 "accessibility.accessibility_needed" = "Permiso de accesibilidad no concedido";
 "tooltip.settings.accessibility_open" = "Abrir Configuración del Sistema para conceder permiso de accesibilidad a KeyJig";

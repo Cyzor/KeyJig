@@ -713,8 +713,9 @@ struct ContentView: View {
                                 comment: "Button: converts the current Keynote slide to a vector PDF"),
                             shortcut: "⌘1")
                     } icon: {
-                        Image(systemName: "arrow.up.square.fill")
-                            .font(.system(size: 24))
+                        Image(systemName: "document.badge.ellipsis.fill")
+                            .font(.system(size: 20))
+                            .padding(.leading, 4)
                     }
                     .padding(.vertical, 6)
                 }
@@ -734,7 +735,7 @@ struct ContentView: View {
                     } icon: {
                         Image(systemName: "rectangle.dashed")
                             .font(.system(size: 20))
-                            .padding(.leading, 2)
+                            .padding(.leading, 1)
                     }
                     .padding(.vertical, 6)
                 }
@@ -767,8 +768,8 @@ struct ContentView: View {
                             shortcut: "⌘3")
                     } icon: {
                         Image(systemName: "document.on.document.fill")
-                            .font(.system(size: 20))
-                            .padding(.leading, 2)
+                            .font(.system(size: 18))
+                            .padding(.leading, 4)
                     }
                     .padding(.vertical, 6)
                 }

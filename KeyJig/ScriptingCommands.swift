@@ -51,8 +51,8 @@ private func frontState() -> AppState? {
 // MARK: - Core SVG Operations
 
 /// Convert the loaded SVG to Keynote format and copy it to the clipboard.
-/// performDefaultImplementation is called on the main thread by the AppleScript
-/// machinery, so all AppState access here is safe without further dispatch.
+/// performDefaultImplementation runs on the main thread (AppleScript machinery
+/// guarantees this), so all AppState access here is safe without further dispatch.
 @objc(ConvertCommand)
 class ConvertCommand: NSScriptCommand {
     override func performDefaultImplementation() -> Any? {
@@ -164,7 +164,7 @@ class ConvertClipboardCommand: NSScriptCommand {
         // Wait on a background thread so the main run loop stays unblocked.
         DispatchQueue.global(qos: .userInitiated).async {
             _ = sema.wait(timeout: .now() + 30)
-            // Resume must be called on the main thread.
+            // Always call resume on the main thread.
             DispatchQueue.main.async {
                 self.resumeExecution(withResult: resultSVG)
             }

@@ -578,7 +578,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     /// Loads a vector file (SVG, PDF, or AI) into the given AppState.
-    /// SVG is read synchronously; PDF/AI are converted via Inkscape on a background queue.
+    /// Reads SVG synchronously; converts PDF/AI via Inkscape on a background queue.
     private func loadFile(at url: URL, into state: AppState) {
         switch url.pathExtension.lowercased() {
         case "svg":
