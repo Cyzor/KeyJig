@@ -78,6 +78,11 @@ func pullFromKeynote(
             ? DispatchQueue.main.sync { NSWorkspace.shared.frontmostApplication }
             : nil
 
+        // Source info used to build a descriptive output filename.
+        // Populated by the probe (selection pull) or the name-fetch block below (full-slide pull).
+        var pdfDocName: String? = nil
+        var pdfSlideIndex: Int? = nil
+
         // 2. Probe: collect selection geometry. Skipped when `wantSelection` is
         //    false — for a full-slide pull the export script works from
         //    `current slide` directly with no geometry needed.
@@ -183,8 +188,38 @@ func pullFromKeynote(
             let probeDocName = parts.count > 2 ? parts[2] : "?"
             let probeDocCount = parts.count > 3 ? parts[3] : "?"
             log.info("probe: front document='\(probeDocName, privacy: .public)' (of \(probeDocCount, privacy: .public) open), slide index \(slideIndex, privacy: .public), \(selectionBoxes.count, privacy: .public) selected item(s)")
+            pdfDocName = probeDocName
+            pdfSlideIndex = slideIndex
         } else {
             selectionBoxes = []
+        }
+
+        // Full-slide pull: the probe above is skipped, so fetch doc name + slide
+        // index now for the output filename. One cheap AppleScript call; the
+        // slide-index loop is O(n) but runs before the heavier export work.
+        if !wantSelection {
+            let nameScript = """
+                tell application "Keynote"
+                    if not (exists front document) then return ""
+                    tell front document
+                        set docName to name
+                        set tgt to current slide
+                        set n to count of slides
+                        set idx to 0
+                        repeat with i from 1 to n
+                            if slide i is tgt then set idx to i
+                        end repeat
+                        return docName & "|" & (idx as string)
+                    end tell
+                end tell
+                """
+            var nameErr: NSDictionary?
+            let nameRes = NSAppleScript(source: nameScript)!.executeAndReturnError(&nameErr)
+            if nameErr == nil, let s = nameRes.stringValue {
+                let f = s.components(separatedBy: "|")
+                pdfDocName = f.first.flatMap { $0.isEmpty ? nil : $0 }
+                pdfSlideIndex = f.count > 1 ? Int(f[1]) : nil
+            }
         }
 
         // 3a-paste. Vector selection-only via a throwaway document (preferred for
@@ -197,7 +232,8 @@ func pullFromKeynote(
            let kpid = NSRunningApplication
                .runningApplications(withBundleIdentifier: "com.apple.iWork.Keynote")
                .first?.processIdentifier,
-           let url = extractSelectionViaPaste(selectionBoxes: selectionBoxes, keynotePID: kpid) {
+           let url = extractSelectionViaPaste(selectionBoxes: selectionBoxes, keynotePID: kpid,
+               docName: pdfDocName, slideIndex: pdfSlideIndex) {
             // The scratch-doc round-trip drops the user's canvas selection; restore it.
             restoreKeynoteSelection(slideIndex: probeSlideIndex, selectionBoxes: selectionBoxes)
             DispatchQueue.main.async {
@@ -235,7 +271,9 @@ func pullFromKeynote(
                     from: srcURL,
                     pageNumber: 1,
                     selectionBoxes: selectionBoxes,
-                    padding: 8.0)
+                    padding: 8.0,
+                    docName: pdfDocName,
+                    slideIndex: pdfSlideIndex)
                 try? FileManager.default.removeItem(at: srcURL)
                 DispatchQueue.main.async {
                     if let app = prevFrontApp {
@@ -345,7 +383,9 @@ func pullFromKeynote(
                             from: srcURL,
                             pageNumber: 1,
                             selectionBoxes: [],
-                            padding: 8.0)
+                            padding: 8.0,
+                            docName: pdfDocName,
+                            slideIndex: pdfSlideIndex)
                         try? FileManager.default.removeItem(at: srcURL)
                         DispatchQueue.main.async { completion(result) }
                         return
@@ -436,7 +476,8 @@ func pullFromKeynote(
                         .appendingPathComponent("KeyJig-clipboard-\(UUID().uuidString).pdf")
                     if (try? data.write(to: srcURL)) != nil {
                         log.info("export failed; using current clipboard PDF as fallback")
-                        let result = extractSlidePDF(from: srcURL, pageNumber: 1, selectionBoxes: [], padding: 8.0)
+                        let result = extractSlidePDF(from: srcURL, pageNumber: 1, selectionBoxes: [],
+                            padding: 8.0, docName: pdfDocName, slideIndex: pdfSlideIndex)
                         try? FileManager.default.removeItem(at: srcURL)
                         DispatchQueue.main.async { completion(result) }
                         return
@@ -455,7 +496,9 @@ func pullFromKeynote(
             from: exportURL,
             pageNumber: wantSelection ? probeSlideIndex : 1,
             selectionBoxes: selectionBoxes,
-            padding: 8.0)
+            padding: 8.0,
+            docName: pdfDocName,
+            slideIndex: pdfSlideIndex)
         try? FileManager.default.removeItem(at: exportURL)
 
         // 5. Restore the user's selection (selection pull only).
@@ -537,7 +580,9 @@ private func restoreKeynoteSelection(slideIndex: Int, selectionBoxes: [Selection
 // save dialog that would hang subsequent Apple Events.
 private func extractSelectionViaPaste(
     selectionBoxes: [SelectionBox],
-    keynotePID: pid_t
+    keynotePID: pid_t,
+    docName: String? = nil,
+    slideIndex: Int? = nil
 ) -> URL? {
     guard !selectionBoxes.isEmpty else { return nil }
     let selN = selectionBoxes.count
@@ -654,7 +699,8 @@ private func extractSelectionViaPaste(
     // Crop the scratch export to the pasted content (read fresh from the scratch
     // doc — paste may offset positions). Only selected objects exist here, so the
     // bounding-box crop is interloper-free.
-    let result = extractSlidePDF(from: exportURL, pageNumber: 1, selectionBoxes: scratchBoxes, padding: 8.0)
+    let result = extractSlidePDF(from: exportURL, pageNumber: 1, selectionBoxes: scratchBoxes,
+        padding: 8.0, docName: docName, slideIndex: slideIndex)
     try? FileManager.default.removeItem(at: exportURL)
     switch result {
     case .success(let url):
@@ -719,7 +765,9 @@ private func extractSlidePDF(
     from exportURL: URL,
     pageNumber: Int,
     selectionBoxes: [SelectionBox],
-    padding: CGFloat
+    padding: CGFloat,
+    docName: String? = nil,
+    slideIndex: Int? = nil
 ) -> Result<URL, KeynotePullError> {
     guard let sourceDoc = CGPDFDocument(exportURL as CFURL) else {
         return .failure(.exportFailed("could not load exported PDF"))
@@ -759,7 +807,8 @@ private func extractSlidePDF(
     //   3. CGPDFContext alone — display-correct but content not removed.
 
     if !selectionBoxes.isEmpty, let gs = ghostscriptURL() {
-        let outURL = makeTempKeynotePDFURL()
+        let outURL = docName.map { makeDescriptivePDFURL(docName: $0, slideIndex: slideIndex) }
+            ?? makeTempKeynotePDFURL()
         if cropWithGhostscript(gs: gs, input: exportURL, cropRect: cropRect, output: outURL) {
             log.info("crop via gs succeeded")
             try? FileManager.default.setAttributes([.posixPermissions: 0o600], ofItemAtPath: outURL.path)
@@ -770,7 +819,8 @@ private func extractSlidePDF(
 
     // Build the CGPDFContext intermediate — used as the final result when no
     // external tool is available, or as mutool's input when gs is absent.
-    let cgURL = makeTempKeynotePDFURL()
+    let cgURL = docName.map { makeDescriptivePDFURL(docName: $0, slideIndex: slideIndex) }
+        ?? makeTempKeynotePDFURL()
     var outMediaBox = CGRect(origin: .zero, size: cropRect.size)
     guard let pdfCtx = CGContext(cgURL as CFURL, mediaBox: &outMediaBox, nil) else {
         return .failure(.exportFailed("could not create PDF context"))
@@ -787,7 +837,8 @@ private func extractSlidePDF(
     }
 
     if !selectionBoxes.isEmpty, let mt = mutoolURL() {
-        let outURL = makeTempKeynotePDFURL()
+        let outURL = docName.map { makeDescriptivePDFURL(docName: $0, slideIndex: slideIndex) }
+            ?? makeTempKeynotePDFURL()
         if reprocessWithMutool(mutool: mt, input: cgURL, output: outURL) {
             log.info("crop via mutool succeeded")
             try? FileManager.default.removeItem(at: cgURL)
@@ -856,16 +907,55 @@ private func reprocessWithMutool(mutool: URL, input: URL, output: URL) -> Bool {
 
 // MARK: - Temp file naming
 
-/// Generates a unique temp-file URL with a human-readable name of the form
-/// "KeyJig-Slide-YYYY-MM-DD-xxxxxxxx.pdf".
+/// Generates a unique temp-file URL for intermediate processing files.
+/// Uses a UUID suffix so concurrent pulls never collide.
+/// Form: "KeyJig-Slide-YYYY-MM-DD-xxxxxxxx.pdf"
 func makeTempKeynotePDFURL() -> URL {
-    let date: String = {
-        let c = Calendar.current.dateComponents([.year, .month, .day], from: Date())
-        return String(format: "%04d-%02d-%02d", c.year ?? 0, c.month ?? 0, c.day ?? 0)
-    }()
+    let date = isoDateString()
     let uuid = UUID().uuidString.prefix(8)
     let name = "KeyJig-Slide-\(date)-\(uuid).pdf"
     return URL(fileURLWithPath: NSTemporaryDirectory()).appendingPathComponent(name)
+}
+
+/// Generates a descriptive URL for the PDF the user will actually see.
+/// Form: "Keynote-{sanitized-doc-name}-{slide}-YYYY-MM-DD.pdf"
+/// If slideIndex is nil (e.g. full-slide pull without probe), omits the slide component.
+private func makeDescriptivePDFURL(docName: String, slideIndex: Int?) -> URL {
+    let date = isoDateString()
+    let safe = sanitizedDocName(docName, maxLength: 20)
+    let slide = slideIndex.map { "-\($0)" } ?? ""
+    let name = "Keynote-\(safe)\(slide)-\(date).pdf"
+    return URL(fileURLWithPath: NSTemporaryDirectory()).appendingPathComponent(name)
+}
+
+private func isoDateString() -> String {
+    let c = Calendar.current.dateComponents([.year, .month, .day], from: Date())
+    return String(format: "%04d-%02d-%02d", c.year ?? 0, c.month ?? 0, c.day ?? 0)
+}
+
+/// Sanitizes a Keynote document name for use in a filename.
+/// Replaces underscores, spaces, and dots with hyphens; strips non-alphanumeric chars;
+/// collapses consecutive hyphens; truncates to maxLength at a hyphen boundary.
+private func sanitizedDocName(_ name: String, maxLength: Int) -> String {
+    // Strip the .key extension if it somehow arrived
+    var s = name.hasSuffix(".key") ? String(name.dropLast(4)) : name
+    // Underscores, spaces, dots → hyphens
+    s = s.replacingOccurrences(of: "_", with: "-")
+    s = s.replacingOccurrences(of: " ", with: "-")
+    s = s.replacingOccurrences(of: ".", with: "-")
+    // Keep only ASCII alphanumeric and hyphens (safe for all filesystems)
+    s = s.unicodeScalars.filter {
+        CharacterSet.alphanumerics.union(CharacterSet(charactersIn: "-")).contains($0)
+    }.map { String($0) }.joined()
+    // Collapse runs of hyphens
+    while s.contains("--") { s = s.replacingOccurrences(of: "--", with: "-") }
+    s = s.trimmingCharacters(in: CharacterSet(charactersIn: "-"))
+    // Truncate at a hyphen boundary so we don't cut a word mid-stream
+    if s.count > maxLength {
+        let prefix = String(s.prefix(maxLength))
+        s = prefix.lastIndex(of: "-").map { String(prefix[..<$0]) } ?? prefix
+    }
+    return s.isEmpty ? "Keynote" : s
 }
 
 // MARK: - Clipboard helper
