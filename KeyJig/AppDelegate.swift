@@ -17,11 +17,54 @@ class MainWindowController: NSWindowController, NSWindowDelegate {
     /// Retains the Combine subscription that keeps the proxy icon current.
     private var representedURLCancellable: AnyCancellable?
 
+    /// Computes the minimum window content width from the localized button labels
+    /// so the window never clips text regardless of the active language or the
+    /// user's accessibility font size.
+    ///
+    /// Every constant used here has a named counterpart in ContentView:
+    ///   • label font   → NSFont.systemFont at the system size (matches SwiftUI body)
+    ///   • shortcut font → NSFont.smallSystemFontSize (matches buttonRow's 11 pt)
+    ///   • iconPt       → 24  (.font(.system(size: 24)) on the largest button icon)
+    ///   • rowSpacing   → 4   (buttonRow HStack(spacing: 4))
+    ///   • outerPadding → 32  (VStack .padding(.horizontal, 16), both sides)
+    ///   • buttonChrome → SwiftUI Label icon-to-title gap (~8 pt) plus the default
+    ///                    NSButton bezel insets (~8 pt per side) — the one value
+    ///                    we cannot measure without rendering.
+    static func minimumContentWidth() -> CGFloat {
+        // Active-state labels (the longer of each dynamic pair).
+        let labels = [
+            NSLocalizedString("button.pull_from_keynote", comment: ""),
+            NSLocalizedString("button.import_selection_from_keynote", comment: ""),
+            NSLocalizedString("button.copy_svg_to_clipboard", comment: ""),
+            NSLocalizedString("button.place_svg_in_keynote", comment: ""),
+        ]
+        let shortcuts = ["⌘1", "⌘2", "⌘3", "⌘4"]
+
+        let labelFont    = NSFont.systemFont(ofSize: NSFont.systemFontSize)
+        let shortcutFont = NSFont.systemFont(ofSize: NSFont.smallSystemFontSize)
+
+        func textWidth(_ s: String, _ font: NSFont) -> CGFloat {
+            (s as NSString).size(withAttributes: [.font: font]).width
+        }
+
+        let widestLabel    = labels   .map { textWidth($0, labelFont)    }.max() ?? 0
+        let widestShortcut = shortcuts.map { textWidth($0, shortcutFont) }.max() ?? 0
+
+        let iconPt:        CGFloat = 24   // largest SF Symbol size used in buttons
+        let rowSpacing:    CGFloat = 4    // buttonRow HStack(spacing:)
+        let outerPadding:  CGFloat = 16 * 2  // VStack .padding(.horizontal, 16)
+        let buttonChrome:  CGFloat = 24   // Label icon-to-title gap + button bezel
+
+        return (widestLabel + rowSpacing + widestShortcut
+              + iconPt + outerPadding + buttonChrome).rounded(.up)
+    }
+
     init(appState: AppState = AppState(), isPrimary: Bool = false) {
         self.appState = appState
 
+        let minW = MainWindowController.minimumContentWidth()
         let window = NSWindow(
-            contentRect: NSRect(x: 0, y: 0, width: 400, height: 640),
+            contentRect: NSRect(x: 0, y: 0, width: max(400, minW), height: 640),
             styleMask: [.titled, .closable, .miniaturizable, .resizable],
             backing: .buffered,
             defer: false
@@ -31,7 +74,7 @@ class MainWindowController: NSWindowController, NSWindowDelegate {
         window.title = NSLocalizedString(
             "window.title.default",
             comment: "Default window title when no file is loaded")
-        window.minSize = NSSize(width: 320, height: 520)
+        window.minSize = NSSize(width: minW, height: 520)
         window.maxSize = NSSize(width: 900, height: 1200)
 
         super.init(window: window)
