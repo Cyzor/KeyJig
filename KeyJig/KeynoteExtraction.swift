@@ -71,6 +71,13 @@ func pullFromKeynote(
             return
         }
 
+        // Capture the frontmost app so we can restore it after any Keynote
+        // activation. Only relevant for the selection pull — the slide pull
+        // leaves you in Keynote intentionally.
+        let prevFrontApp: NSRunningApplication? = wantSelection
+            ? DispatchQueue.main.sync { NSWorkspace.shared.frontmostApplication }
+            : nil
+
         // 2. Probe: collect selection geometry. Skipped when `wantSelection` is
         //    false — for a full-slide pull the export script works from
         //    `current slide` directly with no geometry needed.
@@ -193,7 +200,16 @@ func pullFromKeynote(
            let url = extractSelectionViaPaste(selectionBoxes: selectionBoxes, keynotePID: kpid) {
             // The scratch-doc round-trip drops the user's canvas selection; restore it.
             restoreKeynoteSelection(slideIndex: probeSlideIndex, selectionBoxes: selectionBoxes)
-            DispatchQueue.main.async { completion(.success(url)) }
+            DispatchQueue.main.async {
+                if let app = prevFrontApp {
+                    if #available(macOS 14.0, *) {
+                        app.activate()
+                    } else {
+                        app.activate(options: .activateIgnoringOtherApps)
+                    }
+                }
+                completion(.success(url))
+            }
             return
         }
 
@@ -221,7 +237,16 @@ func pullFromKeynote(
                     selectionBoxes: selectionBoxes,
                     padding: 8.0)
                 try? FileManager.default.removeItem(at: srcURL)
-                DispatchQueue.main.async { completion(result) }
+                DispatchQueue.main.async {
+                    if let app = prevFrontApp {
+                    if #available(macOS 14.0, *) {
+                        app.activate()
+                    } else {
+                        app.activate(options: .activateIgnoringOtherApps)
+                    }
+                }
+                    completion(result)
+                }
                 return
             }
         }
@@ -438,7 +463,16 @@ func pullFromKeynote(
             restoreKeynoteSelection(slideIndex: probeSlideIndex, selectionBoxes: selectionBoxes)
         }
 
-        DispatchQueue.main.async { completion(result) }
+        DispatchQueue.main.async {
+            if let app = prevFrontApp {
+                    if #available(macOS 14.0, *) {
+                        app.activate()
+                    } else {
+                        app.activate(options: .activateIgnoringOtherApps)
+                    }
+                }
+            completion(result)
+        }
     }
 }
 
