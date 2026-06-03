@@ -573,7 +573,8 @@ struct MetadataRow: View {
 
 struct ContentView: View {
     @ObservedObject var appState: AppState
-    @State private var localStatus: String = ""
+    // Status messages are stored in appState.statusMessage so menu commands
+    // (which route through AppDelegate) can update the same property.
     init(appState: AppState = AppState()) {
         self.appState = appState
     }
@@ -610,7 +611,7 @@ struct ContentView: View {
         appState.previewPDFURL != nil
     }
 
-    var statusMessage: String {
+    var computedStatusMessage: String {
         switch appState.conversionStatus {
         case .converting:
             return NSLocalizedString(
@@ -624,8 +625,8 @@ struct ContentView: View {
             break
         }
         let base: String
-        if !localStatus.isEmpty {
-            base = localStatus
+        if !appState.statusMessage.isEmpty {
+            base = appState.statusMessage
         } else if hasContent && !isPDFMode {
             base = NSLocalizedString(
                 "status.ready",
@@ -664,7 +665,7 @@ struct ContentView: View {
             .accessibilityIdentifier("preview_drop_well")
 
             // ── Status ────────────────────────────────────────────────────
-            if !statusMessage.isEmpty {
+            if !computedStatusMessage.isEmpty {
                 HStack(spacing: 6) {
                     if appState.conversionStatus == .converting || appState.keynotePullStatus == .pulling {
                         if #available(macOS 11.0, *) {
@@ -676,16 +677,16 @@ struct ContentView: View {
                             EmptyView()
                         }
                     }
-                    Text(statusMessage)
+                    Text(computedStatusMessage)
                         .font(.subheadline)
                         .multilineTextAlignment(.center)
                         .foregroundColor(
                             appState.conversionStatus == .failed ? .red : .secondary
                         )
-                        .accessibilityLabel(statusMessage)
+                        .accessibilityLabel(computedStatusMessage)
                         .accessibilityAddTraits(.updatesFrequently)
                         .accessibilityIdentifier("status_message")
-                        .onChange(of: statusMessage) { newValue in
+                        .onChange(of: computedStatusMessage) { newValue in
                             announceToVoiceOver(newValue)
                         }
                 }
@@ -702,15 +703,15 @@ struct ContentView: View {
             let isConverting = appState.conversionStatus == .converting
             let isPulling = appState.keynotePullStatus == .pulling
             VStack(spacing: 8) {
-                // ── Convert Keynote Slide to PDF ──────────────────────────
+                // ── Convert Keynote Slide to PDF  ⌘1 ─────────────────────
                 Button {
-                    triggerKeynoteSlide(appState: appState) { localStatus = $0 }
+                    triggerKeynoteSlide(appState: appState) { appState.statusMessage = $0 }
                 } label: {
                     Label {
-                        Text(NSLocalizedString(
-                            "button.pull_from_keynote",
-                            comment: "Button: converts the current Keynote slide to a vector PDF"))
-                        .frame(maxWidth: .infinity)
+                        buttonRow(
+                            NSLocalizedString("button.pull_from_keynote",
+                                comment: "Button: converts the current Keynote slide to a vector PDF"),
+                            shortcut: "⌘1")
                     } icon: {
                         Image(systemName: "arrow.up.square.fill")
                             .font(.system(size: 24))
@@ -718,21 +719,18 @@ struct ContentView: View {
                     .padding(.vertical, 6)
                 }
                 .help(Tooltips.pullFromKeynote)
+                .keyboardShortcut("1", modifiers: .command)
                 .disabled(isConverting || isPulling || !appState.keynoteRunning)
 
-                // ── Convert Keynote Clipboard to PDF ──────────────────────
-                // Option or Shift also triggers this from the floating window
-                // (modifier-key shortcut for power users), but the explicit
-                // button makes the feature discoverable and works in both the
-                // floating window and the menu-bar popover without any modifier.
+                // ── Convert Keynote Clipboard to PDF  ⌘2 ─────────────────
                 Button {
-                    triggerKeynoteClipboard(appState: appState) { localStatus = $0 }
+                    triggerKeynoteClipboard(appState: appState) { appState.statusMessage = $0 }
                 } label: {
                     Label {
-                        Text(NSLocalizedString(
-                            "button.import_selection_from_keynote",
-                            comment: "Button: converts the user's copied Keynote selection to a vector PDF"))
-                        .frame(maxWidth: .infinity)
+                        buttonRow(
+                            NSLocalizedString("button.import_selection_from_keynote",
+                                comment: "Button: converts the user's copied Keynote selection to a vector PDF"),
+                            shortcut: "⌘2")
                     } icon: {
                         Image(systemName: "rectangle.dashed")
                             .font(.system(size: 20))
@@ -741,32 +739,32 @@ struct ContentView: View {
                     .padding(.vertical, 6)
                 }
                 .help(Tooltips.importSelectionFromKeynote)
+                .keyboardShortcut("2", modifiers: .command)
                 .disabled(isConverting || isPulling || !appState.keynoteClipboardReady)
 
+                // ── Copy for Keynote  ⌘3 ─────────────────────────────────
                 Button {
                     let svg = convertClipboardToSVG()
                     if !svg.isEmpty {
                         appState.svgString = svg
                         appState.conversionStatus = .idle
                         if svgToClipboard(svgData: svg, appState: appState) != nil {
-                            localStatus = ""
+                            appState.statusMessage = ""
                         }
                     } else {
-                        localStatus = NSLocalizedString(
+                        appState.statusMessage = NSLocalizedString(
                             "status.no_svg_on_clipboard",
                             comment: "Error message when no SVG is found on the clipboard")
                     }
                 } label: {
                     Label {
-                        Text(appState.svgString.isEmpty
-                            ? NSLocalizedString(
-                                "button.copy_to_clipboard",
-                                comment: "Button: fallback label when no SVG is loaded")
-                            : NSLocalizedString(
-                                "button.copy_svg_to_clipboard",
-                                comment: "Button: copies the loaded SVG to the clipboard in Keynote format")
-                        )
-                        .frame(maxWidth: .infinity)
+                        buttonRow(
+                            appState.svgString.isEmpty
+                                ? NSLocalizedString("button.copy_to_clipboard",
+                                    comment: "Button: fallback label when no SVG is loaded")
+                                : NSLocalizedString("button.copy_svg_to_clipboard",
+                                    comment: "Button: copies the loaded SVG to the clipboard in Keynote format"),
+                            shortcut: "⌘3")
                     } icon: {
                         Image(systemName: "document.on.document.fill")
                             .font(.system(size: 20))
@@ -775,37 +773,36 @@ struct ContentView: View {
                     .padding(.vertical, 6)
                 }
                 .help(Tooltips.copyToClipboard)
-                .keyboardShortcut("c", modifiers: [.command, .shift])
+                .keyboardShortcut("3", modifiers: .command)
                 .disabled(appState.svgString.isEmpty || isConverting)
 
+                // ── Place in Keynote  ⌘4 ─────────────────────────────────
                 let isSending = appState.keynoteSendStatus == .sending
                 Button {
                     appState.keynoteSendStatus = .sending
-                    localStatus = NSLocalizedString(
+                    appState.statusMessage = NSLocalizedString(
                         "status.keynote.sending",
                         comment: "Status: SVG is being placed into Keynote")
                     sendSVGToKeynote(svgData: appState.svgString) { error in
                         if let error = error {
                             appState.keynoteSendStatus = .failed
-                            localStatus = error.localizedDescription
+                            appState.statusMessage = error.localizedDescription
                         } else {
                             appState.keynoteSendStatus = .succeeded
-                            localStatus = NSLocalizedString(
+                            appState.statusMessage = NSLocalizedString(
                                 "status.keynote.success",
                                 comment: "Status: SVG was placed in Keynote successfully")
                         }
                     }
                 } label: {
                     Label {
-                        Text(appState.svgString.isEmpty
-                            ? NSLocalizedString(
-                                "button.place_in_keynote",
-                                comment: "Button: fallback label when no SVG is loaded")
-                            : NSLocalizedString(
-                                "button.place_svg_in_keynote",
-                                comment: "Button: places the loaded SVG directly into the current Keynote slide")
-                        )
-                        .frame(maxWidth: .infinity)
+                        buttonRow(
+                            appState.svgString.isEmpty
+                                ? NSLocalizedString("button.place_in_keynote",
+                                    comment: "Button: fallback label when no SVG is loaded")
+                                : NSLocalizedString("button.place_svg_in_keynote",
+                                    comment: "Button: places the loaded SVG directly into the current Keynote slide"),
+                            shortcut: "⌘4")
                     } icon: {
                         Image(systemName: "arrow.down.square.fill")
                             .font(.system(size: 24))
@@ -813,6 +810,7 @@ struct ContentView: View {
                     .padding(.vertical, 6)
                 }
                 .help(Tooltips.placeInKeynote)
+                .keyboardShortcut("4", modifiers: .command)
                 .disabled(appState.svgString.isEmpty || isConverting || isSending)
 
             }
@@ -836,11 +834,11 @@ struct ContentView: View {
                 onDragStart: { url },
                 onSVGDropped: { svg in
                     appState.svgString = svg
-                    localStatus = ""
+                    appState.statusMessage = ""
                 },
                 onClear: {
                     appState.previewPDFURL = nil
-                    localStatus = ""
+                    appState.statusMessage = ""
                 },
                 dragLabel: NSLocalizedString(
                     "preview.drag_label_pdf",
@@ -854,7 +852,7 @@ struct ContentView: View {
                     Spacer()
                     Button {
                         appState.previewPDFURL = nil
-                        localStatus = ""
+                        appState.statusMessage = ""
                     } label: {
                         Image(systemName: "trash.circle.fill")
                             .font(.system(size: 24))
@@ -905,11 +903,11 @@ struct ContentView: View {
                 },
                 onSVGDropped: { svg in
                     appState.svgString = svg
-                    localStatus = ""
+                    appState.statusMessage = ""
                 },
                 onCopyForKeynote: {
                     if svgToClipboard(svgData: appState.svgString, appState: appState) != nil {
-                        localStatus = NSLocalizedString(
+                        appState.statusMessage = NSLocalizedString(
                             "status.copied",
                             comment:
                                 "Confirmation shown after copying to clipboard via context menu")
@@ -920,7 +918,7 @@ struct ContentView: View {
                     appState.svgURL = ""
                     appState.bridgeFileURL = nil
                     appState.conversionStatus = .idle
-                    localStatus = ""
+                    appState.statusMessage = ""
                 }
             )
 
@@ -945,7 +943,7 @@ struct ContentView: View {
                         appState.svgURL = ""
                         appState.bridgeFileURL = nil
                         appState.conversionStatus = .idle
-                        localStatus = ""
+                        appState.statusMessage = ""
                     } label: {
                         Image(systemName: "trash.circle.fill")
                             .font(.system(size: 24))
@@ -959,9 +957,9 @@ struct ContentView: View {
         .help(Tooltips.previewAreaLoaded)
         .onReceive(appState.$svgString) { newValue in
             // When content arrives externally (clipboard detection, drop),
-            // clear any stale local status so the computed statusMessage shows.
+            // clear any stale local status so the computed computedStatusMessage shows.
             if !newValue.isEmpty {
-                localStatus = ""
+                appState.statusMessage = ""
             }
         }
     }
@@ -975,7 +973,7 @@ struct ContentView: View {
             SVGInteractionViewWrapper(
                 onSVGDropped: { svg in
                     appState.svgString = svg
-                    localStatus = ""
+                    appState.statusMessage = ""
                 }
             )
 
@@ -1035,10 +1033,25 @@ func announceToVoiceOver(_ message: String) {
     )
 }
 
+// MARK: - Button label helpers
+
+/// Lays out a button label as [text ···· shortcut], matching the familiar
+/// look of a pull-down menu item: label expands to fill available width,
+/// shortcut string is right-aligned in muted type.
+private func buttonRow(_ title: String, shortcut: String) -> some View {
+    HStack(spacing: 4) {
+        Text(title)
+            .frame(maxWidth: .infinity, alignment: .leading)
+        Text(shortcut)
+            .foregroundColor(.secondary)
+            .font(.system(size: 11))
+    }
+}
+
 // MARK: - Keynote pull actions
 
 /// Shared action: convert the current Keynote slide to a vector PDF.
-private func triggerKeynoteSlide(appState: AppState, setStatus: @escaping (String) -> Void) {
+func triggerKeynoteSlide(appState: AppState, setStatus: @escaping (String) -> Void) {
     appState.keynotePullStatus = .pulling
     setStatus(NSLocalizedString("status.keynote.pulling",
         comment: "Status: PDF export from Keynote in progress"))
@@ -1057,7 +1070,7 @@ private func triggerKeynoteSlide(appState: AppState, setStatus: @escaping (Strin
 }
 
 /// Shared action: convert the user's copied Keynote selection to a vector PDF.
-private func triggerKeynoteClipboard(appState: AppState, setStatus: @escaping (String) -> Void) {
+func triggerKeynoteClipboard(appState: AppState, setStatus: @escaping (String) -> Void) {
     appState.keynotePullStatus = .pulling
     setStatus(NSLocalizedString("status.keynote.pulling",
         comment: "Status: PDF export from Keynote in progress"))

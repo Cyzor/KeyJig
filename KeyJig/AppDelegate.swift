@@ -206,6 +206,25 @@ class AppMenu {
                 comment: "File menu: Close item"),
             action: #selector(NSWindow.performClose(_:)),
             keyEquivalent: "w")
+        fileMenu.addItem(NSMenuItem.separator())
+        fileMenu.addItem(
+            withTitle: NSLocalizedString(
+                "menu.file.convert_keynote_slide",
+                comment: "File menu: Convert Keynote Slide to PDF"),
+            action: #selector(AppDelegate.menuConvertKeynoteSlide),
+            keyEquivalent: "1")
+        fileMenu.addItem(
+            withTitle: NSLocalizedString(
+                "menu.file.convert_keynote_clipboard",
+                comment: "File menu: Convert Keynote Clipboard to PDF"),
+            action: #selector(AppDelegate.menuConvertKeynoteClipboard),
+            keyEquivalent: "2")
+        fileMenu.addItem(
+            withTitle: NSLocalizedString(
+                "menu.file.place_in_keynote",
+                comment: "File menu: Place SVG in Keynote"),
+            action: #selector(AppDelegate.menuPlaceInKeynote),
+            keyEquivalent: "4")
         fileMenuItem.submenu = fileMenu
 
         // ── Edit menu ─────────────────────────────────────────────────────
@@ -229,6 +248,13 @@ class AppMenu {
         editMenu.addItem(
             withTitle: NSLocalizedString("menu.edit.paste", comment: "Edit menu: Paste"),
             action: nil, keyEquivalent: "v")
+        editMenu.addItem(NSMenuItem.separator())
+        editMenu.addItem(
+            withTitle: NSLocalizedString(
+                "menu.edit.copy_for_keynote",
+                comment: "Edit menu: Copy for Keynote"),
+            action: #selector(AppDelegate.menuCopyForKeynote),
+            keyEquivalent: "3")
         editMenu.addItem(NSMenuItem.separator())
         editMenu.addItem(
             withTitle: NSLocalizedString(
@@ -610,6 +636,67 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     @objc func clearSVG() {
         frontWindowState?.svgString = ""
         frontWindowState?.svgURL = ""
+    }
+
+    // MARK: - Keynote action selectors (menu ↔ button parity)
+
+    @objc func menuConvertKeynoteSlide(_ sender: Any?) {
+        guard let state = frontWindowState else { return }
+        triggerKeynoteSlide(appState: state) { state.statusMessage = $0 }
+    }
+
+    @objc func menuConvertKeynoteClipboard(_ sender: Any?) {
+        guard let state = frontWindowState else { return }
+        triggerKeynoteClipboard(appState: state) { state.statusMessage = $0 }
+    }
+
+    @objc func menuCopyForKeynote(_ sender: Any?) {
+        guard let state = frontWindowState else { return }
+        let svg = convertClipboardToSVG()
+        if !svg.isEmpty {
+            state.svgString = svg
+            state.conversionStatus = .idle
+            _ = svgToClipboard(svgData: svg, appState: state)
+        } else {
+            state.statusMessage = NSLocalizedString(
+                "status.no_svg_on_clipboard",
+                comment: "Error message when no SVG is found on the clipboard")
+        }
+    }
+
+    @objc func menuPlaceInKeynote(_ sender: Any?) {
+        guard let state = frontWindowState, !state.svgString.isEmpty else { return }
+        state.keynoteSendStatus = .sending
+        state.statusMessage = NSLocalizedString(
+            "status.keynote.sending",
+            comment: "Status: SVG is being placed into Keynote")
+        sendSVGToKeynote(svgData: state.svgString) { error in
+            if let error = error {
+                state.keynoteSendStatus = .failed
+                state.statusMessage = error.localizedDescription
+            } else {
+                state.keynoteSendStatus = .succeeded
+                state.statusMessage = NSLocalizedString(
+                    "status.keynote.success",
+                    comment: "Status: SVG was placed in Keynote successfully")
+            }
+        }
+    }
+
+    /// validateMenuItem disables menu items that mirror button disabled states.
+    @objc func validateMenuItem(_ menuItem: NSMenuItem) -> Bool {
+        switch menuItem.action {
+        case #selector(menuConvertKeynoteSlide):
+            return frontWindowState?.keynoteRunning == true
+        case #selector(menuConvertKeynoteClipboard):
+            return frontWindowState?.keynoteClipboardReady == true
+        case #selector(menuCopyForKeynote):
+            return !(frontWindowState?.svgString.isEmpty ?? true)
+        case #selector(menuPlaceInKeynote):
+            return !(frontWindowState?.svgString.isEmpty ?? true)
+        default:
+            return true
+        }
     }
 
     @objc func showAbout() {

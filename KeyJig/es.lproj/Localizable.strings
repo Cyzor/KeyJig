@@ -93,6 +93,9 @@
 "menu.file.new_viewer" = "Nueva ventana";
 "menu.file.open_svg" = "Abrir archivo SVG…";
 "menu.file.close" = "Cerrar";
+"menu.file.convert_keynote_slide" = "Convertir diapositiva de Keynote a PDF";
+"menu.file.convert_keynote_clipboard" = "Convertir portapapeles de Keynote a PDF";
+"menu.file.place_in_keynote" = "Insertar en Keynote";
 
 /* ── Edit menu ──────────────────────────────────────────────────────── */
 "menu.edit" = "Editar";
@@ -102,6 +105,7 @@
 "menu.edit.copy" = "Copiar";
 "menu.edit.paste" = "Pegar";
 "menu.edit.clear" = "Eliminar";
+"menu.edit.copy_for_keynote" = "Copiar para Keynote";
 
 /* ── Window menu ────────────────────────────────────────────────────── */
 "menu.window" = "Ventana";

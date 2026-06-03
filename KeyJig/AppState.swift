@@ -44,6 +44,10 @@ class AppState: ObservableObject {
     /// checkAndLoadClipboardSVG to skip re-processing an unchanged clipboard.
     var lastLoadedClipboardChangeCount: Int = -1
 
+    /// The transient status/error string shown below the preview. Updated by
+    /// button actions and menu commands alike. Empty means "show default state".
+    @Published var statusMessage: String = ""
+
     /// True when the clipboard contains Keynote-native object data (the type
     /// written by Keynote when you ⌘C canvas objects). Drives the enabled
     /// state of the "Convert Keynote Clipboard to PDF" button.

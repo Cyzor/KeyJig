@@ -93,6 +93,9 @@
 "menu.file.new_viewer" = "新規ウインドウ";
 "menu.file.open_svg" = "SVGファイルを開く…";
 "menu.file.close" = "閉じる";
+"menu.file.convert_keynote_slide" = "KeynoteスライドをPDFに変換";
+"menu.file.convert_keynote_clipboard" = "KeynoteクリップボードをPDFに変換";
+"menu.file.place_in_keynote" = "Keynoteに配置";
 
 /* ── Edit menu ──────────────────────────────────────────────────────── */
 "menu.edit" = "編集";
@@ -102,6 +105,7 @@
 "menu.edit.copy" = "コピー";
 "menu.edit.paste" = "ペースト";
 "menu.edit.clear" = "削除";
+"menu.edit.copy_for_keynote" = "Keynote用にコピー";
 
 /* ── Window menu ────────────────────────────────────────────────────── */
 "menu.window" = "ウインドウ";
