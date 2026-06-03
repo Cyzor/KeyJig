@@ -26,6 +26,10 @@ class AppState: ObservableObject {
     @Published var conversionStatus: ConversionStatus = .idle
     /// Tracks Inkscape installation status and all available paths.
     @Published var inkscapeStatus: InkscapeStatus = .checking
+    /// Tracks Ghostscript (gs) installation status.
+    @Published var ghostscriptStatus: CommandLineToolStatus = .checking
+    /// Tracks MuPDF (mutool) installation status.
+    @Published var mutoolStatus: CommandLineToolStatus = .checking
     /// Tracks in-progress / result state for the "Place in Keynote" action.
     @Published var keynoteSendStatus: KeynoteSendStatus = .idle
     /// When non-nil, the preview shows this PDF instead of an SVG. Set by
@@ -69,6 +73,8 @@ class AppState: ObservableObject {
 
     init() {
         checkInkscapeStatus()
+        checkGhostscriptStatus()
+        checkMutoolStatus()
         startKeynoteMonitoring()
     }
 
@@ -142,6 +148,24 @@ class AppState: ObservableObject {
             }
         }
     }
+
+    private func checkGhostscriptStatus() {
+        DispatchQueue.global(qos: .userInitiated).async {
+            let url = ghostscriptURL()
+            DispatchQueue.main.async {
+                self.ghostscriptStatus = url.map { .installed(path: $0.path) } ?? .notInstalled
+            }
+        }
+    }
+
+    private func checkMutoolStatus() {
+        DispatchQueue.global(qos: .userInitiated).async {
+            let url = mutoolURL()
+            DispatchQueue.main.async {
+                self.mutoolStatus = url.map { .installed(path: $0.path) } ?? .notInstalled
+            }
+        }
+    }
 }
 
 // MARK: - Supporting Types
@@ -169,6 +193,13 @@ enum KeynotePullStatus: Equatable {
 enum InkscapeStatus: Equatable {
     case checking
     case installed(paths: [String])  // All found installations
+    case notInstalled
+}
+
+/// Status of a single-path command-line tool (Ghostscript, MuPDF).
+enum CommandLineToolStatus: Equatable {
+    case checking
+    case installed(path: String)
     case notInstalled
 }
 

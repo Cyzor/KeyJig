@@ -166,3 +166,14 @@
 "settings.inkscape.no_installation" = "No se encontró ninguna instalación de Inkscape.";
 "settings.inkscape.copy" = "Copiar";
 "settings.inkscape.reveal" = "Mostrar en Finder";
+"settings.cmdtool.reveal" = "Mostrar en Finder";
+"settings.cmdtool.not_found" = "No encontrado";
+"settings.ghostscript.name" = "Ghostscript";
+"settings.ghostscript.description" = "Mejora la calidad del recorte de PDF reescribiendo los comandos de dibujo — solo sobrevive el contenido dentro del área de recorte. Instala con Homebrew: brew install ghostscript";
+"settings.mutool.name" = "MuPDF (mutool)";
+"settings.mutool.description" = "Elimina el contenido oculto de los PDFs recortados cuando Ghostscript no está disponible. Instala con Homebrew: brew install mupdf-tools";
+"settings.optional_tools.description" = "Las tres herramientas son opcionales. KeyJig usa su renderizador PDF integrado como alternativa cuando no están presentes.";
+"accessibility.ghostscript_installed" = "Ghostscript instalado";
+"accessibility.ghostscript_missing" = "Ghostscript no instalado";
+"accessibility.mutool_installed" = "MuPDF instalado";
+"accessibility.mutool_missing" = "MuPDF no instalado";

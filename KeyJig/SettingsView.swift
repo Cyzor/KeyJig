@@ -158,9 +158,34 @@ struct SettingsView: View {
                 .padding(12)
                 .background(Color(.controlBackgroundColor))
                 .cornerRadius(6)
+
+                // ── Ghostscript ──────────────────────────────────────────
+                CommandLineToolRow(
+                    name: NSLocalizedString("settings.ghostscript.name",
+                        comment: "Ghostscript application name"),
+                    status: appState.ghostscriptStatus,
+                    accessibilityInstalledLabel: NSLocalizedString(
+                        "accessibility.ghostscript_installed",
+                        comment: "VoiceOver label when Ghostscript is installed"),
+                    accessibilityMissingLabel: NSLocalizedString(
+                        "accessibility.ghostscript_missing",
+                        comment: "VoiceOver label when Ghostscript is not installed"))
+
+                // ── MuPDF (mutool) ───────────────────────────────────────
+                CommandLineToolRow(
+                    name: NSLocalizedString("settings.mutool.name",
+                        comment: "MuPDF application name"),
+                    status: appState.mutoolStatus,
+                    accessibilityInstalledLabel: NSLocalizedString(
+                        "accessibility.mutool_installed",
+                        comment: "VoiceOver label when MuPDF is installed"),
+                    accessibilityMissingLabel: NSLocalizedString(
+                        "accessibility.mutool_missing",
+                        comment: "VoiceOver label when MuPDF is not installed"))
             }
 
-            VStack(alignment: .leading, spacing: 6) {
+            // Per-tool descriptions
+            VStack(alignment: .leading, spacing: 8) {
                 Text(NSLocalizedString(
                     "settings.inkscape.description",
                     comment: "Explanatory text about Inkscape's role in the app"))
@@ -176,9 +201,8 @@ struct SettingsView: View {
                     .fontWeight(.semibold)
 
                 if #available(macOS 11.0, *) {
-                    Link(
-                        "https://inkscape.org/", destination: URL(string: "https://inkscape.org/")!
-                    )
+                    Link("https://inkscape.org/",
+                         destination: URL(string: "https://inkscape.org/")!)
                     .font(.caption)
                     .foregroundColor(.blue)
                 } else {
@@ -186,11 +210,35 @@ struct SettingsView: View {
                         NSWorkspace.shared.open(URL(string: "https://inkscape.org/")!)
                     }) {
                         Text("https://inkscape.org/")
-                            .font(.caption)
-                            .foregroundColor(.blue)
+                            .font(.caption).foregroundColor(.blue)
                     }
                     .buttonStyle(PlainButtonStyle())
                 }
+
+                if case .notInstalled = appState.ghostscriptStatus {
+                    Text(NSLocalizedString(
+                        "settings.ghostscript.description",
+                        comment: "Ghostscript description and Homebrew install hint"))
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
+                }
+
+                if case .notInstalled = appState.mutoolStatus {
+                    Text(NSLocalizedString(
+                        "settings.mutool.description",
+                        comment: "MuPDF description and Homebrew install hint"))
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
+                }
+
+                Text(NSLocalizedString(
+                    "settings.optional_tools.description",
+                    comment: "Note that all external tools are optional"))
+                .font(.caption)
+                .foregroundColor(.secondary)
+                .fixedSize(horizontal: false, vertical: true)
             }
             Divider()
 
@@ -270,6 +318,92 @@ struct SettingsView: View {
         .sheet(isPresented: $showingInkscapeDetails) {
             InkscapeDetailsView(appState: appState, isPresented: $showingInkscapeDetails)
         }
+    }
+}
+
+// MARK: - Command-line tool row (Ghostscript, MuPDF)
+
+/// Displays the installed/not-found status of a single command-line tool.
+/// Simpler than the Inkscape row: only one path, no details sheet.
+private struct CommandLineToolRow: View {
+    let name: String
+    let status: CommandLineToolStatus
+    let accessibilityInstalledLabel: String
+    let accessibilityMissingLabel: String
+
+    var body: some View {
+        HStack(spacing: 12) {
+            // Status icon
+            switch status {
+            case .checking:
+                if #available(macOS 11.0, *) {
+                    ProgressView().scaleEffect(0.8)
+                } else {
+                    Text("…")
+                }
+                Text("…")
+
+            case .installed:
+                if #available(macOS 11.0, *) {
+                    Image(systemName: "checkmark.circle.fill")
+                        .foregroundColor(.green)
+                        .font(.title3)
+                        .accessibilityLabel(accessibilityInstalledLabel)
+                } else {
+                    Text("✓").foregroundColor(.green).font(.headline)
+                }
+
+            case .notInstalled:
+                if #available(macOS 11.0, *) {
+                    Image(systemName: "minus.circle")
+                        .foregroundColor(.secondary)
+                        .font(.title3)
+                        .accessibilityLabel(accessibilityMissingLabel)
+                } else {
+                    Text("–").foregroundColor(.secondary).font(.headline)
+                }
+            }
+
+            // Name + subtitle
+            switch status {
+            case .checking:
+                EmptyView()
+
+            case .installed(let path):
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(name).font(.body).fontWeight(.semibold)
+                    Text(path)
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                        .lineLimit(1)
+                        .truncationMode(.middle)
+                }
+                Spacer()
+                Button(NSLocalizedString(
+                    "settings.cmdtool.reveal",
+                    comment: "Button to reveal a command-line tool in Finder")) {
+                    NSWorkspace.shared.selectFile(path, inFileViewerRootedAtPath: "")
+                }
+                .font(.caption)
+                .help(NSLocalizedString(
+                    "settings.cmdtool.reveal",
+                    comment: "Tooltip for the Reveal in Finder button"))
+
+            case .notInstalled:
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(name).font(.body).fontWeight(.semibold)
+                    Text(NSLocalizedString(
+                        "settings.cmdtool.not_found",
+                        comment: "Status shown when a command-line tool is not installed"))
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                }
+                Spacer()
+            }
+        }
+        .padding(12)
+        .background(Color(.controlBackgroundColor))
+        .cornerRadius(6)
     }
 }
 

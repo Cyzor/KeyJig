@@ -167,3 +167,14 @@
 "settings.inkscape.no_installation" = "No Inkscape installation found.";
 "settings.inkscape.copy" = "Copy";
 "settings.inkscape.reveal" = "Reveal";
+"settings.cmdtool.reveal" = "Reveal in Finder";
+"settings.cmdtool.not_found" = "Not found";
+"settings.ghostscript.name" = "Ghostscript";
+"settings.ghostscript.description" = "Improves PDF crop quality by rewriting drawing commands — only content inside the crop boundary survives. Install with Homebrew: brew install ghostscript";
+"settings.mutool.name" = "MuPDF (mutool)";
+"settings.mutool.description" = "Strips hidden content from cropped PDFs when Ghostscript is unavailable. Install with Homebrew: brew install mupdf-tools";
+"settings.optional_tools.description" = "All three tools are optional. KeyJig uses its built-in PDF renderer as a fallback when they are absent.";
+"accessibility.ghostscript_installed" = "Ghostscript installed";
+"accessibility.ghostscript_missing" = "Ghostscript not installed";
+"accessibility.mutool_installed" = "MuPDF installed";
+"accessibility.mutool_missing" = "MuPDF not installed";

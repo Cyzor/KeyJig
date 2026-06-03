@@ -166,3 +166,14 @@
 "settings.inkscape.no_installation" = "Inkscapeのインストールが見つかりません。";
 "settings.inkscape.copy" = "コピー";
 "settings.inkscape.reveal" = "Finderで表示";
+"settings.cmdtool.reveal" = "Finderで表示";
+"settings.cmdtool.not_found" = "見つかりません";
+"settings.ghostscript.name" = "Ghostscript";
+"settings.ghostscript.description" = "描画コマンドを書き換えてPDFの切り抜き品質を向上させます。切り抜き範囲内のコンテンツのみが残ります。Homebrewでインストール: brew install ghostscript";
+"settings.mutool.name" = "MuPDF (mutool)";
+"settings.mutool.description" = "Ghostscriptが利用できない場合に、切り抜いたPDFから隠しコンテンツを除去します。Homebrewでインストール: brew install mupdf-tools";
+"settings.optional_tools.description" = "3つのツールはすべてオプションです。いずれかが存在しない場合、KeyJigは内蔵のPDFレンダラーをフォールバックとして使用します。";
+"accessibility.ghostscript_installed" = "Ghostscriptはインストール済み";
+"accessibility.ghostscript_missing" = "Ghostscriptは未インストール";
+"accessibility.mutool_installed" = "MuPDFはインストール済み";
+"accessibility.mutool_missing" = "MuPDFは未インストール";
