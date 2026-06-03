@@ -136,7 +136,9 @@
 "help.section.keynote.title" = "Send to Keynote";
 "help.section.keynote.body" = "• Copy for Keynote (⌘3) — paste into Keynote (⌘V) and use Format > Shapes & Lines > Break Apart to edit paths.\n• Place SVG in Keynote (⌘4) drops it directly onto the current slide. Requires Accessibility permission (System Settings ▸ Privacy & Security).";
 "help.section.pull.title" = "Convert Keynote to PDF";
-"help.section.pull.body" = "• Convert Keynote Slide to PDF (⌘1) captures the current slide as a vector PDF.\n• Convert Keynote Clipboard to PDF (⌘2) converts the objects you copied in Keynote (⌘C) — non-contiguous selections included. Without a prior copy, captures the bounding rectangle instead.\n• Drag the PDF preview to Affinity, Illustrator, Figma, or any PDF-capable app — or save or copy it with the buttons below.";
+"help.section.pull.body" = "• Convert Keynote Slide to PDF (⌘1) captures the current slide as a vector PDF.\n• Convert Keynote Clipboard to PDF (⌘2) converts the objects you copied in Keynote (⌘C) — non-contiguous selections included. Without a prior copy, captures the bounding rectangle instead.\n• Drag the PDF preview to Affinity, Illustrator, Figma, or any PDF-capable app.";
+"help.section.setup.title" = "Permissions & Dependencies";
+"help.section.setup.body" = "• Place SVG in Keynote (⌘4) needs Accessibility access — grant it in System Settings ▸ Privacy & Security ▸ Accessibility.\n• Opening PDF and .ai files needs Inkscape — download from inkscape.org, or: brew install inkscape.\n• Ghostscript and MuPDF (optional) improve PDF crop quality — brew install ghostscript and brew install mupdf-tools.";
 
 /* ── Settings ───────────────────────────────────────────────────────── */
 "settings.window.title" = "Settings";

@@ -136,6 +136,8 @@
 "help.section.keynote.body" = "• Copiar para Keynote (⌘3) — pega en Keynote (⌘V) y usa Formato > Formas y líneas > Separar para editar los trayectos.\n• Insertar SVG en Keynote (⌘4) lo coloca directamente en la diapositiva actual. Requiere permiso de accesibilidad (Configuración del Sistema ▸ Privacidad y seguridad).";
 "help.section.pull.title" = "Convertir Keynote a PDF";
 "help.section.pull.body" = "• Convertir diapositiva de Keynote a PDF (⌘1) captura la diapositiva actual como PDF vectorial.\n• Convertir portapapeles de Keynote a PDF (⌘2) convierte los objetos que copiaste en Keynote (⌘C) — se admiten selecciones no contiguas. Sin una copia previa, captura el rectángulo delimitador.\n• Arrastra la vista previa del PDF a Affinity, Illustrator, Figma u otra app — o guárdalo o cópialo con los botones de abajo.";
+"help.section.setup.title" = "Permisos y dependencias";
+"help.section.setup.body" = "• Insertar SVG en Keynote (⌘4) necesita permiso de accesibilidad — actívalo en Configuración del Sistema ▸ Privacidad y seguridad ▸ Accesibilidad.\n• Abrir archivos PDF y .ai requiere Inkscape — descárgalo de inkscape.org o usa: brew install inkscape.\n• Ghostscript y MuPDF (opcionales) mejoran la calidad del recorte de PDF — brew install ghostscript y brew install mupdf-tools.";
 
 /* ── Settings ───────────────────────────────────────────────────────── */
 "settings.window.title" = "Ajustes";

@@ -74,6 +74,17 @@ struct HelpView: View {
                     "help.section.pull.body",
                     comment: "Help: Pull from Keynote section bullet points")
             )
+            Divider()
+            HelpSection(
+                symbol: "gearshape.fill",
+                color: Color(.systemGray),
+                title: NSLocalizedString(
+                    "help.section.setup.title",
+                    comment: "Help: Permissions and dependencies section heading"),
+                content: NSLocalizedString(
+                    "help.section.setup.body",
+                    comment: "Help: Permissions and dependencies bullet points")
+            )
         }
         .padding(24)
         .frame(minWidth: 420, idealWidth: 460)
