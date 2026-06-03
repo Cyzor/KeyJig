@@ -636,6 +636,9 @@ private func extractSelectionViaPaste(
     Thread.sleep(forTimeInterval: 0.4)
 
     // Read pasted count + geometry, export (failure-proof), ALWAYS close unsaved.
+    // Batch-read position/size/rotation in one AE round-trip per property so
+    // AppleScript never needs to touch individual items — which causes Keynote
+    // to briefly highlight each one, producing the "deselects one by one" effect.
     let exportURL = makeTempKeynotePDFURL()
     let finishScript = """
         tell application "Keynote"
@@ -646,14 +649,23 @@ private func extractSelectionViaPaste(
                 tell front document
                     set itms to iWork items of slide 1
                     set m to count of itms
-                    repeat with itm in itms
-                        set p to position of itm
-                        set r to 0
+                    if m > 0 then
+                        set posList to position of itms
+                        set widList to width of itms
+                        set htList to height of itms
+                        set rotList to {}
                         try
-                            set r to rotation of itm
+                            set rotList to rotation of itms
+                        on error
+                            repeat m times
+                                set rotList to rotList & {0}
+                            end repeat
                         end try
-                        set geo to geo & (item 1 of p) & "," & (item 2 of p) & "," & (width of itm) & "," & (height of itm) & "," & r & ";"
-                    end repeat
+                        repeat with i from 1 to m
+                            set p to item i of posList
+                            set geo to geo & (item 1 of p) & "," & (item 2 of p) & "," & (item i of widList) & "," & (item i of htList) & "," & (item i of rotList) & ";"
+                        end repeat
+                    end if
                     export to (POSIX file "\(exportURL.path)") as PDF
                     set okExport to true
                 end tell
@@ -819,8 +831,11 @@ private func extractSlidePDF(
 
     // Build the CGPDFContext intermediate — used as the final result when no
     // external tool is available, or as mutool's input when gs is absent.
-    let cgURL = docName.map { makeDescriptivePDFURL(docName: $0, slideIndex: slideIndex) }
-        ?? makeTempKeynotePDFURL()
+    // Always UUID-based: both the GS and mutool success paths use a separate
+    // descriptive URL, and giving cgURL the same descriptive name would make
+    // cgURL == outURL, causing mutool to read and write the same file and the
+    // subsequent removeItem(at: cgURL) to delete the result.
+    let cgURL = makeTempKeynotePDFURL()
     var outMediaBox = CGRect(origin: .zero, size: cropRect.size)
     guard let pdfCtx = CGContext(cgURL as CFURL, mediaBox: &outMediaBox, nil) else {
         return .failure(.exportFailed("could not create PDF context"))
@@ -849,7 +864,15 @@ private func extractSlidePDF(
         try? FileManager.default.removeItem(at: outURL)
     }
 
+    // cgURL is the final output (no external tools available). Rename it to the
+    // descriptive form now that we know it will be the result the user sees.
     try? FileManager.default.setAttributes([.posixPermissions: 0o600], ofItemAtPath: cgURL.path)
+    if let doc = docName {
+        let finalURL = makeDescriptivePDFURL(docName: doc, slideIndex: slideIndex)
+        if (try? FileManager.default.moveItem(at: cgURL, to: finalURL)) != nil {
+            return .success(finalURL)
+        }
+    }
     return .success(cgURL)
 }
 
