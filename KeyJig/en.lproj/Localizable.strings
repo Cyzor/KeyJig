@@ -10,8 +10,6 @@
 "tooltip.place_in_keynote" = "Place the SVG directly onto the current Keynote slide. Keynote must be running with a presentation open. Requires Accessibility access.";
 "tooltip.pull_from_keynote" = "Convert the current Keynote slide to a vector PDF.";
 "tooltip.import_selection_from_keynote" = "Copy your selection in Keynote first (⌘C), then click to convert it to a vector PDF of exactly those objects — non-contiguous selections included. Without a prior copy, falls back to capturing the bounding rectangle.";
-"tooltip.save_pdf" = "Save the pulled PDF to a chosen location.";
-"tooltip.copy_pdf" = "Copy the pulled PDF to the clipboard so you can paste it into another app.";
 "tooltip.preview_pdf_loaded" = "Drag this PDF directly into Affinity, Illustrator, Figma, or any app that accepts PDF.";
 "tooltip.status_ready" = "The SVG is ready. Drag it into Keynote or click 'Copy for Keynote'.";
 "tooltip.preview_loaded" = "Drag this SVG directly into Keynote or any app that accepts SVG files. Your clipboard is not modified during dragging.";
@@ -21,6 +19,7 @@
 "tooltip.settings.copy_path" = "Copy the Inkscape installation path to clipboard";
 "tooltip.settings.reveal" = "Show the Inkscape application in Finder";
 "tooltip.settings.done" = "Close the Inkscape installation details sheet";
+"tooltip.settings.download_tool" = "Download from the official website.";
 
 /* ── Preview area ───────────────────────────────────────────────────── */
 "preview.drag_label" = "Drag into Keynote";
@@ -43,14 +42,12 @@
 "status.keynote.success" = "Placed in Keynote — select it and use Format ▸ Shapes and Lines ▸ Break Apart.";
 "status.keynote.pulling" = "Exporting from Keynote…";
 "status.keynote.pulled" = "Pulled from Keynote — drag the preview or copy the PDF.";
-"status.pdf.copied" = "PDF copied to clipboard.";
-"status.pdf.saved" = "PDF saved.";
 "instruction.break_apart" = "Once placed in Keynote, select the object and choose Format ‣ Shapes and Lines ‣ Break Apart.";
 
 /* ── Keynote errors ─────────────────────────────────────────────────── */
-"error.keynote.not_running" = "Keynote is not running or has no document open.";
+"error.keynote.not_running" = "Keynote is not running.";
 "error.keynote.no_document" = "Keynote has no document open. Open a presentation and try again.";
-"error.keynote.accessibility" = "Grant KeyJig Accessibility access in in System Settings ▸ Privacy & Security ▸ Accessibility, then try again.";
+"error.keynote.accessibility" = "Grant KeyJig Accessibility access in System Settings ▸ Privacy & Security ▸ Accessibility, then try again.";
 "error.keynote.paste_failed" = "Could not place the SVG in Keynote.";
 "error.keynote.export_failed" = "Keynote export failed: %@";
 "error.keynote.page_missing" = "The exported PDF did not contain the current slide.";
@@ -63,8 +60,6 @@
 "button.place_svg_in_keynote" = "Place SVG in Keynote";
 "button.pull_from_keynote" = "Convert Keynote Slide to PDF";
 "button.import_selection_from_keynote" = "Convert Keynote Clipboard to PDF";
-"button.save_pdf" = "Save PDF…";
-"button.copy_pdf" = "Copy PDF";
 
 /* ── Footer ─────────────────────────────────────────────────────────── */
 "footer.build_date" = "App Build Date: %@";
@@ -77,7 +72,8 @@
 "file_dialog.title" = "Choose a vector file";
 
 /* ── Window ─────────────────────────────────────────────────────────── */
-"window.title.default" = "KeyJig";
+"window.title.base" = "KeyJig";
+"window.title.numbered" = "KeyJig %d";
 
 /* ── App menu ───────────────────────────────────────────────────────── */
 "menu.app.about" = "About KeyJig";
@@ -118,6 +114,7 @@
 "menu.help" = "Help";
 "menu.help.keyjig_help" = "KeyJig Help";
 "menu.help.keyjig_website" = "KeyJig Website…";
+"menu.help.reveal_preferences" = "Reveal KeyJig Preferences in Finder…";
 
 /* ── Dock menu ──────────────────────────────────────────────────────── */
 "dock.show_window" = "Show Window";
@@ -145,11 +142,12 @@
 "settings.section.permissions" = "Permissions";
 "settings.accessibility.name" = "Accessibility";
 "settings.accessibility.granted" = "Access granted";
-"settings.accessibility.needed" = "Access required for Place in Keynote";
+"settings.accessibility.needed" = "Access required for Keynote actions";
 "settings.accessibility.open_settings" = "Open Settings";
 "settings.accessibility.description" = "Accessibility access lets KeyJig place SVGs directly onto Keynote slides. Without it, use Copy for Keynote and paste manually.";
 "accessibility.accessibility_granted" = "Accessibility permission granted";
 "accessibility.accessibility_needed" = "Accessibility permission not granted";
+"accessibility.keynote_notice" = "Keynote interaction requires Accessibility permission approval.";
 "tooltip.settings.accessibility_open" = "Open System Settings to grant KeyJig Accessibility permission";
 "settings.section.integration" = "Integration";
 "settings.external_deps" = "External Dependencies";
@@ -172,9 +170,9 @@
 "settings.cmdtool.reveal" = "Reveal in Finder";
 "settings.cmdtool.not_found" = "Not found";
 "settings.ghostscript.name" = "Ghostscript";
-"settings.ghostscript.description" = "Improves PDF crop quality by rewriting drawing commands — only content inside the crop boundary survives. Install with Homebrew: brew install ghostscript";
+"settings.ghostscript.description" = "Improves PDF crop quality by rewriting drawing commands — only content inside the crop boundary survives. Available via Homebrew: brew install ghostscript";
 "settings.mutool.name" = "MuPDF (mutool)";
-"settings.mutool.description" = "Strips hidden content from cropped PDFs when Ghostscript is unavailable. Install with Homebrew: brew install mupdf-tools";
+"settings.mutool.description" = "Strips hidden content from cropped PDFs when Ghostscript is unavailable. Available via Homebrew: brew install mupdf-tools";
 "settings.optional_tools.description" = "All three tools are optional. KeyJig uses its built-in PDF renderer as a fallback when they are absent.";
 "accessibility.ghostscript_installed" = "Ghostscript installed";
 "accessibility.ghostscript_missing" = "Ghostscript not installed";

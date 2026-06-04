@@ -9,8 +9,6 @@
 "tooltip.place_in_keynote" = "Coloca el SVG directamente en la diapositiva actual de Keynote. Keynote debe estar abierto. Requiere acceso de accesibilidad.";
 "tooltip.pull_from_keynote" = "Convierte la diapositiva actual de Keynote a un PDF vectorial.";
 "tooltip.import_selection_from_keynote" = "Copia primero tu selección en Keynote (⌘C) y luego haz clic para convertir exactamente esos objetos a un PDF vectorial — se admiten selecciones no contiguas. Sin una copia previa, captura el rectángulo delimitador.";
-"tooltip.save_pdf" = "Guarda el PDF extraído en la ubicación elegida.";
-"tooltip.copy_pdf" = "Copia el PDF extraído al portapapeles para pegarlo en otra app.";
 "tooltip.preview_pdf_loaded" = "Arrastra este PDF directamente a Affinity, Illustrator, Figma o cualquier app que acepte PDF.";
 "tooltip.status_ready" = "El SVG está listo. Arrástralo a Keynote o haz clic en «Copiar para Keynote».";
 "tooltip.preview_loaded" = "Arrastra este SVG directamente a Keynote o cualquier app que acepte archivos SVG. El portapapeles no se modifica al arrastrar.";
@@ -20,6 +18,7 @@
 "tooltip.settings.copy_path" = "Copiar la ruta de instalación de Inkscape al portapapeles";
 "tooltip.settings.reveal" = "Mostrar la aplicación Inkscape en el Finder";
 "tooltip.settings.done" = "Cerrar el panel de detalles de instalación de Inkscape";
+"tooltip.settings.download_tool" = "Descargar desde el sitio web oficial.";
 
 /* ── Preview area ───────────────────────────────────────────────────── */
 "preview.drag_label" = "Arrastrar a Keynote";
@@ -42,8 +41,6 @@
 "status.keynote.success" = "Insertado en Keynote — selecciona el objeto y usa Formato ▸ Formas y líneas ▸ Separar.";
 "status.keynote.pulling" = "Exportando desde Keynote…";
 "status.keynote.pulled" = "Extraído de Keynote — arrastra la vista previa o copia el PDF.";
-"status.pdf.copied" = "PDF copiado al portapapeles.";
-"status.pdf.saved" = "PDF guardado.";
 "instruction.break_apart" = "Una vez en Keynote, selecciona el objeto y elige Formato ‣ Formas y líneas ‣ Separar.";
 
 /* ── Buttons ────────────────────────────────────────────────────────── */
@@ -54,11 +51,9 @@
 "button.place_svg_in_keynote" = "Insertar SVG en Keynote";
 "button.pull_from_keynote" = "Convertir diapositiva de Keynote a PDF";
 "button.import_selection_from_keynote" = "Convertir portapapeles de Keynote a PDF";
-"button.save_pdf" = "Guardar PDF…";
-"button.copy_pdf" = "Copiar PDF";
 
 /* ── Keynote errors ─────────────────────────────────────────────────── */
-"error.keynote.not_running" = "Keynote no está abierto o no tiene ningún documento activo.";
+"error.keynote.not_running" = "Keynote no está abierto.";
 "error.keynote.no_document" = "Keynote no tiene ningún documento abierto. Abre una presentación e inténtalo de nuevo.";
 "error.keynote.accessibility" = "Se requiere acceso de accesibilidad. Activa KeyJig en Configuración del Sistema ▸ Privacidad y seguridad ▸ Accesibilidad e inténtalo de nuevo.";
 "error.keynote.paste_failed" = "No se pudo insertar el SVG en Keynote.";
@@ -76,7 +71,8 @@
 "file_dialog.title" = "Seleccionar un archivo vectorial";
 
 /* ── Window ─────────────────────────────────────────────────────────── */
-"window.title.default" = "KeyJig";
+"window.title.base" = "KeyJig";
+"window.title.numbered" = "KeyJig %d";
 
 /* ── App menu ───────────────────────────────────────────────────────── */
 "menu.app.about" = "Acerca de KeyJig";
@@ -117,6 +113,7 @@
 "menu.help" = "Ayuda";
 "menu.help.keyjig_help" = "Ayuda de KeyJig";
 "menu.help.keyjig_website" = "Sitio web de KeyJig…";
+"menu.help.reveal_preferences" = "Mostrar archivo de preferencias en el Finder";
 
 /* ── Dock menu ──────────────────────────────────────────────────────── */
 "dock.show_window" = "Mostrar ventana";
@@ -135,7 +132,7 @@
 "help.section.keynote.title" = "Enviar a Keynote";
 "help.section.keynote.body" = "• Copiar para Keynote (⌘3) — pega en Keynote (⌘V) y usa Formato > Formas y líneas > Separar para editar los trayectos.\n• Insertar SVG en Keynote (⌘4) lo coloca directamente en la diapositiva actual. Requiere permiso de accesibilidad (Configuración del Sistema ▸ Privacidad y seguridad).";
 "help.section.pull.title" = "Convertir Keynote a PDF";
-"help.section.pull.body" = "• Convertir diapositiva de Keynote a PDF (⌘1) captura la diapositiva actual como PDF vectorial.\n• Convertir portapapeles de Keynote a PDF (⌘2) convierte los objetos que copiaste en Keynote (⌘C) — se admiten selecciones no contiguas. Sin una copia previa, captura el rectángulo delimitador.\n• Arrastra la vista previa del PDF a Affinity, Illustrator, Figma u otra app — o guárdalo o cópialo con los botones de abajo.";
+"help.section.pull.body" = "• Convertir diapositiva de Keynote a PDF (⌘1) captura la diapositiva actual como PDF vectorial.\n• Convertir portapapeles de Keynote a PDF (⌘2) convierte los objetos que copiaste en Keynote (⌘C) — se admiten selecciones no contiguas. Sin una copia previa, captura el rectángulo delimitador.\n• Arrastra la vista previa del PDF a Affinity, Illustrator, Figma u otra app.";
 "help.section.setup.title" = "Permisos y dependencias";
 "help.section.setup.body" = "• Insertar SVG en Keynote (⌘4) necesita permiso de accesibilidad — actívalo en Configuración del Sistema ▸ Privacidad y seguridad ▸ Accesibilidad.\n• Abrir archivos PDF y .ai requiere Inkscape — descárgalo de inkscape.org o usa: brew install inkscape.\n• Ghostscript y MuPDF (opcionales) mejoran la calidad del recorte de PDF — brew install ghostscript y brew install mupdf-tools.";
 
@@ -149,6 +146,7 @@
 "settings.accessibility.description" = "El permiso de accesibilidad permite a KeyJig colocar SVGs directamente en las diapositivas de Keynote. Sin él, usa Copiar para Keynote y pega manualmente.";
 "accessibility.accessibility_granted" = "Permiso de accesibilidad concedido";
 "accessibility.accessibility_needed" = "Permiso de accesibilidad no concedido";
+"accessibility.keynote_notice" = "Se requiere acceso de accesibilidad para las interacciones con Keynote.";
 "tooltip.settings.accessibility_open" = "Abrir Configuración del Sistema para conceder permiso de accesibilidad a KeyJig";
 "settings.section.integration" = "Integración";
 "settings.external_deps" = "Dependencias externas";
@@ -171,9 +169,9 @@
 "settings.cmdtool.reveal" = "Mostrar en Finder";
 "settings.cmdtool.not_found" = "No encontrado";
 "settings.ghostscript.name" = "Ghostscript";
-"settings.ghostscript.description" = "Mejora la calidad del recorte de PDF reescribiendo los comandos de dibujo — solo sobrevive el contenido dentro del área de recorte. Instala con Homebrew: brew install ghostscript";
+"settings.ghostscript.description" = "Mejora la calidad del recorte de PDF reescribiendo los comandos de dibujo — solo sobrevive el contenido dentro del área de recorte. Disponible en Homebrew: brew install ghostscript";
 "settings.mutool.name" = "MuPDF (mutool)";
-"settings.mutool.description" = "Elimina el contenido oculto de los PDFs recortados cuando Ghostscript no está disponible. Instala con Homebrew: brew install mupdf-tools";
+"settings.mutool.description" = "Elimina el contenido oculto de los PDFs recortados cuando Ghostscript no está disponible. Disponible en Homebrew: brew install mupdf-tools";
 "settings.optional_tools.description" = "Las tres herramientas son opcionales. KeyJig usa su renderizador PDF integrado como alternativa cuando no están presentes.";
 "accessibility.ghostscript_installed" = "Ghostscript instalado";
 "accessibility.ghostscript_missing" = "Ghostscript no instalado";

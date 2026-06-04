@@ -1,6 +1,8 @@
 import SwiftUI
 
 private let inkscapeDownloadURL = URL(string: "https://inkscape.org/release/")!
+private let ghostscriptWebURL = URL(string: "https://www.ghostscript.com/")!
+private let mupdfWebURL = URL(string: "https://mupdf.com/")!
 private let accessibilitySettingsURL = URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility")!
 
 // MARK: - Tooltip Text Constants for Settings
@@ -24,7 +26,6 @@ struct SettingsTooltips {
 struct SettingsView: View {
     @ObservedObject var appState: AppState
     @State private var showingInkscapeDetails = false
-    @State private var accessibilityTrusted: Bool = AXIsProcessTrusted()
 
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
@@ -108,17 +109,12 @@ struct SettingsView: View {
 
                         Spacer()
 
-                        Link(destination: inkscapeDownloadURL) {
-                            Text(NSLocalizedString(
-                                "settings.inkscape.download",
-                                comment: "Button label to download Inkscape"))
-                                .font(.caption)
-                                .padding(.horizontal, 12)
-                                .padding(.vertical, 6)
-                                .background(Color.blue)
-                                .foregroundColor(.white)
-                                .cornerRadius(4)
+                        Button(NSLocalizedString(
+                            "settings.inkscape.download",
+                            comment: "Button label to download Inkscape")) {
+                            NSWorkspace.shared.open(inkscapeDownloadURL)
                         }
+                        .font(.caption)
                         .help(SettingsTooltips.downloadInkscape)
                     }
                 }
@@ -136,7 +132,8 @@ struct SettingsView: View {
                         comment: "VoiceOver label when Ghostscript is installed"),
                     accessibilityMissingLabel: NSLocalizedString(
                         "accessibility.ghostscript_missing",
-                        comment: "VoiceOver label when Ghostscript is not installed"))
+                        comment: "VoiceOver label when Ghostscript is not installed"),
+                    downloadURL: ghostscriptWebURL)
 
                 // ── MuPDF (mutool) ───────────────────────────────────────
                 CommandLineToolRow(
@@ -148,7 +145,8 @@ struct SettingsView: View {
                         comment: "VoiceOver label when MuPDF is installed"),
                     accessibilityMissingLabel: NSLocalizedString(
                         "accessibility.mutool_missing",
-                        comment: "VoiceOver label when MuPDF is not installed"))
+                        comment: "VoiceOver label when MuPDF is not installed"),
+                    downloadURL: mupdfWebURL)
             }
 
             // Per-tool descriptions
@@ -172,23 +170,29 @@ struct SettingsView: View {
                 .font(.caption)
                 .foregroundColor(.blue)
 
-                if case .notInstalled = appState.ghostscriptStatus {
-                    Text(NSLocalizedString(
-                        "settings.ghostscript.description",
-                        comment: "Ghostscript description and Homebrew install hint"))
-                    .font(.caption)
-                    .foregroundColor(.secondary)
-                    .fixedSize(horizontal: false, vertical: true)
-                }
+                Text(NSLocalizedString(
+                    "settings.ghostscript.description",
+                    comment: "Ghostscript description and Homebrew install hint"))
+                .font(.caption)
+                .foregroundColor(.secondary)
+                .fixedSize(horizontal: false, vertical: true)
 
-                if case .notInstalled = appState.mutoolStatus {
-                    Text(NSLocalizedString(
-                        "settings.mutool.description",
-                        comment: "MuPDF description and Homebrew install hint"))
-                    .font(.caption)
-                    .foregroundColor(.secondary)
-                    .fixedSize(horizontal: false, vertical: true)
-                }
+                Link("https://www.ghostscript.com/",
+                     destination: ghostscriptWebURL)
+                .font(.caption)
+                .foregroundColor(.blue)
+
+                Text(NSLocalizedString(
+                    "settings.mutool.description",
+                    comment: "MuPDF description and Homebrew install hint"))
+                .font(.caption)
+                .foregroundColor(.secondary)
+                .fixedSize(horizontal: false, vertical: true)
+
+                Link("https://mupdf.com/",
+                     destination: mupdfWebURL)
+                .font(.caption)
+                .foregroundColor(.blue)
 
                 Text(NSLocalizedString(
                     "settings.optional_tools.description",
@@ -207,7 +211,7 @@ struct SettingsView: View {
                     .font(.headline)
 
                 HStack(spacing: 12) {
-                    if accessibilityTrusted {
+                    if appState.accessibilityGranted {
                         Image(systemName: "checkmark.circle.fill")
                             .foregroundColor(.green)
                             .font(.title3)
@@ -229,7 +233,7 @@ struct SettingsView: View {
                             comment: "Accessibility permission row label"))
                             .font(.body)
                             .fontWeight(.semibold)
-                        Text(accessibilityTrusted
+                        Text(appState.accessibilityGranted
                             ? NSLocalizedString(
                                 "settings.accessibility.granted",
                                 comment: "Status when Accessibility permission is granted")
@@ -242,7 +246,7 @@ struct SettingsView: View {
 
                     Spacer()
 
-                    if !accessibilityTrusted {
+                    if !appState.accessibilityGranted {
                         Button(NSLocalizedString(
                             "settings.accessibility.open_settings",
                             comment: "Button that opens System Settings to grant Accessibility permission")) {
@@ -266,12 +270,6 @@ struct SettingsView: View {
         }
         .padding(24)
         .frame(minWidth: 400)
-        .onAppear {
-            accessibilityTrusted = AXIsProcessTrusted()
-        }
-        .onReceive(NotificationCenter.default.publisher(for: NSApplication.didBecomeActiveNotification)) { _ in
-            accessibilityTrusted = AXIsProcessTrusted()
-        }
         .sheet(isPresented: $showingInkscapeDetails) {
             InkscapeDetailsView(appState: appState, isPresented: $showingInkscapeDetails)
         }
@@ -287,6 +285,7 @@ private struct CommandLineToolRow: View {
     let status: CommandLineToolStatus
     let accessibilityInstalledLabel: String
     let accessibilityMissingLabel: String
+    var downloadURL: URL? = nil
 
     var body: some View {
         HStack(spacing: 12) {
@@ -294,7 +293,9 @@ private struct CommandLineToolRow: View {
             switch status {
             case .checking:
                 ProgressView().scaleEffect(0.8)
-                Text("…")
+                Text(NSLocalizedString(
+                    "settings.inkscape.checking",
+                    comment: "Status shown while checking for a tool"))
 
             case .installed:
                 Image(systemName: "checkmark.circle.fill")
@@ -330,9 +331,6 @@ private struct CommandLineToolRow: View {
                     NSWorkspace.shared.selectFile(path, inFileViewerRootedAtPath: "")
                 }
                 .font(.caption)
-                .help(NSLocalizedString(
-                    "settings.cmdtool.reveal",
-                    comment: "Tooltip for the Reveal in Finder button"))
 
             case .notInstalled:
                 VStack(alignment: .leading, spacing: 2) {
@@ -344,6 +342,17 @@ private struct CommandLineToolRow: View {
                         .foregroundColor(.secondary)
                 }
                 Spacer()
+                if let url = downloadURL {
+                    Button(NSLocalizedString(
+                        "settings.inkscape.download",
+                        comment: "Button label to download a tool")) {
+                        NSWorkspace.shared.open(url)
+                    }
+                    .font(.caption)
+                    .help(NSLocalizedString(
+                        "tooltip.settings.download_tool",
+                        comment: "Tooltip for the Download button on a command-line tool row"))
+                }
             }
         }
         .padding(12)

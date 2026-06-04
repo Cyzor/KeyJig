@@ -52,6 +52,9 @@ class AppState: ObservableObject {
     /// measured by ContentView's invisible probe during its first layout pass.
     /// MainWindowController observes this and applies it as contentMinSize.width.
     @Published var minimumButtonAreaWidth: CGFloat = 0
+    /// The measured natural height of all content below the preview well.
+    /// MainWindowController observes this to keep the window tall enough.
+    @Published var minimumBelowPreviewHeight: CGFloat = 0
 
     /// The transient status/error string shown below the preview. Updated by
     /// button actions and menu commands alike. Empty means "show default state".
@@ -67,8 +70,20 @@ class AppState: ObservableObject {
     /// documents — the existing error message handles that case.
     @Published var keynoteRunning: Bool = false
 
+    /// True when KeyJig has Accessibility permission. Drives the enabled state
+    /// of "Place SVG in Keynote" and the visibility of the lock notice.
+    @Published var accessibilityGranted: Bool = AXIsProcessTrusted()
+
+    /// True when this AppState belongs to the menu-bar popover rather than a
+    /// floating window. ContentView uses this to suppress keyboard shortcut hints
+    /// — popovers can't reliably receive menu-bar shortcuts without explicit
+    /// focus, and don't display a menu bar, so advertising ⌘ shortcuts there
+    /// would be misleading.
+    var isPopoverContext: Bool = false
+
     private var clipboardTimer: Timer?
     private var workspaceObservers: [Any] = []
+    private var appObservers: [Any] = []
     private var lastSeenClipboardChangeCount: Int = -1
 
     init() {
@@ -81,6 +96,7 @@ class AppState: ObservableObject {
     deinit {
         clipboardTimer?.invalidate()
         workspaceObservers.forEach { NSWorkspace.shared.notificationCenter.removeObserver($0) }
+        appObservers.forEach { NotificationCenter.default.removeObserver($0) }
     }
 
     private func startKeynoteMonitoring() {
@@ -117,6 +133,18 @@ class AppState: ObservableObject {
         clipboardTimer = Timer.scheduledTimer(withTimeInterval: 0.5, repeats: true) { [weak self] _ in
             self?.checkClipboardForKeynoteData()
         }
+
+        // ── Accessibility grant state ─────────────────────────────────────
+        // Re-check when KeyJig comes to the foreground — the user may have
+        // just toggled the permission in System Settings and switched back.
+        appObservers.append(NotificationCenter.default.addObserver(
+            forName: NSApplication.didBecomeActiveNotification,
+            object: nil, queue: .main) { [weak self] _ in
+                let trusted = AXIsProcessTrusted()
+                if self?.accessibilityGranted != trusted {
+                    self?.accessibilityGranted = trusted
+                }
+        })
     }
 
     private func checkClipboardForKeynoteData() {

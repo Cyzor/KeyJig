@@ -10,8 +10,6 @@
 "tooltip.place_in_keynote" = "SVG direkt auf die aktuelle Keynote-Folie einfügen. Keynote muss geöffnet sein. Erfordert Bedienungshilfenzugriff.";
 "tooltip.pull_from_keynote" = "Die aktuelle Keynote-Folie als Vektor-PDF konvertieren.";
 "tooltip.import_selection_from_keynote" = "Auswahl zuerst in Keynote kopieren (⌘C), dann klicken, um genau diese Objekte als Vektor-PDF zu konvertieren — auch nicht zusammenhängende Auswahlen. Ohne vorherigen Kopiervorgang wird stattdessen das umschließende Rechteck erfasst.";
-"tooltip.save_pdf" = "Das abgerufene PDF an einem gewählten Speicherort sichern.";
-"tooltip.copy_pdf" = "Das abgerufene PDF in die Zwischenablage kopieren, um es in eine andere App einzufügen.";
 "tooltip.preview_pdf_loaded" = "Dieses PDF direkt in Affinity, Illustrator, Figma oder eine andere App ziehen, die PDF akzeptiert.";
 "tooltip.status_ready" = "Das SVG ist bereit. In Keynote ziehen oder \"Für Keynote kopieren\" klicken.";
 "tooltip.preview_loaded" = "Dieses SVG direkt in Keynote oder eine andere App ziehen, die SVG-Dateien akzeptiert. Die Zwischenablage wird beim Ziehen nicht verändert.";
@@ -21,6 +19,7 @@
 "tooltip.settings.copy_path" = "Installationspfad von Inkscape in die Zwischenablage kopieren";
 "tooltip.settings.reveal" = "Inkscape-Anwendung im Finder anzeigen";
 "tooltip.settings.done" = "Detailblatt zur Inkscape-Installation schließen";
+"tooltip.settings.download_tool" = "Von der offiziellen Website herunterladen.";
 
 /* ── Preview area ───────────────────────────────────────────────────── */
 "preview.drag_label" = "In Keynote ziehen";
@@ -43,8 +42,6 @@
 "status.keynote.success" = "In Keynote eingefügt – Objekt auswählen und Format ▸ Formen und Linien ▸ Aufteilen wählen.";
 "status.keynote.pulling" = "Wird aus Keynote exportiert…";
 "status.keynote.pulled" = "Aus Keynote abgerufen – Vorschau ziehen oder das PDF kopieren.";
-"status.pdf.copied" = "PDF in Zwischenablage kopiert.";
-"status.pdf.saved" = "PDF gesichert.";
 "instruction.break_apart" = "Nach dem Einsetzen in Keynote das Objekt auswählen und Format ‣ Formen und Linien ‣ Aufteilen wählen.";
 
 /* ── Buttons ────────────────────────────────────────────────────────── */
@@ -55,11 +52,9 @@
 "button.place_svg_in_keynote" = "SVG in Keynote einfügen";
 "button.pull_from_keynote" = "Keynote-Folie als PDF konvertieren";
 "button.import_selection_from_keynote" = "Keynote-Zwischenablage als PDF konvertieren";
-"button.save_pdf" = "PDF sichern…";
-"button.copy_pdf" = "PDF kopieren";
 
 /* ── Keynote errors ─────────────────────────────────────────────────── */
-"error.keynote.not_running" = "Keynote läuft nicht oder hat kein Dokument geöffnet.";
+"error.keynote.not_running" = "Keynote läuft nicht.";
 "error.keynote.no_document" = "Keynote hat kein Dokument geöffnet. Präsentation öffnen und erneut versuchen.";
 "error.keynote.accessibility" = "Bedienungshilfenzugriff erforderlich. KeyJig unter Systemeinstellungen ▸ Datenschutz & Sicherheit ▸ Bedienungshilfen aktivieren und erneut versuchen.";
 "error.keynote.paste_failed" = "Das SVG konnte nicht in Keynote eingefügt werden.";
@@ -77,7 +72,8 @@
 "file_dialog.title" = "Vektordatei auswählen";
 
 /* ── Window ─────────────────────────────────────────────────────────── */
-"window.title.default" = "KeyJig";
+"window.title.base" = "KeyJig";
+"window.title.numbered" = "KeyJig %d";
 
 /* ── App menu ───────────────────────────────────────────────────────── */
 "menu.app.about" = "Über KeyJig";
@@ -118,6 +114,7 @@
 "menu.help" = "Hilfe";
 "menu.help.keyjig_help" = "KeyJig-Hilfe";
 "menu.help.keyjig_website" = "KeyJig-Website…";
+"menu.help.reveal_preferences" = "Einstellungsdatei im Finder anzeigen";
 
 /* ── Dock menu ──────────────────────────────────────────────────────── */
 "dock.show_window" = "Fenster anzeigen";
@@ -136,7 +133,7 @@
 "help.section.keynote.title" = "An Keynote senden";
 "help.section.keynote.body" = "• Für Keynote kopieren (⌘3) — dann in Keynote einsetzen (⌘V) und Format > Formen und Linien > Aufteilen verwenden.\n• SVG in Keynote einfügen (⌘4) platziert es direkt auf die aktuelle Folie. Erfordert Bedienungshilfenzugriff (Systemeinstellungen ▸ Datenschutz & Sicherheit).";
 "help.section.pull.title" = "Keynote als PDF konvertieren";
-"help.section.pull.body" = "• Keynote-Folie als PDF konvertieren (⌘1) erfasst die aktuelle Folie als Vektor-PDF.\n• Keynote-Zwischenablage als PDF konvertieren (⌘2) konvertiert die in Keynote kopierten Objekte (⌘C) — auch nicht zusammenhängende Auswahlen. Ohne vorherigen Kopiervorgang wird das umschließende Rechteck erfasst.\n• PDF-Vorschau in Affinity, Illustrator, Figma oder eine andere App ziehen – oder über die Schaltflächen unten speichern oder kopieren.";
+"help.section.pull.body" = "• Keynote-Folie als PDF konvertieren (⌘1) erfasst die aktuelle Folie als Vektor-PDF.\n• Keynote-Zwischenablage als PDF konvertieren (⌘2) konvertiert die in Keynote kopierten Objekte (⌘C) — auch nicht zusammenhängende Auswahlen. Ohne vorherigen Kopiervorgang wird das umschließende Rechteck erfasst.\n• PDF-Vorschau in Affinity, Illustrator, Figma oder eine andere App ziehen.";
 "help.section.setup.title" = "Berechtigungen & Abhängigkeiten";
 "help.section.setup.body" = "• SVG in Keynote einfügen (⌘4) benötigt Bedienungshilfenzugriff — aktivieren unter Systemeinstellungen ▸ Datenschutz & Sicherheit ▸ Bedienungshilfen.\n• PDF- und .ai-Dateien öffnen erfordert Inkscape — herunterladen von inkscape.org oder: brew install inkscape.\n• Ghostscript und MuPDF (optional) verbessern die PDF-Zuschneidequalität — brew install ghostscript und brew install mupdf-tools.";
 
@@ -150,6 +147,7 @@
 "settings.accessibility.description" = "Bedienungshilfenzugriff ermöglicht KeyJig, SVGs direkt auf Keynote-Folien zu platzieren. Ohne ihn bitte \"Für Keynote kopieren\" verwenden und manuell einsetzen.";
 "accessibility.accessibility_granted" = "Bedienungshilfenzugriff erlaubt";
 "accessibility.accessibility_needed" = "Bedienungshilfenzugriff nicht erlaubt";
+"accessibility.keynote_notice" = "Für Keynote-Aktionen ist Bedienungshilfenzugriff erforderlich.";
 "tooltip.settings.accessibility_open" = "Systemeinstellungen öffnen, um KeyJig Bedienungshilfenzugriff zu gewähren";
 "settings.section.integration" = "Integration";
 "settings.external_deps" = "Externe Abhängigkeiten";
@@ -172,9 +170,9 @@
 "settings.cmdtool.reveal" = "Im Finder zeigen";
 "settings.cmdtool.not_found" = "Nicht gefunden";
 "settings.ghostscript.name" = "Ghostscript";
-"settings.ghostscript.description" = "Verbessert die PDF-Zuschneidequalität durch Umschreiben von Zeichenbefehlen — nur Inhalte innerhalb des Zuschneidebereichs bleiben erhalten. Installation mit Homebrew: brew install ghostscript";
+"settings.ghostscript.description" = "Verbessert die PDF-Zuschneidequalität durch Umschreiben von Zeichenbefehlen — nur Inhalte innerhalb des Zuschneidebereichs bleiben erhalten. Verfügbar über Homebrew: brew install ghostscript";
 "settings.mutool.name" = "MuPDF (mutool)";
-"settings.mutool.description" = "Entfernt versteckte Inhalte aus zugeschnittenen PDFs, wenn Ghostscript nicht verfügbar ist. Installation mit Homebrew: brew install mupdf-tools";
+"settings.mutool.description" = "Entfernt versteckte Inhalte aus zugeschnittenen PDFs, wenn Ghostscript nicht verfügbar ist. Verfügbar über Homebrew: brew install mupdf-tools";
 "settings.optional_tools.description" = "Alle drei Werkzeuge sind optional. KeyJig verwendet seinen eingebauten PDF-Renderer als Ausweichlösung, wenn sie fehlen.";
 "accessibility.ghostscript_installed" = "Ghostscript installiert";
 "accessibility.ghostscript_missing" = "Ghostscript nicht installiert";

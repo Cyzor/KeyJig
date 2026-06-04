@@ -14,13 +14,43 @@ class MainWindowController: NSWindowController, NSWindowDelegate {
     /// Each window owns its own state — changes in one window never affect another.
     let appState: AppState
 
+    /// Monotonic source of per-window numbers. Never reused, so two open windows
+    /// always carry distinct numbers even after others have closed.
+    private static var nextWindowNumber = 1
+
+    /// Stable ordinal used to distinguish otherwise-identical "KeyJig" windows.
+    let windowNumber: Int
+
+    /// Title shown when the window holds no named file. The first window is the
+    /// bare app name; later windows carry their number (mirrors TextEdit's
+    /// "Untitled", "Untitled 2", …). Static so it can be used before super.init.
+    private static func untitledTitle(for number: Int) -> String {
+        guard number > 1 else {
+            return NSLocalizedString(
+                "window.title.base",
+                comment: "Window title for the first/only unnamed window")
+        }
+        return String.localizedStringWithFormat(
+            NSLocalizedString(
+                "window.title.numbered",
+                comment: "Window title for an unnamed window, with its number, e.g. 'KeyJig 2'"),
+            number)
+    }
+
+    /// Title shown when the window holds no named file.
+    private var untitledTitle: String { Self.untitledTitle(for: windowNumber) }
+
     /// Retains the Combine subscription that keeps the proxy icon current.
     private var representedURLCancellable: AnyCancellable?
     /// Retains the subscription that applies the measured minimum content width.
     private var minWidthCancellable: AnyCancellable?
+    /// Retains the subscription that grows the window when the accessibility notice appears.
+    private var noticeHeightCancellable: AnyCancellable?
 
     init(appState: AppState = AppState(), isPrimary: Bool = false) {
         self.appState = appState
+        self.windowNumber = MainWindowController.nextWindowNumber
+        MainWindowController.nextWindowNumber += 1
 
         let window = NSWindow(
             contentRect: NSRect(x: 0, y: 0, width: 400, height: 640),
@@ -30,9 +60,7 @@ class MainWindowController: NSWindowController, NSWindowDelegate {
         )
         window.isReleasedWhenClosed = false
         window.level = .normal
-        window.title = NSLocalizedString(
-            "window.title.default",
-            comment: "Default window title when no file is loaded")
+        window.title = Self.untitledTitle(for: windowNumber)
         window.minSize = NSSize(width: 0, height: 520)
         window.maxSize = NSSize(width: 900, height: 1200)
 
@@ -60,6 +88,32 @@ class MainWindowController: NSWindowController, NSWindowDelegate {
                     var f = win.frame; f.size.width = minW
                     win.setFrame(f, display: true, animate: false)
                 }
+            }
+
+        // Track the measured height of below-preview content and use it to set a
+        // correct minimum window height. The GeometryReader in ContentView reports
+        // the actual rendered height (including any accessibility notice text-wrap),
+        // so the window never clips at any width or locale.
+        noticeHeightCancellable = appState.$minimumBelowPreviewHeight
+            .filter { $0 > 0 }
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] belowH in
+                guard let self = self, let win = self.window else { return }
+                let titleH = win.frame.height - win.contentLayoutRect.height
+                let previewMinH: CGFloat = 200  // .frame(minHeight:) in ContentView
+                let previewTopPad: CGFloat = 16 // .padding([.horizontal, .top])
+                let outerSpacing: CGFloat = 4   // VStack(spacing: 4) gap
+                let contentMinH = previewTopPad + previewMinH + outerSpacing + belowH
+                let newMinH = max(520, (titleH + contentMinH).rounded(.up))
+                win.minSize.height = newMinH
+                guard win.frame.height < newMinH else { return }
+                var f = win.frame
+                f.origin.y -= (newMinH - f.size.height)  // keep top edge stable
+                f.size.height = newMinH
+                if let screen = win.screen {
+                    f.origin.y = max(f.origin.y, screen.visibleFrame.minY)
+                }
+                win.setFrame(f, display: true, animate: true)
             }
 
         // Enable the proxy icon. representedURL will be kept current below.
@@ -101,9 +155,7 @@ class MainWindowController: NSWindowController, NSWindowDelegate {
         guard !appState.svgString.isEmpty else {
             // Well is empty — remove proxy icon.
             window?.representedURL = nil
-            window?.title = NSLocalizedString(
-                "window.title.default",
-                comment: "Default window title when no file is loaded")
+            window?.title = untitledTitle
             return
         }
 
@@ -128,9 +180,7 @@ class MainWindowController: NSWindowController, NSWindowDelegate {
 
         // SVG came from the clipboard — no file to represent yet.
         window?.representedURL = nil
-        window?.title = NSLocalizedString(
-            "window.title.default",
-            comment: "Default window title when no file is loaded")
+        window?.title = untitledTitle
     }
 
     // MARK: NSWindowDelegate
@@ -184,12 +234,13 @@ class AppMenu {
                 comment: "App menu: Hide KeyJig item"),
             action: #selector(NSApplication.hide(_:)),
             keyEquivalent: "h")
-        appMenu.addItem(
+        let hideOthers = appMenu.addItem(
             withTitle: NSLocalizedString(
                 "menu.app.hide_others",
                 comment: "App menu: Hide Others item"),
             action: #selector(NSApplication.hideOtherApplications(_:)),
-            keyEquivalent: "")
+            keyEquivalent: "h")
+        hideOthers.keyEquivalentModifierMask = [.command, .option]
         appMenu.addItem(
             withTitle: NSLocalizedString(
                 "menu.app.show_all",
@@ -346,6 +397,13 @@ class AppMenu {
                 comment: "Help menu: KeyJig Website item"),
             action: #selector(AppDelegate.openKeyJigWebsite),
             keyEquivalent: "")
+        helpMenu.addItem(.separator())
+        helpMenu.addItem(
+            withTitle: NSLocalizedString(
+                "menu.help.reveal_preferences",
+                comment: "Help menu: reveal the app preferences plist in Finder"),
+            action: #selector(AppDelegate.revealPreferencesPlist),
+            keyEquivalent: "")
         helpMenuItem.submenu = helpMenu
 
         NSApplication.shared.mainMenu = mainMenu
@@ -355,7 +413,7 @@ class AppMenu {
 // MARK: - AppDelegate
 
 @main
-class AppDelegate: NSObject, NSApplicationDelegate {
+class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
 
     static var shared: AppDelegate?
 
@@ -371,6 +429,12 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     /// The menubar popover and its own independent AppState.
     var popover: NSPopover?
     var popoverAppState: AppState = AppState()
+
+    /// Global event monitor that closes the popover on mouseUp outside its frame.
+    /// Registered when the popover opens; torn down when it closes or the monitor
+    /// fires. Using mouseUp (not mouseDown) so a drag from outside can still land
+    /// inside the popover — the window stays visible during the drag gesture.
+    private var popoverDismissMonitor: Any?
 
     /// Settings window controller (created lazily when user opens preferences).
     var settingsWindowController: SettingsWindowController?
@@ -437,11 +501,16 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         AppMenu.setupMenuBar()
 
         // ── Menubar popover ───────────────────────────────────────────────
+        popoverAppState.isPopoverContext = true
         let popover = NSPopover()
         popover.contentSize = NSSize(width: 400, height: 520)
         popover.contentViewController = NSHostingController(
             rootView: ContentView(appState: popoverAppState))
-        popover.behavior = .transient
+        // .applicationDefined suppresses AppKit's built-in click-outside-to-close
+        // logic. We install our own global mouseUp monitor instead so a drag from
+        // outside can enter the popover before the release dismisses it.
+        popover.behavior = .applicationDefined
+        popover.delegate = self
         self.popover = popover
 
         // ── Status bar ────────────────────────────────────────────────────
@@ -545,11 +614,16 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     /// clipboard content or menu actions.
     ///
     /// Priority:
-    ///   1. A window in our floatingWindows list that is currently key.
-    ///   2. NSApp.keyWindow if it belongs to one of our controllers (covers
+    ///   1. The pinned menu-bar popover, whenever it is visible — it floats
+    ///      above every window and is the user's active surface while open.
+    ///   2. A window in our floatingWindows list that is currently key.
+    ///   3. NSApp.keyWindow if it belongs to one of our controllers (covers
     ///      the brief window between activation and key-window assignment).
-    ///   3. The primary window as the final fallback.
+    ///   4. The primary window as the final fallback.
     private var frontWindowState: AppState? {
+        if popover?.isShown == true {
+            return popoverAppState
+        }
         if let wc = floatingWindows.first(where: { $0.window?.isKeyWindow == true }) {
             return wc.appState
         }
@@ -569,14 +643,59 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             let button = statusBarItem?.button
         else { return }
         if popover.isShown {
-            popover.performClose(nil)
+            closePopover()
         } else {
             checkAndLoadClipboardSVG(into: popoverAppState)
             popover.show(
                 relativeTo: button.bounds,
                 of: button,
                 preferredEdge: .minY)
+            installPopoverDismissMonitor()
         }
+    }
+
+    /// Closes the popover and tears down the dismiss event monitor.
+    private func closePopover() {
+        popover?.performClose(nil)
+        removePopoverDismissMonitor()
+    }
+
+    /// Installs a global mouseUp monitor that closes the popover when the
+    /// release occurs outside the popover's window frame.
+    private func installPopoverDismissMonitor() {
+        guard popoverDismissMonitor == nil else { return }
+        popoverDismissMonitor = NSEvent.addGlobalMonitorForEvents(
+            matching: [.leftMouseUp, .rightMouseUp, .otherMouseUp]
+        ) { [weak self] event in
+            guard let self,
+                  let popover = self.popover,
+                  popover.isShown,
+                  let popoverWindow = popover.contentViewController?.view.window
+            else { return }
+
+            // Convert the cursor position to the popover window's coordinate space.
+            let screenPoint = NSEvent.mouseLocation
+            let windowFrame = popoverWindow.frame
+            if !windowFrame.contains(screenPoint) {
+                self.closePopover()
+            }
+        }
+    }
+
+    /// Removes the global mouseUp monitor if one is installed.
+    private func removePopoverDismissMonitor() {
+        if let monitor = popoverDismissMonitor {
+            NSEvent.removeMonitor(monitor)
+            popoverDismissMonitor = nil
+        }
+    }
+
+    // MARK: NSPopoverDelegate
+
+    /// Cleans up the dismiss monitor whenever the popover closes, regardless of
+    /// how it was closed (toggle button, Escape, or our own mouseUp monitor).
+    func popoverDidClose(_ notification: Notification) {
+        removePopoverDismissMonitor()
     }
 
     /// Brings the primary window to the front, recreating it if it was closed,
@@ -735,6 +854,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             return !(frontWindowState?.svgString.isEmpty ?? true)
         case #selector(menuPlaceInKeynote):
             return !(frontWindowState?.svgString.isEmpty ?? true)
+                && (frontWindowState?.accessibilityGranted ?? false)
         default:
             return true
         }
@@ -774,6 +894,25 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
     @objc func openKeyJigWebsite() {
         NSWorkspace.shared.open(URL(string: "https://github.com/Cyzor/KeyJig")!)
+    }
+
+    /// Reveals the app's preferences plist in Finder. Useful for troubleshooting
+    /// persisted state such as the autosaved window frames.
+    @objc func revealPreferencesPlist() {
+        // Flush any pending defaults so the on-disk plist reflects current state.
+        UserDefaults.standard.synchronize()
+
+        guard let bundleID = Bundle.main.bundleIdentifier else { return }
+        let plistURL = FileManager.default
+            .homeDirectoryForCurrentUser
+            .appendingPathComponent("Library/Preferences/\(bundleID).plist")
+
+        if FileManager.default.fileExists(atPath: plistURL.path) {
+            NSWorkspace.shared.activateFileViewerSelecting([plistURL])
+        } else {
+            // No plist yet — open the containing Preferences folder instead.
+            NSWorkspace.shared.open(plistURL.deletingLastPathComponent())
+        }
     }
 
     @objc func openPreferences() {

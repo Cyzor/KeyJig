@@ -195,7 +195,7 @@ func pullFromKeynote(
         if !wantSelection {
             let nameScript = """
                 tell application "Keynote"
-                    if not (exists front document) then return ""
+                    if not (exists front document) then error number -1728
                     tell front document
                         set docName to name
                         set tgt to current slide
@@ -210,7 +210,16 @@ func pullFromKeynote(
                 """
             var nameErr: NSDictionary?
             let nameRes = NSAppleScript(source: nameScript)!.executeAndReturnError(&nameErr)
-            if nameErr == nil, let s = nameRes.stringValue {
+            if let err = nameErr {
+                let code = (err["NSAppleScriptErrorNumber"] as? Int) ?? 0
+                if code == -1728 {
+                    DispatchQueue.main.async { completion(.failure(.noDocumentOpen)) }
+                    return
+                }
+                // Other errors (e.g., Keynote busy): log and continue without doc name.
+                let msg = err["NSAppleScriptErrorMessage"] as? String ?? "error \(code)"
+                log.info("name fetch failed (\(msg, privacy: .public)); proceeding without doc name")
+            } else if let s = nameRes.stringValue, !s.isEmpty {
                 let f = s.components(separatedBy: "|")
                 pdfDocName = f.first.flatMap { $0.isEmpty ? nil : $0 }
                 pdfSlideIndex = f.count > 1 ? Int(f[1]) : nil

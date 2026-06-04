@@ -9,7 +9,7 @@ class SettingsWindowController: NSWindowController, NSWindowDelegate {
 
         let window = NSWindow(
             contentRect: NSRect(x: 0, y: 0, width: 450, height: 300),
-            styleMask: [.titled, .closable],
+            styleMask: [.titled, .closable, .resizable],
             backing: .buffered,
             defer: false
         )
@@ -26,7 +26,7 @@ class SettingsWindowController: NSWindowController, NSWindowDelegate {
         }
         window.setFrameAutosaveName("SettingsWindow")
 
-        let settingsView = SettingsView(appState: appState)
+        let settingsView = ScrollView { SettingsView(appState: appState) }
         window.contentViewController = NSHostingController(rootView: settingsView)
 
         super.init(window: window)

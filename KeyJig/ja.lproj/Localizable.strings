@@ -9,8 +9,6 @@
 "tooltip.place_in_keynote" = "SVGを現在のKeynoteスライドに直接配置します。Keynoteを開いておく必要があります。アクセシビリティアクセスが必要です。";
 "tooltip.pull_from_keynote" = "現在のKeynoteスライドをベクターPDFに変換します。";
 "tooltip.import_selection_from_keynote" = "先にKeynoteで選択範囲をコピー（⌘C）してからクリックすると、その選択オブジェクトだけをベクターPDFに変換します。非連続選択にも対応。コピーなしの場合は囲み矩形で取得します。";
-"tooltip.save_pdf" = "取り出したPDFを任意の場所に保存します。";
-"tooltip.copy_pdf" = "取り出したPDFをクリップボードにコピーし、他のアプリに貼り付けられるようにします。";
 "tooltip.preview_pdf_loaded" = "このPDFをAffinity、Illustrator、Figma、その他PDFを受け付けるアプリに直接ドラッグします。";
 "tooltip.status_ready" = "SVGの準備ができました。Keynoteにドラッグするか「Keynote用にコピー」をクリックしてください。";
 "tooltip.preview_loaded" = "このSVGをKeynoteまたはSVGファイルを受け付けるアプリに直接ドラッグします。ドラッグ中はクリップボードは変更されません。";
@@ -20,6 +18,7 @@
 "tooltip.settings.copy_path" = "Inkscapeのインストールパスをクリップボードにコピー";
 "tooltip.settings.reveal" = "FinderでInkscapeアプリを表示";
 "tooltip.settings.done" = "Inkscapeインストール詳細シートを閉じる";
+"tooltip.settings.download_tool" = "公式サイトからダウンロードします。";
 
 /* ── Preview area ───────────────────────────────────────────────────── */
 "preview.drag_label" = "Keynoteへドラッグ";
@@ -42,8 +41,6 @@
 "status.keynote.success" = "Keynoteに配置しました — オブジェクトを選択し、フォーマット ▸ 図形と線 ▸ 分割を選択してください。";
 "status.keynote.pulling" = "Keynoteからエクスポート中…";
 "status.keynote.pulled" = "Keynoteから取り出しました — プレビューをドラッグするか、PDFをコピーしてください。";
-"status.pdf.copied" = "PDFをクリップボードにコピーしました。";
-"status.pdf.saved" = "PDFを保存しました。";
 "instruction.break_apart" = "Keynoteに配置後、オブジェクトを選択し、フォーマット ‣ 図形と線 ‣ 分割を選択してください。";
 
 /* ── Buttons ────────────────────────────────────────────────────────── */
@@ -54,11 +51,9 @@
 "button.place_svg_in_keynote" = "SVGをKeynoteに配置";
 "button.pull_from_keynote" = "KeynoteスライドをPDFに変換";
 "button.import_selection_from_keynote" = "KeynoteクリップボードをPDFに変換";
-"button.save_pdf" = "PDFを保存…";
-"button.copy_pdf" = "PDFをコピー";
 
 /* ── Keynote errors ─────────────────────────────────────────────────── */
-"error.keynote.not_running" = "Keynoteが起動していないか、ドキュメントが開かれていません。";
+"error.keynote.not_running" = "Keynoteが起動していません。";
 "error.keynote.no_document" = "Keynoteにドキュメントが開かれていません。プレゼンテーションを開いて再度お試しください。";
 "error.keynote.accessibility" = "アクセシビリティアクセスが必要です。システム設定 ▸ プライバシーとセキュリティ ▸ アクセシビリティ でKeyJigを有効にして、再度お試しください。";
 "error.keynote.paste_failed" = "KeynoteにSVGを配置できませんでした。";
@@ -76,7 +71,8 @@
 "file_dialog.title" = "ベクターファイルを選択";
 
 /* ── Window ─────────────────────────────────────────────────────────── */
-"window.title.default" = "KeyJig";
+"window.title.base" = "KeyJig";
+"window.title.numbered" = "KeyJig %d";
 
 /* ── App menu ───────────────────────────────────────────────────────── */
 "menu.app.about" = "KeyJig について";
@@ -117,6 +113,7 @@
 "menu.help" = "ヘルプ";
 "menu.help.keyjig_help" = "KeyJig ヘルプ";
 "menu.help.keyjig_website" = "KeyJig ウェブサイト…";
+"menu.help.reveal_preferences" = "設定ファイルを Finder で表示";
 
 /* ── Dock menu ──────────────────────────────────────────────────────── */
 "dock.show_window" = "ウインドウを表示";
@@ -135,7 +132,7 @@
 "help.section.keynote.title" = "Keynoteに送る";
 "help.section.keynote.body" = "• Keynote用にコピー（⌘3）— Keynoteで貼り付け（⌘V）後、フォーマット ▸ 図形と線 ▸ 分割でパスを編集できます。\n• SVGをKeynoteに配置（⌘4）で現在のスライドに直接配置します。アクセシビリティアクセスが必要です（システム設定 ▸ プライバシーとセキュリティ）。";
 "help.section.pull.title" = "KeynoteをPDFに変換";
-"help.section.pull.body" = "• KeynoteスライドをPDFに変換（⌘1）で現在のスライドをベクターPDFとして取得します。\n• KeynoteクリップボードをPDFに変換（⌘2）でKeynoteでコピーしたオブジェクト（⌘C）だけを変換します。非連続選択にも対応。コピーなしの場合は囲み矩形で取得します。\n• PDFプレビューをAffinity・Illustrator・Figmaなどのアプリにドラッグするか、下のボタンで保存またはコピーしてください。";
+"help.section.pull.body" = "• KeynoteスライドをPDFに変換（⌘1）で現在のスライドをベクターPDFとして取得します。\n• KeynoteクリップボードをPDFに変換（⌘2）でKeynoteでコピーしたオブジェクト（⌘C）だけを変換します。非連続選択にも対応。コピーなしの場合は囲み矩形で取得します。\n• PDFプレビューをAffinity・Illustrator・Figmaなどのアプリにドラッグしてください。";
 "help.section.setup.title" = "権限と依存関係";
 "help.section.setup.body" = "• SVGをKeynoteに配置（⌘4）にはアクセシビリティアクセスが必要です — システム設定 ▸ プライバシーとセキュリティ ▸ アクセシビリティで許可してください。\n• PDFや.aiファイルを開くにはInkscapeが必要です — inkscape.orgからダウンロードするか: brew install inkscape。\n• GhostscriptとMuPDF（オプション）はPDF切り抜き品質を向上させます — brew install ghostscript および brew install mupdf-tools。";
 
@@ -149,6 +146,7 @@
 "settings.accessibility.description" = "アクセシビリティアクセスを許可すると、KeyJigがSVGを直接Keynoteのスライドに配置できます。許可がない場合は、「Keynote用にコピー」を使用して手動で貼り付けてください。";
 "accessibility.accessibility_granted" = "アクセシビリティアクセスが許可されています";
 "accessibility.accessibility_needed" = "アクセシビリティアクセスが許可されていません";
+"accessibility.keynote_notice" = "Keynote操作にはアクセシビリティアクセスが必要です。";
 "tooltip.settings.accessibility_open" = "システム設定を開いてKeyJigにアクセシビリティアクセスを許可する";
 "settings.section.integration" = "連携";
 "settings.external_deps" = "外部依存関係";
@@ -171,9 +169,9 @@
 "settings.cmdtool.reveal" = "Finderで表示";
 "settings.cmdtool.not_found" = "見つかりません";
 "settings.ghostscript.name" = "Ghostscript";
-"settings.ghostscript.description" = "描画コマンドを書き換えてPDFの切り抜き品質を向上させます。切り抜き範囲内のコンテンツのみが残ります。Homebrewでインストール: brew install ghostscript";
+"settings.ghostscript.description" = "描画コマンドを書き換えてPDFの切り抜き品質を向上させます。切り抜き範囲内のコンテンツのみが残ります。Homebrewで利用可能: brew install ghostscript";
 "settings.mutool.name" = "MuPDF (mutool)";
-"settings.mutool.description" = "Ghostscriptが利用できない場合に、切り抜いたPDFから隠しコンテンツを除去します。Homebrewでインストール: brew install mupdf-tools";
+"settings.mutool.description" = "Ghostscriptが利用できない場合に、切り抜いたPDFから隠しコンテンツを除去します。Homebrewで利用可能: brew install mupdf-tools";
 "settings.optional_tools.description" = "3つのツールはすべてオプションです。いずれかが存在しない場合、KeyJigは内蔵のPDFレンダラーをフォールバックとして使用します。";
 "accessibility.ghostscript_installed" = "Ghostscriptはインストール済み";
 "accessibility.ghostscript_missing" = "Ghostscriptは未インストール";
