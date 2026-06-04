@@ -218,7 +218,15 @@ func wrapSVGForResponsiveDisplay(svgString: String) -> String {
             <meta charset="UTF-8">
             <style>
                 * { margin: 0; padding: 0; }
-                html, body { overflow: hidden; background: transparent; }
+                html, body {
+                    overflow: hidden;
+                    background: repeating-conic-gradient(#e8e8e8 0% 25%, #ffffff 0% 50%) 0 0 / 10px 10px;
+                }
+                @media (prefers-color-scheme: dark) {
+                    html, body {
+                        background: repeating-conic-gradient(#2a2a2a 0% 25%, #202020 0% 50%) 0 0 / 10px 10px;
+                    }
+                }
                 /* Target only the root SVG (direct child of body) so nested
                    <svg> elements inside the document aren't affected.
                    position:fixed + four zero offsets sizes relative to the

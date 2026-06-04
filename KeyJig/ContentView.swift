@@ -6,6 +6,7 @@ import WebKit
 import os
 
 private let log = Logger(subsystem: "com.cyzor.KeyJig", category: "ContentView")
+private let accessibilitySettingsURL = URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility")!
 
 // MARK: - Tooltip Text Constants
 
@@ -80,13 +81,17 @@ class SVGInteractionView: NSView {
     var onCopyForKeynote: (() -> Void)?
 
     /// Called when the user chooses "Clear" from the context menu.
-    var onClear: (() -> Void)?
+    var onClear: (() -> Void)? {
+        didSet { trashButton?.isHidden = onClear == nil }
+    }
 
     // MARK: Private state
 
     private var isDropHighlighted = false {
         didSet { needsDisplay = true }
     }
+
+    private var trashButton: NSButton?
 
     // Accepted inbound pasteboard types
     private static let acceptedTypes: [NSPasteboard.PasteboardType] = [
@@ -103,11 +108,43 @@ class SVGInteractionView: NSView {
     override init(frame frameRect: NSRect) {
         super.init(frame: frameRect)
         registerForDraggedTypes(Self.acceptedTypes)
+        setupTrashButton()
     }
 
     required init?(coder: NSCoder) {
         super.init(coder: coder)
         registerForDraggedTypes(Self.acceptedTypes)
+        setupTrashButton()
+    }
+
+    private func setupTrashButton() {
+        let config = NSImage.SymbolConfiguration(pointSize: 24, weight: .regular)
+        let base = NSImage(
+            systemSymbolName: "trash.circle.fill",
+            accessibilityDescription: NSLocalizedString(
+                "context_menu.clear",
+                comment: "Context menu: clear the loaded SVG"))
+        guard let image = base?.withSymbolConfiguration(config) else { return }
+        let btn = NSButton(image: image, target: self, action: #selector(handleClear))
+        btn.bezelStyle = .smallSquare
+        btn.isBordered = false
+        btn.imageScaling = .scaleNone
+        btn.contentTintColor = .secondaryLabelColor
+        btn.isHidden = true
+        addSubview(btn)
+        trashButton = btn
+    }
+
+    // MARK: Layout
+
+    override func layout() {
+        super.layout()
+        let size: CGFloat = 32
+        let padding: CGFloat = 8
+        trashButton?.frame = NSRect(
+            x: bounds.maxX - size - padding,
+            y: padding,
+            width: size, height: size)
     }
 
     // MARK: Drawing
@@ -657,6 +694,8 @@ struct ContentView: View {
             .frame(minHeight: 200, maxHeight: .infinity)
             .accessibilityIdentifier("preview_drop_well")
 
+            VStack(spacing: 4) {
+
             // ── Status ────────────────────────────────────────────────────
             if !computedStatusMessage.isEmpty {
                 HStack(spacing: 6) {
@@ -686,6 +725,34 @@ struct ContentView: View {
                 .help(appState.svgString.isEmpty ? "" : Tooltips.readyStatus)
             }
 
+            // ── Accessibility notice ──────────────────────────────────────
+            // Shown in SVG mode only (svgString non-empty ↔ ⌘4 is visible).
+            // In PDF mode svgString is empty, so the notice is naturally hidden.
+            if !appState.accessibilityGranted && !appState.svgString.isEmpty {
+                HStack(spacing: 6) {
+                    Image(systemName: "lock.fill")
+                        .foregroundColor(.orange)
+                        .font(.caption)
+                    Text(NSLocalizedString(
+                        "accessibility.keynote_notice",
+                        comment: "Accessibility notice: access required for Keynote interactions"))
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                    Spacer()
+                    Button(NSLocalizedString(
+                        "settings.accessibility.open_settings",
+                        comment: "Button: open System Settings to grant accessibility")) {
+                        NSWorkspace.shared.open(accessibilitySettingsURL)
+                    }
+                    .font(.caption)
+                    .help(NSLocalizedString(
+                        "tooltip.settings.accessibility_open",
+                        comment: "Tooltip for accessibility settings button"))
+                }
+                .padding(.horizontal)
+                .padding(.bottom, 6)
+            }
+
             Divider().padding(.vertical, 8)
 
             // ── Action buttons ────────────────────────────────────────────
@@ -700,7 +767,8 @@ struct ContentView: View {
                         buttonRow(
                             NSLocalizedString("button.pull_from_keynote",
                                 comment: "Button: converts the current Keynote slide to a vector PDF"),
-                            shortcut: "⌘1")
+                            shortcut: "⌘1",
+                            showShortcut: !appState.isPopoverContext)
                     } icon: {
                         Image(systemName: "document.badge.ellipsis.fill")
                             .font(.system(size: 20))
@@ -720,7 +788,8 @@ struct ContentView: View {
                         buttonRow(
                             NSLocalizedString("button.import_selection_from_keynote",
                                 comment: "Button: converts the user's copied Keynote selection to a vector PDF"),
-                            shortcut: "⌘2")
+                            shortcut: "⌘2",
+                            showShortcut: !appState.isPopoverContext)
                     } icon: {
                         Image(systemName: "rectangle.dashed")
                             .font(.system(size: 20))
@@ -729,7 +798,7 @@ struct ContentView: View {
                 }
                 .help(Tooltips.importSelectionFromKeynote)
                 .keyboardShortcut("2", modifiers: .command)
-                .disabled(isConverting || isPulling || !appState.keynoteClipboardReady)
+                .disabled(isConverting || isPulling || !appState.keynoteClipboardReady || !appState.accessibilityGranted)
 
                 // ── Copy for Keynote  ⌘3 ─────────────────────────────────
                 Button {
@@ -753,7 +822,8 @@ struct ContentView: View {
                                     comment: "Button: fallback label when no SVG is loaded")
                                 : NSLocalizedString("button.copy_svg_to_clipboard",
                                     comment: "Button: copies the loaded SVG to the clipboard in Keynote format"),
-                            shortcut: "⌘3")
+                            shortcut: "⌘3",
+                            showShortcut: !appState.isPopoverContext)
                     } icon: {
                         Image(systemName: "document.on.document.fill")
                             .font(.system(size: 18))
@@ -791,7 +861,8 @@ struct ContentView: View {
                                     comment: "Button: fallback label when no SVG is loaded")
                                 : NSLocalizedString("button.place_svg_in_keynote",
                                     comment: "Button: places the loaded SVG directly into the current Keynote slide"),
-                            shortcut: "⌘4")
+                            shortcut: "⌘4",
+                            showShortcut: !appState.isPopoverContext)
                     } icon: {
                         Image(systemName: "arrow.down.square.fill")
                             .font(.system(size: 20))
@@ -801,7 +872,7 @@ struct ContentView: View {
                 }
                 .help(Tooltips.placeInKeynote)
                 .keyboardShortcut("4", modifiers: .command)
-                .disabled(appState.svgString.isEmpty || isConverting || isSending)
+                .disabled(appState.svgString.isEmpty || isConverting || isSending || !appState.accessibilityGranted)
 
             }
             .background(
@@ -830,6 +901,16 @@ struct ContentView: View {
             .padding(.horizontal, 16)
             .padding(.bottom, 16)
 
+            }   // end below-preview VStack
+            .background(GeometryReader { geo in
+                Color.clear.preference(key: BelowPreviewHeightKey.self,
+                                       value: geo.size.height)
+            })
+            .onPreferenceChange(BelowPreviewHeightKey.self) { height in
+                guard height > 0 else { return }
+                appState.minimumBelowPreviewHeight = height
+            }
+
         }
     }
 
@@ -839,7 +920,7 @@ struct ContentView: View {
     /// dropping an SVG switches back to SVG mode automatically.
     private func loadedPDFPreview(url: URL) -> some View {
         ZStack {
-            Color(NSColor.windowBackgroundColor)
+            CheckerboardPattern()
 
             PDFPreviewView(url: url)
 
@@ -857,24 +938,6 @@ struct ContentView: View {
                     "preview.drag_label_pdf",
                     comment: "Text on the drag image thumbnail when dragging a pulled PDF")
             )
-
-            // Trash button lower-right — clears the well (same as right-click > Clear).
-            VStack {
-                Spacer()
-                HStack {
-                    Spacer()
-                    Button {
-                        appState.previewPDFURL = nil
-                        appState.statusMessage = ""
-                    } label: {
-                        Image(systemName: "trash.circle.fill")
-                            .font(.system(size: 24))
-                            .foregroundColor(.secondary)
-                    }
-                    .buttonStyle(.plain)
-                    .padding(8)
-                }
-            }
         }
         .help(Tooltips.previewPDFLoaded)
     }
@@ -945,27 +1008,6 @@ struct ContentView: View {
                 }
             }
             .allowsHitTesting(false)
-
-            // Trash button lower-right — clears the well (same as right-click > Clear).
-            VStack {
-                Spacer()
-                HStack {
-                    Spacer()
-                    Button {
-                        appState.svgString = ""
-                        appState.svgURL = ""
-                        appState.bridgeFileURL = nil
-                        appState.conversionStatus = .idle
-                        appState.statusMessage = ""
-                    } label: {
-                        Image(systemName: "trash.circle.fill")
-                            .font(.system(size: 24))
-                            .foregroundColor(.secondary)
-                    }
-                    .buttonStyle(.plain)
-                    .padding(8)
-                }
-            }
         }
         .help(Tooltips.previewAreaLoaded)
         .onReceive(appState.$svgString) { newValue in
@@ -1046,6 +1088,42 @@ func announceToVoiceOver(_ message: String) {
     )
 }
 
+// MARK: - Checkerboard background
+
+/// Subtle checkerboard rendered as an NSView; adapts to dark/light mode.
+/// Used in content-loaded preview wells so white artwork doesn't disappear
+/// into a white background.
+private struct CheckerboardPattern: NSViewRepresentable {
+    func makeNSView(context: Context) -> CheckerboardNSView { CheckerboardNSView() }
+    func updateNSView(_ view: CheckerboardNSView, context: Context) {}
+}
+
+private class CheckerboardNSView: NSView {
+    private let tile: CGFloat = 10
+
+    override func draw(_ dirtyRect: NSRect) {
+        let isDark = effectiveAppearance.bestMatch(from: [.darkAqua, .aqua]) == .darkAqua
+        let a = isDark ? NSColor(white: 0.16, alpha: 1) : NSColor(white: 1.00, alpha: 1)
+        let b = isDark ? NSColor(white: 0.13, alpha: 1) : NSColor(white: 0.91, alpha: 1)
+        let minCol = Int(floor(dirtyRect.minX / tile))
+        let maxCol = Int(ceil(dirtyRect.maxX  / tile))
+        let minRow = Int(floor(dirtyRect.minY / tile))
+        let maxRow = Int(ceil(dirtyRect.maxY  / tile))
+        for row in minRow ..< maxRow {
+            for col in minCol ..< maxCol {
+                ((row + col) % 2 == 0 ? a : b).setFill()
+                NSRect(x: CGFloat(col) * tile, y: CGFloat(row) * tile,
+                       width: tile, height: tile).fill()
+            }
+        }
+    }
+
+    override func viewDidChangeEffectiveAppearance() {
+        super.viewDidChangeEffectiveAppearance()
+        needsDisplay = true
+    }
+}
+
 // MARK: - Minimum button area width preference
 
 /// Collects the maximum natural (unconstrained) width of any button row.
@@ -1058,18 +1136,32 @@ struct ButtonAreaMinWidthKey: PreferenceKey {
     }
 }
 
+// MARK: - Minimum below-preview height preference
+
+/// Reports the natural (compressed) height of all content below the preview well.
+/// MainWindowController observes this via AppState and uses it to set the window's
+/// minimum height so the below-preview block is never clipped.
+struct BelowPreviewHeightKey: PreferenceKey {
+    static var defaultValue: CGFloat = 0
+    static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) {
+        value = max(value, nextValue())
+    }
+}
+
 // MARK: - Button label helpers
 
 /// Lays out a button label as [text ···· shortcut], matching the familiar
 /// look of a pull-down menu item: label expands to fill available width,
 /// shortcut string is right-aligned in muted type.
-private func buttonRow(_ title: String, shortcut: String) -> some View {
+private func buttonRow(_ title: String, shortcut: String, showShortcut: Bool = true) -> some View {
     HStack(spacing: 4) {
         Text(title)
             .frame(maxWidth: .infinity, alignment: .leading)
-        Text(shortcut)
-            .foregroundColor(.secondary)
-            .font(.system(size: 11))
+        if showShortcut {
+            Text(shortcut)
+                .foregroundColor(.secondary)
+                .font(.system(size: 11))
+        }
     }
 }
 
