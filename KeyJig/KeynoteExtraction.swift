@@ -584,11 +584,32 @@ private func extractSelectionViaPaste(
     log.info("paste tier: scratch doc is '\(scratchName, privacy: .public)'")
     Thread.sleep(forTimeInterval: 0.3)
 
+    // Always close the scratch doc on any exit path once we have its name.
+    // A dedicated close script (rather than embedding it inside finishScript)
+    // ensures the close runs even when finishScript itself returns an error.
+    // The brief sleep gives Keynote time to finish any post-export bookkeeping
+    // before the close command arrives, avoiding silent close failures.
+    defer {
+        Thread.sleep(forTimeInterval: 0.15)
+        let closeScript = """
+            tell application "Keynote"
+                try
+                    close document "\(scratchName)" saving no
+                end try
+            end tell
+            """
+        var eClose: NSDictionary?
+        NSAppleScript(source: closeScript)!.executeAndReturnError(&eClose)
+        if let e = eClose {
+            log.error("paste tier: scratch doc '\(scratchName, privacy: .public)' close error — \(e["NSAppleScriptErrorMessage"] as? String ?? "?", privacy: .public)")
+        }
+    }
+
     // AX-paste the user's copied selection into the scratch doc.
     _ = pressMenuItemWithCmdChar("v", appPID: keynotePID)
     Thread.sleep(forTimeInterval: 0.4)
 
-    // Read pasted count + geometry, export (failure-proof), ALWAYS close unsaved.
+    // Read pasted count + geometry, export (failure-proof). Close happens in defer.
     // Batch-read position/size/rotation in one AE round-trip per property so
     // AppleScript never needs to touch individual items — which causes Keynote
     // to briefly highlight each one, producing the "deselects one by one" effect.
@@ -632,9 +653,6 @@ private func extractSelectionViaPaste(
                 end tell
             on error errMsg
                 set exportErr to errMsg
-            end try
-            try
-                close document "\(scratchName)" saving no
             end try
             return (m as string) & "|" & (okExport as string) & "|" & geo & "|" & exportErr
         end tell
