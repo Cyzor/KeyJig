@@ -50,7 +50,7 @@
 "button.place_in_keynote" = "Insertar en Keynote";
 "button.place_svg_in_keynote" = "Insertar SVG en Keynote";
 "button.pull_from_keynote" = "Convertir diapositiva de Keynote a PDF";
-"button.import_selection_from_keynote" = "Convertir portapapeles de Keynote a PDF";
+"button.import_selection_from_keynote" = "Convertir portapapeles de Keynote";
 
 /* ── Keynote errors ─────────────────────────────────────────────────── */
 "error.keynote.not_running" = "Keynote no está abierto.";
@@ -59,6 +59,12 @@
 "error.keynote.paste_failed" = "No se pudo insertar el SVG en Keynote.";
 "error.keynote.export_failed" = "Error de exportación de Keynote: %@";
 "error.keynote.page_missing" = "El PDF exportado no contenía la diapositiva actual.";
+
+/* ── Keynote pull hints ─────────────────────────────────────────────── */
+"undo.clear" = "Eliminar";
+"hint.keynote.clipboard_ready" = "Selección copiada — lista para la extracción de máxima calidad";
+"hint.keynote.clipboard_not_ready" = "Para mejores resultados, selecciona una diapositiva en el Navigator de Keynote y cópiala al portapapeles (⌘C)";
+"hint.pdf_done" = "Arrastra la vista previa a Affinity, Illustrator, Figma o cualquier app que acepte PDF.";
 
 /* ── Footer ─────────────────────────────────────────────────────────── */
 "footer.build_date" = "Fecha de compilación: %@";
@@ -90,7 +96,7 @@
 "menu.file.open_svg" = "Abrir archivo SVG…";
 "menu.file.close" = "Cerrar";
 "menu.file.convert_keynote_slide" = "Convertir diapositiva de Keynote a PDF";
-"menu.file.convert_keynote_clipboard" = "Convertir portapapeles de Keynote a PDF";
+"menu.file.convert_keynote_clipboard" = "Convertir portapapeles de Keynote";
 "menu.file.place_in_keynote" = "Insertar en Keynote";
 
 /* ── Edit menu ──────────────────────────────────────────────────────── */
@@ -130,11 +136,11 @@
 "help.section.import.title" = "Importar SVG";
 "help.section.import.body" = "• Arrastra un archivo SVG al área de vista previa.\n• Copia una ilustración en Illustrator, Affinity o Inkscape (⌘C) — KeyJig lo detecta automáticamente.\n• Usa Archivo > Abrir archivo SVG… (⌘O).\n• Con Inkscape instalado, KeyJig también abre archivos PDF y .ai.";
 "help.section.keynote.title" = "Enviar a Keynote";
-"help.section.keynote.body" = "• Copiar para Keynote (⌘3) — pega en Keynote (⌘V) y usa Formato > Formas y líneas > Separar para editar los trayectos.\n• Insertar SVG en Keynote (⌘4) lo coloca directamente en la diapositiva actual. Requiere permiso de accesibilidad (Configuración del Sistema ▸ Privacidad y seguridad).";
+"help.section.keynote.body" = "• Copiar para Keynote (⇧⌘C) — pega en Keynote (⌘V) y usa Formato > Formas y líneas > Separar para editar los trayectos.\n• Insertar SVG en Keynote (⌘D) lo coloca directamente en la diapositiva actual. Requiere permiso de accesibilidad (Configuración del Sistema ▸ Privacidad y seguridad).";
 "help.section.pull.title" = "Convertir Keynote a PDF";
-"help.section.pull.body" = "• Convertir diapositiva de Keynote a PDF (⌘1) captura la diapositiva actual como PDF vectorial.\n• Convertir portapapeles de Keynote a PDF (⌘2) convierte los objetos que copiaste en Keynote (⌘C) — se admiten selecciones no contiguas. Sin una copia previa, captura el rectángulo delimitador.\n• Arrastra la vista previa del PDF a Affinity, Illustrator, Figma u otra app.";
+"help.section.pull.body" = "• Convertir portapapeles de Keynote (⌘E) — copia primero tu selección en Keynote (⌘C) para obtener un resultado vectorial preciso. Sin una copia previa, captura el rectángulo delimitador de la selección actual.\n• Convertir diapositiva de Keynote a PDF (⌘R) exporta la diapositiva actual completa como PDF vectorial — no se necesita copia previa.\n• Arrastra la vista previa del PDF a Affinity, Illustrator, Figma u otra app.";
 "help.section.setup.title" = "Permisos y dependencias";
-"help.section.setup.body" = "• Insertar SVG en Keynote (⌘4) necesita permiso de accesibilidad — actívalo en Configuración del Sistema ▸ Privacidad y seguridad ▸ Accesibilidad.\n• Abrir archivos PDF y .ai requiere Inkscape — descárgalo de inkscape.org o usa: brew install inkscape.\n• Ghostscript y MuPDF (opcionales) mejoran la calidad del recorte de PDF — brew install ghostscript y brew install mupdf-tools.";
+"help.section.setup.body" = "• Insertar SVG en Keynote (⌘D) necesita permiso de accesibilidad — actívalo en Configuración del Sistema ▸ Privacidad y seguridad ▸ Accesibilidad.\n• Abrir archivos PDF y .ai requiere Inkscape — descárgalo de inkscape.org o usa: brew install inkscape.\n• Ghostscript y MuPDF (opcionales) mejoran la calidad del recorte de PDF — brew install ghostscript y brew install mupdf-tools.";
 
 /* ── Settings ───────────────────────────────────────────────────────── */
 "settings.window.title" = "Ajustes";

@@ -599,14 +599,44 @@ struct MetadataRow: View {
     }
 }
 
+// MARK: - Option-key monitor
+
+/// Tracks whether the Option key is currently held down.
+/// One instance per ContentView so each window gets its own local monitor.
+/// Local monitors fire only while the app is key — no cross-app leakage.
+private class OptionKeyMonitor: ObservableObject {
+    @Published var isHeld = false
+    private var monitor: Any?
+
+    init() {
+        monitor = NSEvent.addLocalMonitorForEvents(matching: .flagsChanged) { [weak self] event in
+            self?.isHeld = event.modifierFlags.contains(.option)
+            return event
+        }
+    }
+
+    deinit {
+        if let m = monitor { NSEvent.removeMonitor(m) }
+    }
+}
+
 // MARK: - Main content view
 
 struct ContentView: View {
     @ObservedObject var appState: AppState
+    /// True when this ContentView is hosted inside the menu-bar popover.
+    /// Suppresses keyboard-shortcut labels and the Option-key reveal —
+    /// the popover can't reliably receive ⌘ shortcuts without explicit focus.
+    /// Kept here rather than on AppState so the same AppState can be shared
+    /// between a floating window and the popover without affecting either's UI.
+    let isPopoverContext: Bool
+    @StateObject private var optionMonitor = OptionKeyMonitor()
+    @Environment(\.undoManager) private var undoManager
     // Status messages are stored in appState.statusMessage so menu commands
     // (which route through AppDelegate) can update the same property.
-    init(appState: AppState = AppState()) {
+    init(appState: AppState = AppState(), isPopoverContext: Bool = false) {
         self.appState = appState
+        self.isPopoverContext = isPopoverContext
     }
 
     private static let breakApartInstruction = NSLocalizedString(
@@ -672,6 +702,45 @@ struct ContentView: View {
         return (hasContent && !isPDFMode) ? base + "\n\n" + Self.breakApartInstruction : base
     }
 
+    /// Clears whichever content mode is currently active and registers an undo
+    /// operation so ⌘Z can restore the content.
+    private func clearCanvas() {
+        // Snapshot the current state before modifying anything.
+        let prevSVG       = appState.svgString
+        let prevURL       = appState.svgURL
+        let prevBridge    = appState.bridgeFileURL
+        let prevPDF       = appState.previewPDFURL
+        let prevStatus    = appState.conversionStatus
+
+        undoManager?.registerUndo(withTarget: appState) { state in
+            // Restore — use the setters that keep svgString and previewPDFURL
+            // mutually exclusive (each didSet clears the other).
+            if prevPDF != nil {
+                state.previewPDFURL = prevPDF
+            } else {
+                state.svgString     = prevSVG
+                state.svgURL        = prevURL
+                state.bridgeFileURL = prevBridge
+                state.conversionStatus = prevStatus
+            }
+            // Leave statusMessage empty after undo — the restored content sets
+            // its own default via computedStatusMessage.
+        }
+        undoManager?.setActionName(NSLocalizedString(
+            "undo.clear",
+            comment: "Undo action name shown in Edit menu after clearing the canvas"))
+
+        if isPDFMode {
+            appState.previewPDFURL = nil
+        } else {
+            appState.svgString = ""
+            appState.svgURL = ""
+            appState.bridgeFileURL = nil
+            appState.conversionStatus = .idle
+        }
+        appState.statusMessage = ""
+    }
+
     var body: some View {
         VStack(spacing: 4) {
 
@@ -695,6 +764,21 @@ struct ContentView: View {
             .accessibilityIdentifier("preview_drop_well")
 
             VStack(spacing: 4) {
+
+            if isPDFMode {
+                // ── PDF done state ────────────────────────────────────────
+                // The result is already in the preview well — just tell the
+                // user to drag it. No buttons needed; they imply work remains.
+                Text(NSLocalizedString(
+                    "hint.pdf_done",
+                    comment: "Muted prompt shown below the preview when a Keynote PDF result is in the well"))
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+                    .multilineTextAlignment(.center)
+                    .frame(maxWidth: .infinity)
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 16)
+            } else {
 
             // ── Status ────────────────────────────────────────────────────
             if !computedStatusMessage.isEmpty {
@@ -726,7 +810,7 @@ struct ContentView: View {
             }
 
             // ── Accessibility notice ──────────────────────────────────────
-            // Shown in SVG mode only (svgString non-empty ↔ ⌘4 is visible).
+            // Shown in SVG mode only (svgString non-empty ↔ ⌘D is visible).
             // In PDF mode svgString is empty, so the notice is naturally hidden.
             if !appState.accessibilityGranted && !appState.svgString.isEmpty {
                 HStack(spacing: 6) {
@@ -759,83 +843,78 @@ struct ContentView: View {
             let isConverting = appState.conversionStatus == .converting
             let isPulling = appState.keynotePullStatus == .pulling
             VStack(spacing: 8) {
-                // ── Convert Keynote Slide to PDF  ⌘1 ─────────────────────
-                Button {
-                    triggerKeynoteSlide(appState: appState) { appState.statusMessage = $0 }
-                } label: {
-                    Label {
-                        buttonRow(
-                            NSLocalizedString("button.pull_from_keynote",
-                                comment: "Button: converts the current Keynote slide to a vector PDF"),
-                            shortcut: "⌘1",
-                            showShortcut: !appState.isPopoverContext)
-                    } icon: {
-                        Image(systemName: "document.badge.ellipsis.fill")
-                            .font(.system(size: 20))
-                            .padding(.leading, 4)
-                    }
-                    .padding(.vertical, 6)
-                }
-                .help(Tooltips.pullFromKeynote)
-                .keyboardShortcut("1", modifiers: .command)
-                .disabled(isConverting || isPulling || !appState.keynoteRunning)
-
-                // ── Convert Keynote Clipboard to PDF  ⌘2 ─────────────────
-                Button {
-                    triggerKeynoteClipboard(appState: appState) { appState.statusMessage = $0 }
-                } label: {
-                    Label {
-                        buttonRow(
-                            NSLocalizedString("button.import_selection_from_keynote",
-                                comment: "Button: converts the user's copied Keynote selection to a vector PDF"),
-                            shortcut: "⌘2",
-                            showShortcut: !appState.isPopoverContext)
-                    } icon: {
-                        Image(systemName: "rectangle.dashed")
-                            .font(.system(size: 20))
-                    }
-                    .padding(.vertical, 6)
-                }
-                .help(Tooltips.importSelectionFromKeynote)
-                .keyboardShortcut("2", modifiers: .command)
-                .disabled(isConverting || isPulling || !appState.keynoteClipboardReady || !appState.accessibilityGranted)
-
-                // ── Copy for Keynote  ⌘3 ─────────────────────────────────
-                Button {
-                    let svg = convertClipboardToSVG()
-                    if !svg.isEmpty {
-                        appState.svgString = svg
-                        appState.conversionStatus = .idle
-                        if svgToClipboard(svgData: svg, appState: appState) != nil {
-                            appState.statusMessage = ""
+                // ── Convert Keynote Slide  ⌘R  ────────────────────────────
+                // ── Convert Keynote Selection  ⌘E ────────────────────────
+                // Hidden by default; revealed while Option is held. Menu
+                // shortcuts remain available at all times regardless. The
+                // Option reveal keeps the default view focused on the
+                // SVG-import workflow while giving power users easy access.
+                if optionMonitor.isHeld && !isPopoverContext {
+                    // ── Convert Keynote Slide  ⌘R ─────────────────────────
+                    Button {
+                        triggerKeynoteSlide(appState: appState) { appState.statusMessage = $0 }
+                    } label: {
+                        Label {
+                            buttonRow(
+                                NSLocalizedString("button.pull_from_keynote",
+                                    comment: "Button: converts the current Keynote slide to a vector PDF"),
+                                shortcut: "⌘R",
+                                showShortcut: !isPopoverContext)
+                        } icon: {
+                            Image(systemName: "document.badge.ellipsis.fill")
+                                .font(.system(size: 20))
+                                .padding(.leading, 4)
                         }
-                    } else {
-                        appState.statusMessage = NSLocalizedString(
-                            "status.no_svg_on_clipboard",
-                            comment: "Error message when no SVG is found on the clipboard")
+                        .padding(.vertical, 6)
                     }
-                } label: {
-                    Label {
-                        buttonRow(
-                            appState.svgString.isEmpty
-                                ? NSLocalizedString("button.copy_to_clipboard",
-                                    comment: "Button: fallback label when no SVG is loaded")
-                                : NSLocalizedString("button.copy_svg_to_clipboard",
-                                    comment: "Button: copies the loaded SVG to the clipboard in Keynote format"),
-                            shortcut: "⌘3",
-                            showShortcut: !appState.isPopoverContext)
-                    } icon: {
-                        Image(systemName: "document.on.document.fill")
-                            .font(.system(size: 18))
-                            .padding(.leading, 4)
-                    }
-                    .padding(.vertical, 6)
-                }
-                .help(Tooltips.copyToClipboard)
-                .keyboardShortcut("3", modifiers: .command)
-                .disabled(appState.svgString.isEmpty || isConverting)
+                    .help(Tooltips.pullFromKeynote)
+                    .keyboardShortcut("r", modifiers: .command)
+                    .disabled(isConverting || isPulling || !appState.keynoteRunning)
 
-                // ── Place in Keynote  ⌘4 ─────────────────────────────────
+                    // ── Convert Keynote Clipboard  ⌘E ────────────────────
+                    VStack(alignment: .leading, spacing: 2) {
+                        Button {
+                            triggerKeynoteClipboard(appState: appState) { appState.statusMessage = $0 }
+                        } label: {
+                            Label {
+                                buttonRow(
+                                    NSLocalizedString("button.import_selection_from_keynote",
+                                        comment: "Button: converts the user's copied Keynote clipboard to a vector PDF"),
+                                    shortcut: "⌘E",
+                                    showShortcut: !isPopoverContext)
+                            } icon: {
+                                Image(systemName: "rectangle.dashed")
+                                    .font(.system(size: 20))
+                            }
+                            .padding(.vertical, 6)
+                        }
+                        .help(Tooltips.importSelectionFromKeynote)
+                        .keyboardShortcut("e", modifiers: .command)
+                        .disabled(isConverting || isPulling || !appState.keynoteRunning)
+
+                        // Live clipboard readiness indicator
+                        if appState.keynoteRunning {
+                            HStack(spacing: 4) {
+                                if appState.keynoteClipboardReady {
+                                    Image(systemName: "checkmark.circle.fill")
+                                    Text(NSLocalizedString(
+                                        "hint.keynote.clipboard_ready",
+                                        comment: "Hint: Keynote selection is on the clipboard"))
+                                } else {
+                                    Text(NSLocalizedString(
+                                        "hint.keynote.clipboard_not_ready",
+                                        comment: "Hint: no Keynote selection on the clipboard yet"))
+                                }
+                            }
+                            .font(.caption2)
+                            .foregroundColor(appState.keynoteClipboardReady ? .accentColor : .secondary)
+                            .padding(.leading, 40)
+                            .animation(.easeInOut(duration: 0.15), value: appState.keynoteClipboardReady)
+                        }
+                    }
+                }
+
+                // ── Place in Keynote  ⌘D ─────────────────────────────────
                 let isSending = appState.keynoteSendStatus == .sending
                 Button {
                     appState.keynoteSendStatus = .sending
@@ -861,8 +940,8 @@ struct ContentView: View {
                                     comment: "Button: fallback label when no SVG is loaded")
                                 : NSLocalizedString("button.place_svg_in_keynote",
                                     comment: "Button: places the loaded SVG directly into the current Keynote slide"),
-                            shortcut: "⌘4",
-                            showShortcut: !appState.isPopoverContext)
+                            shortcut: "⌘D",
+                            showShortcut: !isPopoverContext)
                     } icon: {
                         Image(systemName: "arrow.down.square.fill")
                             .font(.system(size: 20))
@@ -871,7 +950,7 @@ struct ContentView: View {
                     .padding(.vertical, 6)
                 }
                 .help(Tooltips.placeInKeynote)
-                .keyboardShortcut("4", modifiers: .command)
+                .keyboardShortcut("d", modifiers: .command)
                 .disabled(appState.svgString.isEmpty || isConverting || isSending || !appState.accessibilityGranted)
 
             }
@@ -882,10 +961,9 @@ struct ContentView: View {
                 // Placed on the inner VStack (before outer padding) so the reported
                 // width is just the button content — the window controller adds padding.
                 VStack(spacing: 0) {
-                    buttonRow(NSLocalizedString("button.pull_from_keynote",              comment: ""), shortcut: "⌘1")
-                    buttonRow(NSLocalizedString("button.import_selection_from_keynote",  comment: ""), shortcut: "⌘2")
-                    buttonRow(NSLocalizedString("button.copy_svg_to_clipboard",          comment: ""), shortcut: "⌘3")
-                    buttonRow(NSLocalizedString("button.place_svg_in_keynote",           comment: ""), shortcut: "⌘4")
+                    buttonRow(NSLocalizedString("button.pull_from_keynote",              comment: ""), shortcut: "⌘R")
+                    buttonRow(NSLocalizedString("button.import_selection_from_keynote",  comment: ""), shortcut: "⌘E")
+                    buttonRow(NSLocalizedString("button.place_svg_in_keynote",           comment: ""), shortcut: "⌘D")
                 }
                 .fixedSize()
                 .hidden()
@@ -901,6 +979,7 @@ struct ContentView: View {
             .padding(.horizontal, 16)
             .padding(.bottom, 16)
 
+            }   // end else (non-PDF mode)
             }   // end below-preview VStack
             .background(GeometryReader { geo in
                 Color.clear.preference(key: BelowPreviewHeightKey.self,
@@ -912,6 +991,23 @@ struct ContentView: View {
             }
 
         }
+        // Hidden utility buttons — keyboard shortcuts with no visible affordance.
+        .background(
+            Group {
+                // Delete / ⌘Delete clear the canvas (same as the trash icon).
+                if hasContent {
+                    Button("") { clearCanvas() }.keyboardShortcut(.delete, modifiers: [])
+                    Button("") { clearCanvas() }.keyboardShortcut(.delete, modifiers: .command)
+                }
+                // Escape dismisses the menu-bar popover.
+                if isPopoverContext {
+                    Button("") { AppDelegate.shared?.closePopover() }
+                        .keyboardShortcut(.escape, modifiers: [])
+                }
+            }
+            .frame(width: 0, height: 0)
+            .hidden()
+        )
     }
 
     // MARK: Sub-views — preview wells
@@ -930,10 +1026,7 @@ struct ContentView: View {
                     appState.svgString = svg
                     appState.statusMessage = ""
                 },
-                onClear: {
-                    appState.previewPDFURL = nil
-                    appState.statusMessage = ""
-                },
+                onClear: { clearCanvas() },
                 dragLabel: NSLocalizedString(
                     "preview.drag_label_pdf",
                     comment: "Text on the drag image thumbnail when dragging a pulled PDF")
@@ -989,13 +1082,7 @@ struct ContentView: View {
                                 "Confirmation shown after copying to clipboard via context menu")
                     }
                 },
-                onClear: {
-                    appState.svgString = ""
-                    appState.svgURL = ""
-                    appState.bridgeFileURL = nil
-                    appState.conversionStatus = .idle
-                    appState.statusMessage = ""
-                }
+                onClear: { clearCanvas() }
             )
 
             // Metadata badge lower-left — no hit testing so events reach the layer below.

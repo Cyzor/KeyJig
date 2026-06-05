@@ -16,12 +16,16 @@ class HelpWindowController: NSWindowController {
             "dialog.help.title",
             comment: "Help window title")
         window.isReleasedWhenClosed = false
+        window.identifier = NSUserInterfaceItemIdentifier("HelpWindow")
 
         let didRestore = window.setFrameUsingName("HelpWindow")
         if !didRestore { window.center() }
         window.setFrameAutosaveName("HelpWindow")
 
         let host = NSHostingController(rootView: HelpView())
+        if #available(macOS 13.0, *) {
+            host.sizingOptions = .minSize
+        }
         window.contentViewController = host
 
         super.init(window: window)

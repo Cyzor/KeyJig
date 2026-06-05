@@ -74,13 +74,6 @@ class AppState: ObservableObject {
     /// of "Place SVG in Keynote" and the visibility of the lock notice.
     @Published var accessibilityGranted: Bool = AXIsProcessTrusted()
 
-    /// True when this AppState belongs to the menu-bar popover rather than a
-    /// floating window. ContentView uses this to suppress keyboard shortcut hints
-    /// — popovers can't reliably receive menu-bar shortcuts without explicit
-    /// focus, and don't display a menu bar, so advertising ⌘ shortcuts there
-    /// would be misleading.
-    var isPopoverContext: Bool = false
-
     private var clipboardTimer: Timer?
     private var workspaceObservers: [Any] = []
     private var appObservers: [Any] = []

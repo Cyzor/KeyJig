@@ -38,12 +38,14 @@
 	<string>KeyJig sends Apple Events to Keynote to insert SVG content onto the current slide and to export the current slide as a PDF.</string>
 	<key>NSHumanReadableCopyright</key>
 	<string>Copyright © 2026 KeyJig Contributors. Copyright © 2021–2026 Jonathan Lampérth.</string>
-		<key>NSMainStoryboardFile</key>
-		<string>Main</string>
+	<key>NSMainStoryboardFile</key>
+	<string>Main</string>
+	<key>NSApplicationSupportsSecureRestorableState</key>
+	<true />
 	<key>NSSupportsAutomaticTermination</key>
-	<true />
+	<false />
 	<key>NSSupportsSuddenTermination</key>
-	<true />
+	<false />
 	<key>OSAScriptingDefinition</key>
 	<string>KeyJig.sdef</string>
 	<key>CFBundleDocumentTypes</key>

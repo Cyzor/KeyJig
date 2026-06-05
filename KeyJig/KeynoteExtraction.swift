@@ -883,9 +883,21 @@ func pdfToClipboard(url: URL) -> Bool {
 // MARK: - Helpers
 
 private extension NSRunningApplication {
-    /// Activates the app, using the macOS 14 API when available.
+    /// Activates the app, restoring it as the frontmost application.
+    ///
+    /// When re-activating our own process (the common case — user triggered a
+    /// pull from KeyJig's menu or a button), use `NSApp.activate(ignoringOtherApps:
+    /// true)`, which is exempt from macOS 14's focus-stealing prevention and works
+    /// reliably from a background-queue completion callback. Activating a *different*
+    /// app (uncommon) uses the weaker API so we don't steal focus from an app the
+    /// user deliberately moved to while the pull was running.
     func activateFrontmost() {
-        if #available(macOS 14.0, *) { activate() }
-        else { activate(options: .activateIgnoringOtherApps) }
+        if bundleIdentifier == Bundle.main.bundleIdentifier {
+            NSApp.activate(ignoringOtherApps: true)
+        } else if #available(macOS 14.0, *) {
+            activate()
+        } else {
+            activate(options: .activateIgnoringOtherApps)
+        }
     }
 }

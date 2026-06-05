@@ -299,19 +299,19 @@ class AppMenu {
                 "menu.file.convert_keynote_slide",
                 comment: "File menu: Convert Keynote Slide to PDF"),
             action: #selector(AppDelegate.menuConvertKeynoteSlide),
-            keyEquivalent: "1")
+            keyEquivalent: "r")
         fileMenu.addItem(
             withTitle: NSLocalizedString(
                 "menu.file.convert_keynote_clipboard",
                 comment: "File menu: Convert Keynote Clipboard to PDF"),
             action: #selector(AppDelegate.menuConvertKeynoteClipboard),
-            keyEquivalent: "2")
+            keyEquivalent: "e")
         fileMenu.addItem(
             withTitle: NSLocalizedString(
                 "menu.file.place_in_keynote",
                 comment: "File menu: Place SVG in Keynote"),
             action: #selector(AppDelegate.menuPlaceInKeynote),
-            keyEquivalent: "4")
+            keyEquivalent: "d")
         fileMenuItem.submenu = fileMenu
 
         // ── Edit menu ─────────────────────────────────────────────────────
@@ -341,7 +341,7 @@ class AppMenu {
                 "menu.edit.copy_for_keynote",
                 comment: "Edit menu: Copy for Keynote"),
             action: #selector(AppDelegate.menuCopyForKeynote),
-            keyEquivalent: "3")
+            keyEquivalent: "k")
         editMenu.addItem(NSMenuItem.separator())
         editMenu.addItem(
             withTitle: NSLocalizedString(
@@ -410,6 +410,91 @@ class AppMenu {
     }
 }
 
+// MARK: - Session State
+
+/// Writes and reads per-session SVG snapshots for windows whose content
+/// came from the clipboard (no on-disk file URL of the user's own).
+private enum SessionFiles {
+    static var directory: URL {
+        let id = Bundle.main.bundleIdentifier ?? "com.cyzor.KeyJig"
+        let base = FileManager.default.urls(
+            for: .applicationSupportDirectory, in: .userDomainMask).first!
+        return base.appendingPathComponent(id + "/session")
+    }
+
+    /// Writes `svg` to a stable named slot under the session directory.
+    /// Returns the file URL on success, nil on write failure.
+    static func write(_ svg: String, slot name: String) -> URL? {
+        let dir = directory
+        try? FileManager.default.createDirectory(
+            at: dir, withIntermediateDirectories: true)
+        let url = dir.appendingPathComponent(name + ".svg")
+        return (try? svg.write(to: url, atomically: true, encoding: .utf8)) == nil
+            ? nil : url
+    }
+
+    static func isSessionFile(_ url: URL) -> Bool {
+        url.path.hasPrefix(directory.path)
+    }
+}
+
+/// Codable wrapper around NSRect.
+private struct CodableRect: Codable {
+    var x, y, w, h: Double
+    init(_ r: NSRect) {
+        x = Double(r.origin.x); y = Double(r.origin.y)
+        w = Double(r.size.width); h = Double(r.size.height)
+    }
+    var nsRect: NSRect { NSRect(x: x, y: y, width: w, height: h) }
+}
+
+/// State for one document window.
+private struct WindowEntry: Codable {
+    /// User's original file path, or a SessionFiles snapshot path.  nil = empty window.
+    var contentURL: String?
+    /// Frame of the window at quit time.
+    var frame: CodableRect
+    /// Windows sharing the same non-nil tabGroupID are part of one tab bar.
+    var tabGroupID: Int?
+    /// True when this window was the selected (frontmost) tab in its group at quit time.
+    var isSelectedTab: Bool
+
+    init(contentURL: String?, frame: CodableRect, tabGroupID: Int?, isSelectedTab: Bool = false) {
+        self.contentURL = contentURL
+        self.frame = frame
+        self.tabGroupID = tabGroupID
+        self.isSelectedTab = isSelectedTab
+    }
+
+    // Custom decoder so old session records missing `isSelectedTab` still load.
+    init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        contentURL   = try c.decodeIfPresent(String.self,      forKey: .contentURL)
+        frame        = try c.decode(CodableRect.self,           forKey: .frame)
+        tabGroupID   = try c.decodeIfPresent(Int.self,          forKey: .tabGroupID)
+        isSelectedTab = (try? c.decode(Bool.self, forKey: .isSelectedTab)) ?? false
+    }
+}
+
+/// Persists the complete window arrangement at last quit. Stored as JSON in UserDefaults.
+private struct SessionState: Codable {
+    /// All document windows in creation order; index 0 is always the primary window.
+    var windows: [WindowEntry]
+
+    static let defaultsKey = "SessionState"
+
+    static func load() -> SessionState? {
+        guard let data = UserDefaults.standard.data(forKey: defaultsKey) else { return nil }
+        return try? JSONDecoder().decode(SessionState.self, from: data)
+    }
+
+    func save() {
+        if let data = try? JSONEncoder().encode(self) {
+            UserDefaults.standard.set(data, forKey: SessionState.defaultsKey)
+        }
+    }
+}
+
 // MARK: - AppDelegate
 
 @main
@@ -441,6 +526,14 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
 
     /// Help window controller (created lazily on first open).
     var helpWindowController: HelpWindowController?
+
+    /// The AppState currently displayed in the popover.
+    /// When a document window was frontmost at open time this is a reference to
+    /// that window's AppState — the popover mirrors it.
+    /// Falls back to the independent popoverAppState when no doc window exists.
+    /// Cleared in popoverDidClose. Strong because NSHostingController already
+    /// retains AppState independently; weak would mislead without saving memory.
+    private var activePopoverState: AppState?
 
     // MARK: Scriptable properties for Explorer visibility
 
@@ -501,11 +594,10 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
         AppMenu.setupMenuBar()
 
         // ── Menubar popover ───────────────────────────────────────────────
-        popoverAppState.isPopoverContext = true
         let popover = NSPopover()
         popover.contentSize = NSSize(width: 400, height: 520)
         popover.contentViewController = NSHostingController(
-            rootView: ContentView(appState: popoverAppState))
+            rootView: ContentView(appState: popoverAppState, isPopoverContext: true))
         // .applicationDefined suppresses AppKit's built-in click-outside-to-close
         // logic. We install our own global mouseUp monitor instead so a drag from
         // outside can enter the popover before the release dismisses it.
@@ -535,11 +627,101 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
         primaryWindowController = wc
         floatingWindows.append(wc)
 
-        // Seed the primary window's state from the clipboard if SVG is present.
-        checkAndLoadClipboardSVG(into: wc.appState)
+        // Restore last session. Only fall through to clipboard seeding when
+        // restore left the primary window empty — a restored SVG must not be
+        // silently overwritten by whatever happens to be on the clipboard.
+        let restored = restoreSession(into: wc)
+        if !restored {
+            checkAndLoadClipboardSVG(into: wc.appState)
+        }
 
         wc.window?.makeKeyAndOrderFront(nil)
         NSApp.activate(ignoringOtherApps: true)
+    }
+
+    /// Recreates the window arrangement and document state saved at last quit.
+    /// Returns true if content was restored into the primary window.
+    @discardableResult
+    private func restoreSession(into primary: MainWindowController) -> Bool {
+        guard let state = SessionState.load(), !state.windows.isEmpty else { return false }
+
+        // ── 1. Create controllers and restore frames/content ────────────────
+        var controllers: [MainWindowController] = []
+        var primaryRestored = false
+
+        for (i, entry) in state.windows.enumerated() {
+            let wc: MainWindowController
+            if i == 0 {
+                wc = primary
+            } else {
+                wc = MainWindowController(isPrimary: false)
+                floatingWindows.append(wc)
+            }
+            // Apply the saved frame before the window is shown.
+            wc.window?.setFrame(entry.frame.nsRect, display: false)
+
+            if let urlString = entry.contentURL {
+                let loaded = loadSessionContent(
+                    from: URL(fileURLWithPath: urlString), into: wc.appState)
+                if i == 0 && loaded { primaryRestored = true }
+            }
+            controllers.append(wc)
+        }
+
+        // ── 2. Restore tab groups ────────────────────────────────────────────
+        // Collect windows by their saved tab-group ID, then merge them with
+        // addTabbedWindow(_:ordered:). Windows are shown before merging so
+        // AppKit has valid on-screen targets to group.
+        var tabGroups: [Int: [NSWindow]] = [:]
+        for (i, entry) in state.windows.enumerated() {
+            if let gid = entry.tabGroupID, let win = controllers[i].window {
+                tabGroups[gid, default: []].append(win)
+            }
+        }
+
+        // ── 3. Show windows back-to-front so the first entry ends up on top ─
+        // Secondary windows are shown here; the primary is shown again (harmlessly)
+        // by applicationDidFinishLaunching after we return.
+        for wc in controllers.reversed() {
+            wc.window?.makeKeyAndOrderFront(nil)
+        }
+
+        // Merge tab groups after all windows are on screen.
+        for (_, group) in tabGroups.sorted(by: { $0.key < $1.key }) {
+            guard group.count > 1 else { continue }
+            let anchor = group[0]
+            for other in group.dropFirst() {
+                anchor.addTabbedWindow(other, ordered: .above)
+            }
+        }
+
+        // Select the tab that was active at quit time.
+        for (i, entry) in state.windows.enumerated() {
+            guard entry.isSelectedTab, let win = controllers[i].window else { continue }
+            win.tabGroup?.selectedWindow = win
+        }
+
+        // Help and Settings are not restored on relaunch — they open on demand
+        // and remember their position via setFrameAutosaveName.
+
+        return primaryRestored
+    }
+
+    /// Loads SVG content from a URL into an AppState.
+    /// Session files are read directly into svgString without setting svgURL
+    /// (they're treated as clipboard-equivalent; no proxy icon).
+    /// User files go through loadFile(), which sets svgURL for the proxy icon.
+    @discardableResult
+    private func loadSessionContent(from url: URL, into appState: AppState) -> Bool {
+        guard FileManager.default.fileExists(atPath: url.path) else { return false }
+        if SessionFiles.isSessionFile(url) {
+            guard let svg = try? String(contentsOf: url, encoding: .utf8),
+                  !svg.isEmpty else { return false }
+            appState.svgString = svg
+            return true
+        }
+        loadFile(at: url, into: appState)
+        return true
     }
 
     // MARK: Clipboard helper
@@ -622,7 +804,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
     ///   4. The primary window as the final fallback.
     private var frontWindowState: AppState? {
         if popover?.isShown == true {
-            return popoverAppState
+            return activePopoverState ?? popoverAppState
         }
         if let wc = floatingWindows.first(where: { $0.window?.isKeyWindow == true }) {
             return wc.appState
@@ -637,25 +819,52 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
 
     // MARK: Actions
 
-    /// Toggles the menubar popover, seeding it from the clipboard when opening.
+    /// Toggles the menubar popover.
+    ///
+    /// When a document window was most recently active, the popover mirrors it —
+    /// the same AppState object is shared, so content and actions are identical.
+    /// When no document window exists the popover is fully independent.
+    /// The chosen AppState is locked in for the lifetime of this open; it does
+    /// not change if the user switches windows while the popover is visible.
     @objc func togglePopover() {
         guard let popover = self.popover,
             let button = statusBarItem?.button
         else { return }
         if popover.isShown {
             closePopover()
-        } else {
-            checkAndLoadClipboardSVG(into: popoverAppState)
-            popover.show(
-                relativeTo: button.bounds,
-                of: button,
-                preferredEdge: .minY)
-            installPopoverDismissMonitor()
+            return
         }
+
+        // Resolve the mirror target: prefer the most recently active document
+        // window (NSApp.mainWindow persists across app switches), then the
+        // primary window, then fall back to the independent popoverAppState.
+        let target: AppState
+        let mirrorWindow = NSApp.mainWindow ?? NSApp.keyWindow
+        if let win = mirrorWindow,
+           let wc = floatingWindows.first(where: { $0.window === win }) {
+            target = wc.appState
+        } else if let primary = primaryWindowController {
+            target = primary.appState
+        } else {
+            target = popoverAppState
+        }
+
+        // Recreate the hosting controller only when the target changes.
+        // Because this happens before show(), there is no visible flash.
+        if activePopoverState !== target {
+            let isIndependent = target === popoverAppState
+            popover.contentViewController = NSHostingController(
+                rootView: ContentView(appState: target, isPopoverContext: isIndependent))
+            activePopoverState = target
+        }
+
+        checkAndLoadClipboardSVG(into: target)
+        popover.show(relativeTo: button.bounds, of: button, preferredEdge: .minY)
+        installPopoverDismissMonitor()
     }
 
     /// Closes the popover and tears down the dismiss event monitor.
-    private func closePopover() {
+    func closePopover() {
         popover?.performClose(nil)
         removePopoverDismissMonitor()
     }
@@ -696,6 +905,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
     /// how it was closed (toggle button, Escape, or our own mouseUp monitor).
     func popoverDidClose(_ notification: Notification) {
         removePopoverDismissMonitor()
+        activePopoverState = nil
     }
 
     /// Brings the primary window to the front, recreating it if it was closed,
@@ -899,9 +1109,6 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
     /// Reveals the app's preferences plist in Finder. Useful for troubleshooting
     /// persisted state such as the autosaved window frames.
     @objc func revealPreferencesPlist() {
-        // Flush any pending defaults so the on-disk plist reflects current state.
-        UserDefaults.standard.synchronize()
-
         guard let bundleID = Bundle.main.bundleIdentifier else { return }
         let plistURL = FileManager.default
             .homeDirectoryForCurrentUser
@@ -917,7 +1124,6 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
 
     @objc func openPreferences() {
         if settingsWindowController == nil {
-            // Use the primary window's AppState, or create a default one
             let appState = primaryWindowController?.appState ?? AppState()
             settingsWindowController = SettingsWindowController(appState: appState)
         }
@@ -925,6 +1131,44 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
     }
 
     // MARK: NSApplicationDelegate
+
+    func applicationWillTerminate(_ notification: Notification) {
+        func persistURL(for appState: AppState, slot: String) -> String? {
+            if !appState.svgURL.isEmpty { return appState.svgURL }
+            if !appState.svgString.isEmpty {
+                return SessionFiles.write(appState.svgString, slot: slot)?.path
+            }
+            return nil
+        }
+
+        // Assign a stable integer to each distinct NSWindowTabGroup.
+        var tabGroupMap: [ObjectIdentifier: Int] = [:]
+        var nextGroupID = 0
+        for wc in floatingWindows {
+            guard let window = wc.window,
+                  let group = window.tabGroup,
+                  group.windows.count > 1 else { continue }
+            let key = ObjectIdentifier(group)
+            if tabGroupMap[key] == nil {
+                tabGroupMap[key] = nextGroupID
+                nextGroupID += 1
+            }
+        }
+
+        let entries = floatingWindows.enumerated().compactMap { i, wc -> WindowEntry? in
+            guard let window = wc.window else { return nil }
+            let slot = i == 0 ? "primary" : "secondary-\(i - 1)"
+            let tabGroupID = window.tabGroup.flatMap { tabGroupMap[ObjectIdentifier($0)] }
+            let isSelectedTab = window.tabGroup?.selectedWindow === window
+            return WindowEntry(
+                contentURL: persistURL(for: wc.appState, slot: slot),
+                frame: CodableRect(window.frame),
+                tabGroupID: tabGroupID,
+                isSelectedTab: isSelectedTab)
+        }
+
+        SessionState(windows: entries).save()
+    }
 
     func application(_ sender: NSApplication, openFile filename: String) -> Bool {
         let url = URL(fileURLWithPath: filename)
@@ -957,17 +1201,17 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
         return false
     }
 
-    func applicationWillBecomeActive(_ notification: Notification) {
+    func applicationDidBecomeActive(_ notification: Notification) {
         // On reactivation (e.g. switching back from Illustrator), seed the
-        // front window. frontWindowState falls back to the primary window so
-        // this never silently does nothing even if key-window state hasn't
-        // transferred yet.
+        // front window with whatever is now on the clipboard. Using Did (not
+        // Will) so that the key window is fully assigned before frontWindowState
+        // resolves it — Will fires before the key window transfers, causing
+        // clipboard content to land in the primary window regardless of which
+        // window the user was working in.
+        // frontWindowState already accounts for the popover's active state,
+        // so no separate popover seeding is needed here.
         if let state = frontWindowState {
             checkAndLoadClipboardSVG(into: state)
-        }
-        // Also seed the popover if it happens to be open.
-        if popover?.isShown == true {
-            checkAndLoadClipboardSVG(into: popoverAppState)
         }
     }
 
@@ -975,18 +1219,33 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
 
     @objc func applicationDockMenu(_ sender: NSApplication) -> NSMenu? {
         let menu = NSMenu()
-        menu.addItem(
-            withTitle: NSLocalizedString(
-                "dock.show_window",
-                comment: "Dock context menu: Show Window item"),
-            action: #selector(showMainWindow),
-            keyEquivalent: "")
+//        menu.addItem(
+//            withTitle: NSLocalizedString(
+//                "dock.show_window",
+//                comment: "Dock context menu: Show Window item"),
+//            action: #selector(showMainWindow),
+//            keyEquivalent: "")
         menu.addItem(
             withTitle: NSLocalizedString(
                 "dock.new_viewer",
                 comment: "Dock context menu: New Viewer item"),
             action: #selector(newFloatingWindow),
             keyEquivalent: "")
+
+        menu.addItem(.separator())
+
+        let placeItem = NSMenuItem(
+            title: NSLocalizedString(
+                "menu.file.place_in_keynote",
+                comment: "File menu: Place SVG in Keynote"),
+            action: #selector(menuPlaceInKeynote),
+            keyEquivalent: "")
+        placeItem.target = self
+        let state = frontWindowState
+        placeItem.isEnabled = !(state?.svgString.isEmpty ?? true)
+            && (state?.accessibilityGranted ?? false)
+        menu.addItem(placeItem)
+
         return menu
     }
 

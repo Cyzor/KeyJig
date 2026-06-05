@@ -29,12 +29,12 @@ struct SettingsView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
-            Text(NSLocalizedString(
-                "settings.section.integration",
-                comment: "Settings section heading"))
-                .font(.title3.weight(.semibold))
-
-            Divider()
+//            Text(NSLocalizedString(
+//                "settings.section.integration",
+//                comment: "Settings section heading"))
+//                .font(.title3.weight(.semibold))
+//
+//            Divider()
 
             // Inkscape Section
             VStack(alignment: .leading, spacing: 8) {

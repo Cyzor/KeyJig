@@ -50,7 +50,7 @@
 "button.place_in_keynote" = "Keynoteに配置";
 "button.place_svg_in_keynote" = "SVGをKeynoteに配置";
 "button.pull_from_keynote" = "KeynoteスライドをPDFに変換";
-"button.import_selection_from_keynote" = "KeynoteクリップボードをPDFに変換";
+"button.import_selection_from_keynote" = "Keynoteクリップボードを変換";
 
 /* ── Keynote errors ─────────────────────────────────────────────────── */
 "error.keynote.not_running" = "Keynoteが起動していません。";
@@ -59,6 +59,12 @@
 "error.keynote.paste_failed" = "KeynoteにSVGを配置できませんでした。";
 "error.keynote.export_failed" = "Keynoteのエクスポートに失敗しました: %@";
 "error.keynote.page_missing" = "エクスポートされたPDFに現在のスライドが含まれていません。";
+
+/* ── Keynote pull hints ─────────────────────────────────────────────── */
+"undo.clear" = "削除";
+"hint.keynote.clipboard_ready" = "選択範囲をコピー済み — 最高品質で変換できます";
+"hint.keynote.clipboard_not_ready" = "最良の結果を得るには、KeynoteのナビゲーターでスライドをSelectし、クリップボードにコピーしてください（⌘C）";
+"hint.pdf_done" = "プレビューをAffinity・Illustrator・Figmaなど、PDFを受け付けるアプリにドラッグしてください。";
 
 /* ── Footer ─────────────────────────────────────────────────────────── */
 "footer.build_date" = "ビルド日: %@";
@@ -90,7 +96,7 @@
 "menu.file.open_svg" = "SVGファイルを開く…";
 "menu.file.close" = "閉じる";
 "menu.file.convert_keynote_slide" = "KeynoteスライドをPDFに変換";
-"menu.file.convert_keynote_clipboard" = "KeynoteクリップボードをPDFに変換";
+"menu.file.convert_keynote_clipboard" = "Keynoteクリップボードを変換";
 "menu.file.place_in_keynote" = "Keynoteに配置";
 
 /* ── Edit menu ──────────────────────────────────────────────────────── */
@@ -130,11 +136,11 @@
 "help.section.import.title" = "SVGを読み込む";
 "help.section.import.body" = "• SVGファイルをプレビューエリアにドロップします。\n• Illustrator・Affinity・Inkscapeでアートワークをコピー（⌘C）すると、KeyJigが自動で検出します。\n• ファイル ▸ SVGファイルを開く…（⌘O）でファイルを開きます。\n• Inkscapeがインストールされていれば、PDFや.aiファイルも開けます。";
 "help.section.keynote.title" = "Keynoteに送る";
-"help.section.keynote.body" = "• Keynote用にコピー（⌘3）— Keynoteで貼り付け（⌘V）後、フォーマット ▸ 図形と線 ▸ 分割でパスを編集できます。\n• SVGをKeynoteに配置（⌘4）で現在のスライドに直接配置します。アクセシビリティアクセスが必要です（システム設定 ▸ プライバシーとセキュリティ）。";
+"help.section.keynote.body" = "• Keynote用にコピー（⇧⌘C）— Keynoteで貼り付け（⌘V）後、フォーマット ▸ 図形と線 ▸ 分割でパスを編集できます。\n• SVGをKeynoteに配置（⌘D）で現在のスライドに直接配置します。アクセシビリティアクセスが必要です（システム設定 ▸ プライバシーとセキュリティ）。";
 "help.section.pull.title" = "KeynoteをPDFに変換";
-"help.section.pull.body" = "• KeynoteスライドをPDFに変換（⌘1）で現在のスライドをベクターPDFとして取得します。\n• KeynoteクリップボードをPDFに変換（⌘2）でKeynoteでコピーしたオブジェクト（⌘C）だけを変換します。非連続選択にも対応。コピーなしの場合は囲み矩形で取得します。\n• PDFプレビューをAffinity・Illustrator・Figmaなどのアプリにドラッグしてください。";
+"help.section.pull.body" = "• Keynoteクリップボードを変換（⌘E）— 先にKeynoteで選択をコピー（⌘C）すると、ベクターデータのみを正確に取得できます。コピーなしの場合は、現在の選択の囲み矩形で取得します。\n• KeynoteスライドをPDFに変換（⌘R）— 現在のスライド全体をベクターPDFとして取得します。事前のコピーは不要です。\n• PDFプレビューをAffinity・Illustrator・Figmaなどのアプリにドラッグしてください。";
 "help.section.setup.title" = "権限と依存関係";
-"help.section.setup.body" = "• SVGをKeynoteに配置（⌘4）にはアクセシビリティアクセスが必要です — システム設定 ▸ プライバシーとセキュリティ ▸ アクセシビリティで許可してください。\n• PDFや.aiファイルを開くにはInkscapeが必要です — inkscape.orgからダウンロードするか: brew install inkscape。\n• GhostscriptとMuPDF（オプション）はPDF切り抜き品質を向上させます — brew install ghostscript および brew install mupdf-tools。";
+"help.section.setup.body" = "• SVGをKeynoteに配置（⌘D）にはアクセシビリティアクセスが必要です — システム設定 ▸ プライバシーとセキュリティ ▸ アクセシビリティで許可してください。\n• PDFや.aiファイルを開くにはInkscapeが必要です — inkscape.orgからダウンロードするか: brew install inkscape。\n• GhostscriptとMuPDF（オプション）はPDF切り抜き品質を向上させます — brew install ghostscript および brew install mupdf-tools。";
 
 /* ── Settings ───────────────────────────────────────────────────────── */
 "settings.window.title" = "設定";
