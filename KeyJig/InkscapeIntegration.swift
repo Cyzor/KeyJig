@@ -100,9 +100,14 @@ func convertToSVGWithInkscape(inputURL: URL) -> String? {
         return nil
     }
 
-    let svg = try? String(contentsOf: outputURL, encoding: .utf8)
+    guard let svg = try? String(contentsOf: outputURL, encoding: .utf8),
+          svg.contains("<svg")
+    else {
+        try? FileManager.default.removeItem(at: outputURL)
+        return nil
+    }
     try? FileManager.default.removeItem(at: outputURL)
-    return svg?.contains("<svg") == true ? svg : nil
+    return addSVGMargin(svg)
 }
 
 /// Asynchronously converts clipboard PDF/AICB data to SVG via Inkscape.

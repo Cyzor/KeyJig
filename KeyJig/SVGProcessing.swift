@@ -154,6 +154,83 @@ func extractSVGCreator(svgString: String) -> String? {
     return nil
 }
 
+// MARK: - SVG Canvas Expansion
+
+/// Expands the viewBox (and matching width/height attributes) by `margin`
+/// on every side, preventing strokes and fills at the document edge from
+/// being clipped when the SVG is rasterized by a host application.
+///
+/// Called on every Inkscape conversion result: Inkscape sizes the viewBox to
+/// the PDF page boundary exactly, so content that touches the edge is cut off.
+/// A 5-unit margin is imperceptible at typical slide sizes yet large enough
+/// to protect against even a 10 pt stroke centred on the edge.
+func addSVGMargin(_ svg: String, margin: Double = 5) -> String {
+    guard margin > 0 else { return svg }
+
+    // Locate the opening <svg … > tag.
+    guard let svgStart = svg.range(of: "<svg") else { return svg }
+    let searchRange = svgStart.upperBound..<svg.endIndex
+    guard let tagClose = svg.range(of: ">", range: searchRange) else { return svg }
+    let tagRange = svgStart.lowerBound..<tagClose.upperBound
+    var tag = String(svg[tagRange])
+
+    // Extract viewBox="x y w h" (or single-quoted variant).
+    guard let vbAttrRange = tag.range(of: #"viewBox=["'][^"']+["']"#, options: .regularExpression)
+    else { return svg }
+    let vbAttr = String(tag[vbAttrRange])
+    let vbParts = vbAttr
+        .components(separatedBy: CharacterSet(charactersIn: "\"'"))
+        .first { !$0.isEmpty && $0.contains(" ") }
+        .flatMap { $0.split(separator: " ").compactMap { Double($0) } }
+    guard let parts = vbParts, parts.count == 4 else { return svg }
+
+    let newX = parts[0] - margin
+    let newY = parts[1] - margin
+    let newW = parts[2] + margin * 2
+    let newH = parts[3] + margin * 2
+
+    func fmt(_ n: Double) -> String { String(format: "%g", n) }
+
+    tag = tag.replacingOccurrences(
+        of: #"viewBox=["'][^"']+["']"#,
+        with: "viewBox=\"\(fmt(newX)) \(fmt(newY)) \(fmt(newW)) \(fmt(newH))\"",
+        options: .regularExpression)
+
+    // Grow width and height by the same amounts so the aspect ratio is preserved.
+    for (attr, newVal) in [("width", newW), ("height", newH)] {
+        tag = tag.replacingOccurrences(
+            of: "\\b\(attr)=[\"'][0-9][^\"']*[\"']",
+            with: "\(attr)=\"\(fmt(newVal))\"",
+            options: .regularExpression)
+    }
+
+    return svg.replacingCharacters(in: tagRange, with: tag)
+}
+
+// MARK: - Keynote SVG Sanitization
+
+/// Strips elements that Keynote's SVG importer rejects.
+///
+/// Keynote returns "The image type is not supported on this device" when the
+/// SVG contains a `<color-profile>` element — the ICC profile metadata that
+/// Inkscape (and some Illustrator export paths) embeds to declare the document
+/// colour space.  The element is pure metadata; removing it is safe because
+/// colours render identically in the sRGB fallback Keynote uses anyway.
+func sanitizeSVGForKeynote(_ svg: String) -> String {
+    var result = svg
+    // Self-closing form: <color-profile ... />   (Inkscape / Illustrator exports)
+    result = result.replacingOccurrences(
+        of: "<color-profile[^>]*/>",
+        with: "",
+        options: .regularExpression)
+    // Element form: <color-profile ...>…</color-profile>   (rare, but handle it)
+    result = result.replacingOccurrences(
+        of: "<color-profile[\\s\\S]*?</color-profile>",
+        with: "",
+        options: .regularExpression)
+    return result
+}
+
 // MARK: - SVG Normalization
 
 /// Normalise the <svg> root tag so CSS can scale it correctly:

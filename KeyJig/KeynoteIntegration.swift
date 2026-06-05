@@ -51,7 +51,7 @@ func sendSVGToKeynote(svgData: String, completion: @escaping (KeynoteInsertError
     // 1. Write SVG to a temp file — clipboard untouched so far.
     let tempURL = makeTempSVGURL()
     do {
-        try svgData.write(to: tempURL, atomically: true, encoding: .utf8)
+        try sanitizeSVGForKeynote(svgData).write(to: tempURL, atomically: true, encoding: .utf8)
         try FileManager.default.setAttributes(
             [.posixPermissions: 0o600], ofItemAtPath: tempURL.path)
     } catch {
