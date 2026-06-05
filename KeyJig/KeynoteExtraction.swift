@@ -585,23 +585,34 @@ private func extractSelectionViaPaste(
     Thread.sleep(forTimeInterval: 0.3)
 
     // Always close the scratch doc on any exit path once we have its name.
-    // A dedicated close script (rather than embedding it inside finishScript)
-    // ensures the close runs even when finishScript itself returns an error.
-    // The brief sleep gives Keynote time to finish any post-export bookkeeping
-    // before the close command arrives, avoiding silent close failures.
+    // macOS autosave can rename an unsaved document from "Untitled N" to
+    // "Untitled N.key" while it is still open, so we match both forms.
+    // Without the fallback, the close finds nothing and silently succeeds,
+    // leaving the document open and polluting subsequent probe reads.
     defer {
-        Thread.sleep(forTimeInterval: 0.15)
+        log.info("paste tier: closing scratch doc '\(scratchName, privacy: .public)'")
         let closeScript = """
             tell application "Keynote"
+                set closed to false
                 try
                     close document "\(scratchName)" saving no
+                    set closed to true
                 end try
+                if not closed then
+                    try
+                        close document "\(scratchName).key" saving no
+                        set closed to true
+                    end try
+                end if
+                return closed as string
             end tell
             """
         var eClose: NSDictionary?
-        NSAppleScript(source: closeScript)!.executeAndReturnError(&eClose)
+        let rClose = NSAppleScript(source: closeScript)!.executeAndReturnError(&eClose)
         if let e = eClose {
-            log.error("paste tier: scratch doc '\(scratchName, privacy: .public)' close error — \(e["NSAppleScriptErrorMessage"] as? String ?? "?", privacy: .public)")
+            log.error("paste tier: scratch doc close script error — \(e["NSAppleScriptErrorMessage"] as? String ?? "?", privacy: .public)")
+        } else if rClose.stringValue != "true" {
+            log.error("paste tier: scratch doc '\(scratchName, privacy: .public)' not found under either name — document may remain open")
         }
     }
 
