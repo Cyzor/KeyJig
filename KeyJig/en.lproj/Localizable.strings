@@ -5,15 +5,13 @@
 "accessibility.placeholder_icon" = "Illustration indicating no SVG is loaded";
 
 /* ── Tooltips ───────────────────────────────────────────────────────── */
-"tooltip.open_file" = "Load an SVG file from your computer. You can also drag and drop SVG files directly onto the preview area.";
-"tooltip.copy_to_clipboard" = "Copy the loaded SVG to your clipboard for pasting into Keynote with ⌘V, then use 'Break Apart' and 'Make Editable'.";
 "tooltip.place_in_keynote" = "Place the SVG directly onto the current Keynote slide. Keynote must be running with a presentation open. Requires Accessibility access.";
 "tooltip.pull_from_keynote" = "Convert the current Keynote slide to a vector PDF.";
 "tooltip.import_selection_from_keynote" = "Copy your selection in Keynote first (⌘C), then click to convert it to a vector PDF of exactly those objects — non-contiguous selections included. Without a prior copy, falls back to capturing the bounding rectangle.";
 "tooltip.preview_pdf_loaded" = "Drag this PDF directly into Affinity, Illustrator, Figma, or any app that accepts PDF.";
 "tooltip.status_ready" = "The SVG is ready. Drag it into Keynote or click 'Copy for Keynote'.";
 "tooltip.preview_loaded" = "Drag this SVG directly into Keynote or any app that accepts SVG files. Your clipboard is not modified during dragging.";
-"tooltip.preview_empty" = "Drop an SVG file here, open one with the button below, or copy artwork and click 'Copy for Keynote'.";
+"tooltip.preview_empty" = "Drop an SVG or PDF here, or copy artwork in Illustrator, Affinity, or Inkscape (⌘C) and switch back to KeyJig.";
 "tooltip.settings.details" = "View the installation paths where Inkscape was found on your system.";
 "tooltip.settings.download" = "Download and install Inkscape from the official website to enable PDF fallback conversion.";
 "tooltip.settings.copy_path" = "Copy the Inkscape installation path to clipboard";
@@ -54,9 +52,6 @@
 "error.keynote.cancelled" = "Operation cancelled.";
 
 /* ── Buttons ────────────────────────────────────────────────────────── */
-"button.open_svg_file" = "Open SVG File…";
-"button.copy_to_clipboard" = "Copy for Keynote";
-"button.copy_svg_to_clipboard" = "Copy SVG to Clipboard";
 "button.place_in_keynote" = "Place in Keynote";
 "button.place_svg_in_keynote" = "Place SVG in Keynote";
 "button.pull_from_keynote" = "Convert Keynote Slide to PDF";
@@ -65,7 +60,7 @@
 /* ── Keynote pull hints ─────────────────────────────────────────────── */
 "undo.clear" = "Clear";
 "hint.keynote.clipboard_ready" = "Selection copied — ready for best-quality extraction";
-"hint.keynote.clipboard_not_ready" = "For best results, select a slide in Keynote's Navigator and copy it to the clipboard (⌘C)";
+"hint.keynote.clipboard_not_ready" = "Copy selected objects from the Keynote canvas (⌘C) for best-quality extraction";
 "hint.pdf_done" = "Drag the preview to Affinity, Illustrator, Figma, or any app that accepts PDF.";
 
 /* ── Footer ─────────────────────────────────────────────────────────── */

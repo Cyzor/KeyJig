@@ -4,15 +4,13 @@
 "accessibility.placeholder_icon" = "SVGが読み込まれていないことを示す図解";
 
 /* ── Tooltips ───────────────────────────────────────────────────────── */
-"tooltip.open_file" = "コンピュータからSVGファイルを読み込みます。SVGファイルをプレビューエリアに直接ドラッグ＆ドロップすることもできます。";
-"tooltip.copy_to_clipboard" = "読み込んだSVGをクリップボードにコピーし、⌘VでKeynoteに貼り付けます。その後「分割」と「編集可能にする」を使用してください。";
 "tooltip.place_in_keynote" = "SVGを現在のKeynoteスライドに直接配置します。Keynoteを開いておく必要があります。アクセシビリティアクセスが必要です。";
 "tooltip.pull_from_keynote" = "現在のKeynoteスライドをベクターPDFに変換します。";
 "tooltip.import_selection_from_keynote" = "先にKeynoteで選択範囲をコピー（⌘C）してからクリックすると、その選択オブジェクトだけをベクターPDFに変換します。非連続選択にも対応。コピーなしの場合は囲み矩形で取得します。";
 "tooltip.preview_pdf_loaded" = "このPDFをAffinity、Illustrator、Figma、その他PDFを受け付けるアプリに直接ドラッグします。";
 "tooltip.status_ready" = "SVGの準備ができました。Keynoteにドラッグするか「Keynote用にコピー」をクリックしてください。";
 "tooltip.preview_loaded" = "このSVGをKeynoteまたはSVGファイルを受け付けるアプリに直接ドラッグします。ドラッグ中はクリップボードは変更されません。";
-"tooltip.preview_empty" = "SVGファイルをここにドロップするか、下のボタンで開くか、アートワークをコピーして「Keynote用にコピー」をクリックしてください。";
+"tooltip.preview_empty" = "SVGまたはPDFをここにドロップするか、Illustrator・Affinity・Inkscapeでアートワークをコピー（⌘C）してKeyJigに切り替えてください。";
 "tooltip.settings.details" = "システムでInkscapeが見つかったインストールパスを表示します。";
 "tooltip.settings.download" = "公式サイトからInkscapeをダウンロードしてインストールし、PDFフォールバック変換を有効にします。";
 "tooltip.settings.copy_path" = "Inkscapeのインストールパスをクリップボードにコピー";
@@ -44,9 +42,6 @@
 "instruction.break_apart" = "Keynoteに配置後、オブジェクトを選択し、フォーマット ‣ 図形と線 ‣ 分割を選択してください。";
 
 /* ── Buttons ────────────────────────────────────────────────────────── */
-"button.open_svg_file" = "SVGファイルを開く…";
-"button.copy_to_clipboard" = "Keynote用にコピー";
-"button.copy_svg_to_clipboard" = "SVGをクリップボードにコピー";
 "button.place_in_keynote" = "Keynoteに配置";
 "button.place_svg_in_keynote" = "SVGをKeynoteに配置";
 "button.pull_from_keynote" = "KeynoteスライドをPDFに変換";
@@ -64,7 +59,7 @@
 /* ── Keynote pull hints ─────────────────────────────────────────────── */
 "undo.clear" = "削除";
 "hint.keynote.clipboard_ready" = "選択範囲をコピー済み — 最高品質で変換できます";
-"hint.keynote.clipboard_not_ready" = "最良の結果を得るには、KeynoteのナビゲーターでスライドをSelectし、クリップボードにコピーしてください（⌘C）";
+"hint.keynote.clipboard_not_ready" = "Keynoteのキャンバスでオブジェクトを選択してコピー（⌘C）すると、最高品質で変換できます";
 "hint.pdf_done" = "プレビューをAffinity・Illustrator・Figmaなど、PDFを受け付けるアプリにドラッグしてください。";
 
 /* ── Footer ─────────────────────────────────────────────────────────── */
@@ -72,7 +67,7 @@
 
 /* ── Empty state ────────────────────────────────────────────────────── */
 "empty_state.title" = "SVG未読み込み";
-"empty_state.body" = "SVGファイルをここにドロップするか、下のボタンで開くか、アートワークをコピーして「Keynote用にコピー」をクリックしてください。";
+"empty_state.body" = "SVGまたはPDFをここにドロップするか、アートワークをクリップボードにコピーしてKeyJigを再アクティブにしてください。";
 
 /* ── File dialog ────────────────────────────────────────────────────── */
 "file_dialog.title" = "ベクターファイルを選択";

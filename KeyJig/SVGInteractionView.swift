@@ -4,14 +4,6 @@ import SwiftUI
 // MARK: - Tooltip Text Constants
 
 struct Tooltips {
-    static let openFile = NSLocalizedString(
-        "tooltip.open_file",
-        comment: "Tooltip for the Open SVG File button")
-
-    static let copyToClipboard = NSLocalizedString(
-        "tooltip.copy_to_clipboard",
-        comment: "Tooltip for the Copy to Clipboard button")
-
     static let placeInKeynote = NSLocalizedString(
         "tooltip.place_in_keynote",
         comment: "Tooltip for the Place in Keynote button")
@@ -23,14 +15,6 @@ struct Tooltips {
     static let importSelectionFromKeynote = NSLocalizedString(
         "tooltip.import_selection_from_keynote",
         comment: "Tooltip for the Convert Keynote Clipboard to PDF button (Option-held variant)")
-
-    static let savePDF = NSLocalizedString(
-        "tooltip.save_pdf",
-        comment: "Tooltip for the Save PDF button")
-
-    static let copyPDF = NSLocalizedString(
-        "tooltip.copy_pdf",
-        comment: "Tooltip for the Copy PDF button")
 
     static let previewPDFLoaded = NSLocalizedString(
         "tooltip.preview_pdf_loaded",
