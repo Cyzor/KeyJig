@@ -10,6 +10,7 @@ enum KeynotePullError: LocalizedError {
     case noDocumentOpen
     case exportFailed(String)
     case pageMissing
+    case cancelled
 
     var errorDescription: String? {
         switch self {
@@ -31,7 +32,32 @@ enum KeynotePullError: LocalizedError {
             return NSLocalizedString(
                 "error.keynote.page_missing",
                 comment: "Error: the exported PDF has no page for the current slide")
+        case .cancelled:
+            return NSLocalizedString(
+                "error.keynote.cancelled",
+                comment: "Error: the Keynote pull operation was cancelled by the user")
         }
+    }
+}
+
+// MARK: - Cancellation token
+
+/// A thread-safe token that signals cancellation across async pull steps.
+/// Create one per pull invocation and store it on AppState so the UI can cancel.
+final class PullCancellationToken {
+    private let lock = NSLock()
+    private var _cancelled = false
+
+    var isCancelled: Bool {
+        lock.lock()
+        defer { lock.unlock() }
+        return _cancelled
+    }
+
+    func cancel() {
+        lock.lock()
+        defer { lock.unlock() }
+        _cancelled = true
     }
 }
 
@@ -54,6 +80,7 @@ enum KeynotePullError: LocalizedError {
 func pullFromKeynote(
     wantSelection: Bool = false,
     clipboardPDFData: Data? = nil,
+    cancellationToken: PullCancellationToken? = nil,
     completion: @escaping (Result<URL, KeynotePullError>) -> Void
 ) {
     // Serial queue keeps NSAppleScript calls non-concurrent.
@@ -71,6 +98,18 @@ func pullFromKeynote(
         // Capture the frontmost app so we can restore it after Keynote activates.
         let prevFrontApp: NSRunningApplication? = DispatchQueue.main.sync {
             NSWorkspace.shared.frontmostApplication
+        }
+
+        // Unhide Keynote if it is hidden — a hidden app silently ignores
+        // AppleScript export calls, causing the pull to stall indefinitely.
+        // `unhide()` makes the app visible without stealing focus.
+        if let keynoteApp = NSRunningApplication
+            .runningApplications(withBundleIdentifier: "com.apple.iWork.Keynote").first,
+            keynoteApp.isHidden
+        {
+            log.info("Keynote is hidden; unhiding before export")
+            keynoteApp.unhide()
+            Thread.sleep(forTimeInterval: 0.3)
         }
 
         // Source info used to build a descriptive output filename.
@@ -91,6 +130,7 @@ func pullFromKeynote(
         if wantSelection {
             let probeScript = """
                 tell application "Keynote"
+                    with timeout of 30 seconds
                     if not (exists front document) then error number -1728
                     set docCount to count of documents
                     tell front document
@@ -141,6 +181,7 @@ func pullFromKeynote(
                         end if
                         return (slideIdx as string) & "|" & bboxLines & "|" & docName & "|" & (docCount as string)
                     end tell
+                    end timeout
                 end tell
                 """
             var probeError: NSDictionary?
@@ -189,12 +230,18 @@ func pullFromKeynote(
             selectionBoxes = []
         }
 
+        if cancellationToken?.isCancelled == true {
+            DispatchQueue.main.async { completion(.failure(.cancelled)) }
+            return
+        }
+
         // Full-slide pull: the probe above is skipped, so fetch doc name + slide
         // index now for the output filename. One cheap AppleScript call; the
         // slide-index loop is O(n) but runs before the heavier export work.
         if !wantSelection {
             let nameScript = """
                 tell application "Keynote"
+                    with timeout of 30 seconds
                     if not (exists front document) then error number -1728
                     tell front document
                         set docName to name
@@ -206,6 +253,7 @@ func pullFromKeynote(
                         end repeat
                         return docName & "|" & (idx as string)
                     end tell
+                    end timeout
                 end tell
                 """
             var nameErr: NSDictionary?
@@ -223,6 +271,11 @@ func pullFromKeynote(
                 let f = s.components(separatedBy: "|")
                 pdfDocName = f.first.flatMap { $0.isEmpty ? nil : $0 }
                 pdfSlideIndex = f.count > 1 ? Int(f[1]) : nil
+            }
+
+            if cancellationToken?.isCancelled == true {
+                DispatchQueue.main.async { completion(.failure(.cancelled)) }
+                return
             }
         }
 
@@ -269,7 +322,7 @@ func pullFromKeynote(
                     from: srcURL,
                     pageNumber: 1,
                     selectionBoxes: selectionBoxes,
-                    padding: 8.0,
+                    padding: 40.0,
                     docName: pdfDocName,
                     slideIndex: pdfSlideIndex)
                 try? FileManager.default.removeItem(at: srcURL)
@@ -279,6 +332,11 @@ func pullFromKeynote(
                 }
                 return
             }
+        }
+
+        if cancellationToken?.isCancelled == true {
+            DispatchQueue.main.async { completion(.failure(.cancelled)) }
+            return
         }
 
         // 3b. Export the current slide as PDF.
@@ -299,14 +357,17 @@ func pullFromKeynote(
         if wantSelection {
             exportScript = """
                 tell application "Keynote"
+                    with timeout of 90 seconds
                     tell front document
                         export to (POSIX file "\(exportURL.path)") as PDF
                     end tell
+                    end timeout
                 end tell
                 """
         } else {
             exportScript = """
                 tell application "Keynote"
+                    with timeout of 90 seconds
                     tell front document
                         set savedSkipped to skipped of every slide
                         set nSlides to count of slides
@@ -321,10 +382,12 @@ func pullFromKeynote(
                             error errMsg number errNum
                         end try
                     end tell
+                    end timeout
                 end tell
 
                 on restoreSkips(savedSkipped, nSlides)
                     tell front document of application "Keynote"
+                        with timeout of 30 seconds
                         try
                             set skipped of every slide to savedSkipped
                         on error
@@ -332,6 +395,7 @@ func pullFromKeynote(
                                 set skipped of slide i to (item i of savedSkipped)
                             end repeat
                         end try
+                        end timeout
                     end tell
                 end restoreSkips
                 """
@@ -360,7 +424,7 @@ func pullFromKeynote(
                     if (try? data.write(to: srcURL)) != nil {
                         log.info("export failed; using current clipboard PDF as fallback")
                         let result = extractSlidePDF(from: srcURL, pageNumber: 1, selectionBoxes: [],
-                            padding: 8.0, docName: pdfDocName, slideIndex: pdfSlideIndex)
+                            padding: 40.0, docName: pdfDocName, slideIndex: pdfSlideIndex)
                         try? FileManager.default.removeItem(at: srcURL)
                         DispatchQueue.main.async {
                             prevFrontApp?.activateFrontmost()
@@ -382,7 +446,7 @@ func pullFromKeynote(
             from: exportURL,
             pageNumber: wantSelection ? probeSlideIndex : 1,
             selectionBoxes: selectionBoxes,
-            padding: 8.0,
+            padding: 40.0,
             docName: pdfDocName,
             slideIndex: pdfSlideIndex)
         try? FileManager.default.removeItem(at: exportURL)
@@ -490,6 +554,9 @@ private func extractSelectionViaPaste(
     let h = szs.count == 2 ? szs[1] : 768
 
     // Scratch doc → match size → blank placeholders → activate.
+    // Returns the new document's name so finishScript can address it by name
+    // rather than relying on `front document`, which may shift if the paste
+    // action causes another window to come forward.
     let setupScript = """
         tell application "Keynote"
             set d to make new document
@@ -501,14 +568,20 @@ private func extractSelectionViaPaste(
                 end try
             end tell
             activate
+            return name of d
         end tell
         """
     var eSetup: NSDictionary?
-    NSAppleScript(source: setupScript)!.executeAndReturnError(&eSetup)
+    let rSetup = NSAppleScript(source: setupScript)!.executeAndReturnError(&eSetup)
     if let e = eSetup {
         log.info("paste tier: scratch-doc setup failed: \(e["NSAppleScriptErrorMessage"] as? String ?? "?", privacy: .public)")
         return nil
     }
+    guard let scratchName = rSetup.stringValue, !scratchName.isEmpty else {
+        log.info("paste tier: could not read scratch doc name — aborting")
+        return nil
+    }
+    log.info("paste tier: scratch doc is '\(scratchName, privacy: .public)'")
     Thread.sleep(forTimeInterval: 0.3)
 
     // AX-paste the user's copied selection into the scratch doc.
@@ -520,40 +593,50 @@ private func extractSelectionViaPaste(
     // AppleScript never needs to touch individual items — which causes Keynote
     // to briefly highlight each one, producing the "deselects one by one" effect.
     let exportURL = makeTempKeynotePDFURL()
+    // Address the scratch doc by name so that even if the paste action caused
+    // another window to come forward, we never read from or close the wrong doc.
     let finishScript = """
         tell application "Keynote"
             set m to 0
             set okExport to false
             set geo to ""
+            set exportErr to ""
             try
-                tell front document
+                tell document "\(scratchName)"
                     set itms to iWork items of slide 1
                     set m to count of itms
+                    -- Geometry reading is best-effort; charts can't be queried
+                    -- via the batch iWork-item specifier and throw here. Wrap in
+                    -- a bare try so failure is silent and export still proceeds.
                     if m > 0 then
-                        set posList to position of itms
-                        set widList to width of itms
-                        set htList to height of itms
-                        set rotList to {}
                         try
-                            set rotList to rotation of itms
-                        on error
-                            repeat m times
-                                set rotList to rotList & {0}
+                            set posList to position of itms
+                            set widList to width of itms
+                            set htList to height of itms
+                            set rotList to {}
+                            try
+                                set rotList to rotation of itms
+                            on error
+                                repeat m times
+                                    set rotList to rotList & {0}
+                                end repeat
+                            end try
+                            repeat with i from 1 to m
+                                set p to item i of posList
+                                set geo to geo & (item 1 of p) & "," & (item 2 of p) & "," & (item i of widList) & "," & (item i of htList) & "," & (item i of rotList) & ";"
                             end repeat
                         end try
-                        repeat with i from 1 to m
-                            set p to item i of posList
-                            set geo to geo & (item 1 of p) & "," & (item 2 of p) & "," & (item i of widList) & "," & (item i of htList) & "," & (item i of rotList) & ";"
-                        end repeat
                     end if
                     export to (POSIX file "\(exportURL.path)") as PDF
                     set okExport to true
                 end tell
+            on error errMsg
+                set exportErr to errMsg
             end try
             try
-                close front document saving no
+                close document "\(scratchName)" saving no
             end try
-            return (m as string) & "|" & (okExport as string) & "|" & geo
+            return (m as string) & "|" & (okExport as string) & "|" & geo & "|" & exportErr
         end tell
         """
     var eFinish: NSDictionary?
@@ -572,27 +655,37 @@ private func extractSelectionViaPaste(
             guard n.count == 5 else { return nil }
             return SelectionBox(x: n[0], y: n[1], w: n[2], h: n[3], rotation: n[4])
         }
+    if !okExport, parts.count > 3, !parts[3].isEmpty {
+        log.info("paste tier: scratch-doc export error: \(parts[3], privacy: .public)")
+    }
 
     // Validate the clipboard actually held the live selection.
-    guard okExport, m == selN, !scratchBoxes.isEmpty else {
+    // scratchBoxes may be empty for charts (geometry batch-read not supported);
+    // count match + successful export is sufficient validation in that case.
+    guard okExport, m == selN else {
         log.info("paste tier: clipboard didn't match selection (pasted \(m, privacy: .public) vs \(selN, privacy: .public), export=\(okExport, privacy: .public)) — falling back to export+crop")
         try? FileManager.default.removeItem(at: exportURL)
         return nil
     }
-    let scratchExtent = scratchBoxes.dropFirst().reduce(scratchBoxes[0].aabb) { $0.union($1.aabb) }
-    let tol: CGFloat = 6
-    guard abs(scratchExtent.width - selExtent.width) < tol,
-          abs(scratchExtent.height - selExtent.height) < tol else {
-        log.info("paste tier: extent mismatch (\(scratchExtent.width, privacy: .public)x\(scratchExtent.height, privacy: .public) vs \(selExtent.width, privacy: .public)x\(selExtent.height, privacy: .public)) — stale clipboard, falling back")
-        try? FileManager.default.removeItem(at: exportURL)
-        return nil
+    if !scratchBoxes.isEmpty {
+        let scratchExtent = scratchBoxes.dropFirst().reduce(scratchBoxes[0].aabb) { $0.union($1.aabb) }
+        let tol: CGFloat = 6
+        guard abs(scratchExtent.width - selExtent.width) < tol,
+              abs(scratchExtent.height - selExtent.height) < tol else {
+            log.info("paste tier: extent mismatch (\(scratchExtent.width, privacy: .public)x\(scratchExtent.height, privacy: .public) vs \(selExtent.width, privacy: .public)x\(selExtent.height, privacy: .public)) — stale clipboard, falling back")
+            try? FileManager.default.removeItem(at: exportURL)
+            return nil
+        }
     }
 
     // Crop the scratch export to the pasted content (read fresh from the scratch
     // doc — paste may offset positions). Only selected objects exist here, so the
     // bounding-box crop is interloper-free.
+    // useContentBounds: scratch doc contains only selected objects, so the
+    // rendered ink bbox is the exact right crop — captures chart labels and
+    // leader lines that live outside the scripted geometry bounds.
     let result = extractSlidePDF(from: exportURL, pageNumber: 1, selectionBoxes: scratchBoxes,
-        padding: 8.0, docName: docName, slideIndex: slideIndex)
+        padding: 40.0, useContentBounds: true, docName: docName, slideIndex: slideIndex)
     try? FileManager.default.removeItem(at: exportURL)
     switch result {
     case .success(let url):
@@ -628,11 +721,65 @@ private struct SelectionBox {
 
 // MARK: - PDF extraction
 
+/// Renders one PDF page at reduced resolution and returns the tight bounding
+/// box of all non-white ink, in PDF coordinates (origin bottom-left).
+/// Passing the result to extractSlidePDF captures chart labels, leader lines,
+/// and any other content that overflows the scripted object geometry.
+/// Returns nil if rendering fails or the page has no non-white content.
+private func contentBoundsByRendering(cgPage: CGPDFPage, pageRect: CGRect) -> CGRect? {
+    guard pageRect.width > 0, pageRect.height > 0 else { return nil }
+    // 1024px on the long edge: 1pt≈1px for standard Keynote slides so thin
+    // leader lines (often 1pt) are reliably captured without subpixel dropout.
+    let scale = min(1.0, 1024.0 / max(pageRect.width, pageRect.height))
+    let w  = max(1, Int((pageRect.width  * scale).rounded()))
+    let h  = max(1, Int((pageRect.height * scale).rounded()))
+    let bpr = w * 4
+    let buf = UnsafeMutablePointer<UInt8>.allocate(capacity: h * bpr)
+    defer { buf.deallocate() }
+    memset(buf, 0xFF, h * bpr)   // white canvas
+
+    guard let ctx = CGContext(data: buf, width: w, height: h,
+                              bitsPerComponent: 8, bytesPerRow: bpr,
+                              space: CGColorSpaceCreateDeviceRGB(),
+                              bitmapInfo: CGImageAlphaInfo.noneSkipLast.rawValue)
+    else { return nil }
+
+    ctx.scaleBy(x: scale, y: scale)
+    ctx.drawPDFPage(cgPage)
+
+    // macOS CGContext bitmaps store row 0 at the visual top (high PDF y).
+    // `by` = min row = topmost ink = highest PDF y (near page top).
+    // `ty` = max row = bottommost ink = lowest PDF y (near page bottom).
+    // PDF y of the bottom edge of content = (h - 1 - ty) / scale.
+    var lx = w, rx = -1, by = h, ty = -1
+    for row in 0..<h {
+        let rowBase = buf + row * bpr
+        for col in 0..<w {
+            let p = rowBase + col * 4
+            if p[0] < 250 || p[1] < 250 || p[2] < 250 {
+                if col < lx { lx = col }
+                if col > rx { rx = col }
+                if row < by { by = row }
+                if row > ty { ty = row }
+            }
+        }
+    }
+    guard rx >= 0 else { return nil }
+
+    return CGRect(
+        x:      CGFloat(lx)          / scale,
+        y:      CGFloat(h - 1 - ty)  / scale,   // row ty → PDF y near bottom
+        width:  CGFloat(rx - lx + 1) / scale,
+        height: CGFloat(ty - by + 1) / scale
+    )
+}
+
 private func extractSlidePDF(
     from exportURL: URL,
     pageNumber: Int,
     selectionBoxes: [SelectionBox],
     padding: CGFloat,
+    useContentBounds: Bool = false,
     docName: String? = nil,
     slideIndex: Int? = nil
 ) -> Result<URL, KeynotePullError> {
@@ -650,15 +797,27 @@ private func extractSlidePDF(
 
     // Determine crop rect in PDF coords (origin bottom-left).
     let cropRect: CGRect
-    if selectionBoxes.isEmpty {
-        cropRect = pageRect
-    } else {
+    if useContentBounds,
+       let cb = contentBoundsByRendering(cgPage: cgPage, pageRect: pageRect) {
+        // Scratch-doc path: the PDF contains exactly the selected objects.
+        // Use the actual ink bounding box so chart data labels, leader lines,
+        // and anything else that overflows the scripted geometry is included.
+        // 4 pt expansion absorbs anti-aliasing at the outermost pixel edge.
+        let r = cb.insetBy(dx: -4.0, dy: -4.0)
+        cropRect = r.intersection(pageRect)
+        log.info("content-bounds crop: \(cropRect.width, privacy: .public)×\(cropRect.height, privacy: .public) (page \(pageRect.width, privacy: .public)×\(pageRect.height, privacy: .public))")
+    } else if !selectionBoxes.isEmpty {
+        // Geometry-based fallback: crop to the union of reported object bounds
+        // plus padding. Keynote's scripted geometry underreports chart overflow,
+        // but this is the best available without PDF content information.
         let union = selectionBoxes.dropFirst().reduce(selectionBoxes[0].aabb) { $0.union($1.aabb) }
         // Flip Y from Keynote (top-left origin) to PDF (bottom-left origin).
         let pdfY = pageRect.height - (union.minY + union.height)
         var r = CGRect(x: union.minX, y: pdfY, width: union.width, height: union.height)
         r = r.insetBy(dx: -padding, dy: -padding)
         cropRect = r.intersection(pageRect)
+    } else {
+        cropRect = pageRect
     }
 
     // Prefer external tools that genuinely rewrite the content stream so no
@@ -863,19 +1022,28 @@ private extension NSRunningApplication {
 /// Shared action: convert the current Keynote slide to a vector PDF.
 /// Called by both the button in ContentView and the File menu in AppDelegate.
 func triggerKeynoteSlide(appState: AppState, setStatus: @escaping (String) -> Void) {
+    guard appState.keynotePullStatus != .pulling else { return }
+    let token = PullCancellationToken()
+    appState.activePullToken = token
     appState.keynotePullStatus = .pulling
     setStatus(NSLocalizedString("status.keynote.pulling",
         comment: "Status: PDF export from Keynote in progress"))
     appState.previewPDFURL = nil
-    pullFromKeynote(wantSelection: false, clipboardPDFData: nil) { result in
+    pullFromKeynote(wantSelection: false, clipboardPDFData: nil, cancellationToken: token) { result in
+        appState.activePullToken = nil
         switch result {
         case .success(let url):
             appState.previewPDFURL = url
             appState.keynotePullStatus = .succeeded
             setStatus("")
         case .failure(let error):
-            appState.keynotePullStatus = .failed
-            setStatus(error.localizedDescription)
+            if case .cancelled = error {
+                appState.keynotePullStatus = .idle
+                setStatus("")
+            } else {
+                appState.keynotePullStatus = .failed
+                setStatus(error.localizedDescription)
+            }
         }
     }
 }
@@ -883,6 +1051,9 @@ func triggerKeynoteSlide(appState: AppState, setStatus: @escaping (String) -> Vo
 /// Shared action: convert the user's copied Keynote selection to a vector PDF.
 /// Called by both the button in ContentView and the File menu in AppDelegate.
 func triggerKeynoteClipboard(appState: AppState, setStatus: @escaping (String) -> Void) {
+    guard appState.keynotePullStatus != .pulling else { return }
+    let token = PullCancellationToken()
+    appState.activePullToken = token
     appState.keynotePullStatus = .pulling
     setStatus(NSLocalizedString("status.keynote.pulling",
         comment: "Status: PDF export from Keynote in progress"))
@@ -893,15 +1064,21 @@ func triggerKeynoteClipboard(appState: AppState, setStatus: @escaping (String) -
             .compactMap { pb.data(forType: NSPasteboard.PasteboardType($0)) }
             .first { !$0.isEmpty }
     }()
-    pullFromKeynote(wantSelection: true, clipboardPDFData: clipboardPDF) { result in
+    pullFromKeynote(wantSelection: true, clipboardPDFData: clipboardPDF, cancellationToken: token) { result in
+        appState.activePullToken = nil
         switch result {
         case .success(let url):
             appState.previewPDFURL = url
             appState.keynotePullStatus = .succeeded
             setStatus("")
         case .failure(let error):
-            appState.keynotePullStatus = .failed
-            setStatus(error.localizedDescription)
+            if case .cancelled = error {
+                appState.keynotePullStatus = .idle
+                setStatus("")
+            } else {
+                appState.keynotePullStatus = .failed
+                setStatus(error.localizedDescription)
+            }
         }
     }
 }

@@ -59,7 +59,8 @@
 "error.keynote.accessibility" = "Bedienungshilfenzugriff erforderlich. KeyJig unter Systemeinstellungen ▸ Datenschutz & Sicherheit ▸ Bedienungshilfen aktivieren und erneut versuchen.";
 "error.keynote.paste_failed" = "Das SVG konnte nicht in Keynote eingefügt werden.";
 "error.keynote.export_failed" = "Keynote-Export fehlgeschlagen: %@";
-"error.keynote.page_missing" = "Das exportierte PDF enthielt die aktuelle Folie nicht.";
+"error.keynote.page_missing" = "Die aktuelle Folie wurde nicht in das PDF exportiert.";
+"error.keynote.cancelled" = "Vorgang abgebrochen.";
 
 /* ── Keynote pull hints ─────────────────────────────────────────────── */
 "undo.clear" = "Löschen";

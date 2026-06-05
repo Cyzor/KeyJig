@@ -11,13 +11,27 @@ class AppState: ObservableObject {
     @Published var svgURL: String = ""
     @Published var svgString: String = "" {
         didSet {
-            // Loading any SVG content takes over the preview — clear any
-            // active "Pull from Keynote" PDF so the two modes don't coexist.
             if !svgString.isEmpty && previewPDFURL != nil {
                 previewPDFURL = nil
             }
+            // Cache metadata so views never run regex in their body.
+            if svgString.isEmpty {
+                svgDimensions = nil
+                svgFileSize = ""
+                svgCreator = nil
+            } else {
+                svgDimensions = extractSVGDimensions(svgString: svgString)
+                svgFileSize = getFileSizeString(svgString: svgString)
+                svgCreator = extractSVGCreator(svgString: svgString)
+            }
         }
     }
+    /// Cached result of extractSVGDimensions — updated whenever svgString changes.
+    private(set) var svgDimensions: (width: Double, height: Double)? = nil
+    /// Cached result of getFileSizeString — updated whenever svgString changes.
+    private(set) var svgFileSize: String = ""
+    /// Cached result of extractSVGCreator — updated whenever svgString changes.
+    private(set) var svgCreator: String? = nil
     /// The last temp file written by svgToClipboard() or an outbound drag.
     /// Stored here so the proxy icon can find it even though each write now
     /// produces a uniquely-named file.
@@ -44,6 +58,10 @@ class AppState: ObservableObject {
     }
     /// Tracks in-progress / result state for the "Pull from Keynote" action.
     @Published var keynotePullStatus: KeynotePullStatus = .idle
+    /// The active cancellation token for an in-flight pull operation.
+    /// Set by triggerKeynoteSlide/triggerKeynoteClipboard; nil when idle.
+    /// ContentView observes this to wire the Escape key to cancel.
+    @Published var activePullToken: PullCancellationToken? = nil
     /// Change count of the last pasteboard snapshot we acted on. Used by
     /// checkAndLoadClipboardSVG to skip re-processing an unchanged clipboard.
     var lastLoadedClipboardChangeCount: Int = -1

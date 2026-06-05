@@ -59,6 +59,7 @@
 "error.keynote.paste_failed" = "No se pudo insertar el SVG en Keynote.";
 "error.keynote.export_failed" = "Error de exportación de Keynote: %@";
 "error.keynote.page_missing" = "El PDF exportado no contenía la diapositiva actual.";
+"error.keynote.cancelled" = "Operación cancelada.";
 
 /* ── Keynote pull hints ─────────────────────────────────────────────── */
 "undo.clear" = "Eliminar";

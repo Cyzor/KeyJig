@@ -51,6 +51,7 @@
 "error.keynote.paste_failed" = "Could not place the SVG in Keynote.";
 "error.keynote.export_failed" = "Keynote export failed: %@";
 "error.keynote.page_missing" = "The exported PDF did not contain the current slide.";
+"error.keynote.cancelled" = "Operation cancelled.";
 
 /* ── Buttons ────────────────────────────────────────────────────────── */
 "button.open_svg_file" = "Open SVG File…";
@@ -59,7 +60,7 @@
 "button.place_in_keynote" = "Place in Keynote";
 "button.place_svg_in_keynote" = "Place SVG in Keynote";
 "button.pull_from_keynote" = "Convert Keynote Slide to PDF";
-"button.import_selection_from_keynote" = "Convert Keynote Clipboard";
+"button.import_selection_from_keynote" = "Convert Keynote Clipboard to PDF";
 
 /* ── Keynote pull hints ─────────────────────────────────────────────── */
 "undo.clear" = "Clear";

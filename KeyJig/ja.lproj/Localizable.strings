@@ -59,6 +59,7 @@
 "error.keynote.paste_failed" = "KeynoteにSVGを配置できませんでした。";
 "error.keynote.export_failed" = "Keynoteのエクスポートに失敗しました: %@";
 "error.keynote.page_missing" = "エクスポートされたPDFに現在のスライドが含まれていません。";
+"error.keynote.cancelled" = "操作はキャンセルされました。";
 
 /* ── Keynote pull hints ─────────────────────────────────────────────── */
 "undo.clear" = "削除";
