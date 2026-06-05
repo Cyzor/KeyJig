@@ -181,7 +181,8 @@ private class OptionKeyMonitor: ObservableObject {
 
     init() {
         monitor = NSEvent.addLocalMonitorForEvents(matching: .flagsChanged) { [weak self] event in
-            self?.isHeld = event.modifierFlags.contains(.option)
+            let flags = event.modifierFlags
+            self?.isHeld = flags.contains(.option) || flags.contains(.shift)
             return event
         }
     }
