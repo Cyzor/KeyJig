@@ -109,7 +109,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
         let popover = NSPopover()
         popover.contentSize = NSSize(width: 400, height: 520)
         popover.contentViewController = NSHostingController(
-            rootView: ContentView(appState: popoverAppState, isPopoverContext: true))
+            rootView: ContentView(appState: popoverAppState, isPopoverContext: true, isPopoverSurface: true))
         // .applicationDefined suppresses AppKit's built-in click-outside-to-close
         // logic. We install our own global mouseUp monitor instead so a drag from
         // outside can enter the popover before the release dismisses it.
@@ -416,7 +416,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
         if activePopoverState !== target {
             let isIndependent = target === popoverAppState
             popover.contentViewController = NSHostingController(
-                rootView: ContentView(appState: target, isPopoverContext: isIndependent))
+                rootView: ContentView(appState: target, isPopoverContext: isIndependent, isPopoverSurface: true))
             activePopoverState = target
         }
 
@@ -505,6 +505,21 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
                 CGPoint(x: last.origin.x + 20, y: last.origin.y - 20))
         }
 
+        wc.window?.makeKeyAndOrderFront(nil)
+        NSApp.activate(ignoringOtherApps: true)
+        floatingWindows.append(wc)
+    }
+
+    /// Opens a new floating viewer window preloaded with an SVG string.
+    /// Called when a multi-file drop produces more results than the target
+    /// window can absorb (extras) or when the popover receives any drop (all).
+    func openNewFloatingWindow(withSVG svg: String) {
+        let wc = MainWindowController(isPrimary: false)
+        if let last = floatingWindows.last?.window?.frame {
+            wc.window?.setFrameOrigin(
+                CGPoint(x: last.origin.x + 20, y: last.origin.y - 20))
+        }
+        wc.appState.svgString = svg
         wc.window?.makeKeyAndOrderFront(nil)
         NSApp.activate(ignoringOtherApps: true)
         floatingWindows.append(wc)
@@ -868,10 +883,23 @@ private final class StatusBarDragProxy: NSView {
     }
 
     /// Handles the rare case where the user releases on the icon itself rather
-    /// than moving into the opened popover. Loads the content directly into the
-    /// frontmost window so the interaction still completes without extra steps.
+    /// than moving into the opened popover. For multi-file drops all results go
+    /// to floating windows; for single files the front window receives the content.
     override func performDragOperation(_ sender: NSDraggingInfo) -> Bool {
-        guard let svg = SVGInteractionView.svgString(from: sender.draggingPasteboard),
+        let pb = sender.draggingPasteboard
+        let fileURLs = SVGInteractionView.validFileURLs(from: pb)
+        if fileURLs.count > 1 {
+            let state = appDelegate?.frontWindowState
+            state?.conversionStatus = .converting
+            SVGInteractionView.processFilesSerially(fileURLs) { [weak self] svgs in
+                state?.conversionStatus = .idle
+                for svg in svgs {
+                    self?.appDelegate?.openNewFloatingWindow(withSVG: svg)
+                }
+            }
+            return true
+        }
+        guard let svg = SVGInteractionView.svgString(from: pb),
               let state = appDelegate?.frontWindowState
         else { return false }
         state.svgString = svg

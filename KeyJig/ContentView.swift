@@ -116,11 +116,13 @@ struct PDFPreviewView: NSViewRepresentable {
 // MARK: - Metadata overlay
 
 struct MetadataOverlay: View {
-    let svgString: String
+    let dimensions: (width: Double, height: Double)?
+    let fileSize: String
+    let creator: String?
 
     var body: some View {
         VStack(alignment: .leading, spacing: 4) {
-            if let (width, height) = extractSVGDimensions(svgString: svgString) {
+            if let (width, height) = dimensions {
                 MetadataRow(
                     label: NSLocalizedString(
                         "metadata.dimensions",
@@ -132,8 +134,8 @@ struct MetadataOverlay: View {
                 label: NSLocalizedString(
                     "metadata.size",
                     comment: "Metadata overlay label for SVG file size"),
-                value: getFileSizeString(svgString: svgString))
-            if let creator = extractSVGCreator(svgString: svgString) {
+                value: fileSize)
+            if let creator {
                 MetadataRow(
                     label: NSLocalizedString(
                         "metadata.source",
@@ -199,15 +201,23 @@ struct ContentView: View {
     /// Kept here rather than on AppState so the same AppState can be shared
     /// between a floating window and the popover without affecting either's UI.
     let isPopoverContext: Bool
+    /// True when this ContentView is hosted inside the menu-bar popover,
+    /// regardless of whether it is mirroring a document window. Used only for
+    /// drop routing — multi-file drops send all results to new floating windows
+    /// rather than loading the first into the popover's (or mirrored window's)
+    /// AppState. Distinct from `isPopoverContext`, which controls keyboard
+    /// shortcut visibility and the option-reveal.
+    let isPopoverSurface: Bool
     @StateObject private var optionMonitor = OptionKeyMonitor()
     @Environment(\.undoManager) private var undoManager
     @State private var svgPopReady = false
     @State private var pdfPopReady = false
     // Status messages are stored in appState.statusMessage so menu commands
     // (which route through AppDelegate) can update the same property.
-    init(appState: AppState = AppState(), isPopoverContext: Bool = false) {
+    init(appState: AppState = AppState(), isPopoverContext: Bool = false, isPopoverSurface: Bool = false) {
         self.appState = appState
         self.isPopoverContext = isPopoverContext
+        self.isPopoverSurface = isPopoverSurface
     }
 
     private static let breakApartInstruction = NSLocalizedString(
@@ -223,12 +233,12 @@ struct ContentView: View {
             "accessibility.svg_preview",
             comment: "VoiceOver label for the loaded SVG preview, e.g. 'SVG preview, 512 by 384, 23.4 KB'")
         let dims: String
-        if let (w, h) = extractSVGDimensions(svgString: appState.svgString) {
+        if let (w, h) = appState.svgDimensions {
             dims = "\(Int(w.rounded())) × \(Int(h.rounded()))"
         } else {
             dims = "—"
         }
-        let size = getFileSizeString(svgString: appState.svgString)
+        let size = appState.svgFileSize
         return String.localizedStringWithFormat(format, dims, size)
     }
 
@@ -237,9 +247,41 @@ struct ContentView: View {
         !appState.svgString.isEmpty || appState.previewPDFURL != nil
     }
 
+    /// True when the empty well is showing its own built-in spinner.
+    /// Used to suppress the redundant status-area entry for the same operation.
+    private var isEmptyWellProcessing: Bool {
+        !hasContent && (appState.conversionStatus == .converting
+            || appState.keynotePullStatus == .pulling)
+    }
+
     /// True when the preview holds a PDF pulled from Keynote.
     private var isPDFMode: Bool {
         appState.previewPDFURL != nil
+    }
+
+    /// Routes one or more dropped SVGs to the right destination.
+    /// In a regular window the first SVG loads here; extras open new floating
+    /// windows. On the popover surface (isPopoverSurface), multi-file drops
+    /// send every result to a new floating window so the pinned panel isn't
+    /// commandeered and the mirrored window isn't silently overwritten;
+    /// single-file drops still load into the popover normally.
+    private func handleDroppedSVGs(_ svgs: [String]) {
+        guard let first = svgs.first else { return }
+        if isPopoverSurface && svgs.count > 1 {
+            // Multi-file on the popover: every result gets its own floating window
+            // so the pinned panel isn't commandeered and the mirrored window isn't
+            // silently overwritten. Single files still load into the popover normally.
+            for svg in svgs {
+                AppDelegate.shared?.openNewFloatingWindow(withSVG: svg)
+            }
+        } else {
+            appState.conversionStatus = .idle
+            appState.svgString = first
+            appState.statusMessage = ""
+            for svg in svgs.dropFirst() {
+                AppDelegate.shared?.openNewFloatingWindow(withSVG: svg)
+            }
+        }
     }
 
     var computedStatusMessage: String {
@@ -254,6 +296,11 @@ struct ContentView: View {
                 comment: "Status: conversion found no usable data")
         case .idle:
             break
+        }
+        if appState.keynotePullStatus == .pulling {
+            return NSLocalizedString(
+                "status.keynote.pulling",
+                comment: "Status: Keynote export is in progress")
         }
         let base: String
         if !appState.statusMessage.isEmpty {
@@ -352,9 +399,11 @@ struct ContentView: View {
             } else {
 
             // ── Status ────────────────────────────────────────────────────
-            if !computedStatusMessage.isEmpty {
+            if !computedStatusMessage.isEmpty && !isEmptyWellProcessing {
                 HStack(spacing: 6) {
-                    if appState.conversionStatus == .converting || appState.keynotePullStatus == .pulling {
+                    if appState.conversionStatus == .converting
+                        || appState.keynotePullStatus == .pulling
+                        || appState.keynoteSendStatus == .sending {
                         ProgressView()
                             .progressViewStyle(.circular)
                             .scaleEffect(0.6)
@@ -442,7 +491,7 @@ struct ContentView: View {
                     .keyboardShortcut("r", modifiers: .command)
                     .disabled(isConverting || isPulling || !appState.keynoteRunning)
 
-                    // ── Convert Keynote Clipboard  ⌘E ────────────────────
+                    // ── Convert Keynote Clipboard to PDF ⌘E ────────────────────
                     VStack(alignment: .leading, spacing: 2) {
                         Button {
                             triggerKeynoteClipboard(appState: appState) { appState.statusMessage = $0 }
@@ -461,7 +510,7 @@ struct ContentView: View {
                         }
                         .help(Tooltips.importSelectionFromKeynote)
                         .keyboardShortcut("e", modifiers: .command)
-                        .disabled(isConverting || isPulling || !appState.keynoteRunning)
+                        .disabled(isConverting || isPulling || !appState.keynoteRunning || !appState.keynoteClipboardReady)
 
                         // Live clipboard readiness indicator
                         if appState.keynoteRunning {
@@ -480,6 +529,7 @@ struct ContentView: View {
                             .font(.caption2)
                             .foregroundColor(appState.keynoteClipboardReady ? .accentColor : .secondary)
                             .padding(.leading, 40)
+                            .padding(.top, 6)
                             .animation(.easeInOut(duration: 0.15), value: appState.keynoteClipboardReady)
                         }
                     }
@@ -570,11 +620,16 @@ struct ContentView: View {
                     Button("") { clearCanvas() }.keyboardShortcut(.delete, modifiers: [])
                     Button("") { clearCanvas() }.keyboardShortcut(.delete, modifiers: .command)
                 }
-                // Escape dismisses the menu-bar popover.
-                if isPopoverContext {
-                    Button("") { AppDelegate.shared?.closePopover() }
-                        .keyboardShortcut(.escape, modifiers: [])
+                // Escape cancels an active pull/send operation when one is in
+                // flight; otherwise it dismisses the menu-bar popover (if shown).
+                Button("") {
+                    if let token = appState.activePullToken, !token.isCancelled {
+                        token.cancel()
+                    } else if isPopoverContext {
+                        AppDelegate.shared?.closePopover()
+                    }
                 }
+                .keyboardShortcut(.escape, modifiers: [])
             }
             .frame(width: 0, height: 0)
             .hidden()
@@ -604,9 +659,11 @@ struct ContentView: View {
 
             SVGInteractionViewWrapper(
                 onDragStart: { url },
-                onSVGDropped: { svg in
-                    appState.svgString = svg
-                    appState.statusMessage = ""
+                onMultiFileDropStarted: {
+                    if !isPopoverSurface { appState.conversionStatus = .converting }
+                },
+                onSVGDropped: { svgs in
+                    handleDroppedSVGs(svgs)
                 },
                 onClear: { clearCanvas() },
                 dragLabel: NSLocalizedString(
@@ -660,9 +717,11 @@ struct ContentView: View {
                     }
                     return url
                 },
-                onSVGDropped: { svg in
-                    appState.svgString = svg
-                    appState.statusMessage = ""
+                onMultiFileDropStarted: {
+                    if !isPopoverSurface { appState.conversionStatus = .converting }
+                },
+                onSVGDropped: { svgs in
+                    handleDroppedSVGs(svgs)
                 },
                 onCopyForKeynote: {
                     if svgToClipboard(svgData: appState.svgString, appState: appState) != nil {
@@ -679,7 +738,10 @@ struct ContentView: View {
             VStack {
                 Spacer()
                 HStack {
-                    MetadataOverlay(svgString: appState.svgString)
+                    MetadataOverlay(
+                        dimensions: appState.svgDimensions,
+                        fileSize: appState.svgFileSize,
+                        creator: appState.svgCreator)
                         .padding(8)
                     Spacer()
                 }
@@ -710,45 +772,58 @@ struct ContentView: View {
 
             // Interaction layer (drop only — onDragStart and menu callbacks are nil).
             SVGInteractionViewWrapper(
-                onSVGDropped: { svg in
-                    appState.svgString = svg
-                    appState.statusMessage = ""
+                onMultiFileDropStarted: {
+                    if !isPopoverSurface { appState.conversionStatus = .converting }
+                },
+                onSVGDropped: { svgs in
+                    handleDroppedSVGs(svgs)
                 }
             )
 
             // Visual prompt — no hit testing so drops reach the layer below.
-            VStack(spacing: 12) {
-                Image("Placeholder")
-                    .renderingMode(.template)
-                    .resizable()
-                    .aspectRatio(contentMode: .fit)
-                    .frame(width: 80, height: 80)
-                    .foregroundColor(.secondary)
-                    .accessibilityLabel(
+            if isEmptyWellProcessing {
+                VStack(spacing: 12) {
+                    ProgressView()
+                        .scaleEffect(1.5)
+                    Text(computedStatusMessage)
+                        .font(.headline)
+                        .foregroundColor(.secondary)
+                }
+                .allowsHitTesting(false)
+            } else {
+                VStack(spacing: 12) {
+                    Image("Placeholder")
+                        .renderingMode(.template)
+                        .resizable()
+                        .aspectRatio(contentMode: .fit)
+                        .frame(width: 80, height: 80)
+                        .foregroundColor(.secondary)
+                        .accessibilityLabel(
+                            NSLocalizedString(
+                                "accessibility.placeholder_icon",
+                                comment: "VoiceOver label for the empty state illustration"
+                            ))
+
+                    Text(
                         NSLocalizedString(
-                            "accessibility.placeholder_icon",
-                            comment: "VoiceOver label for the empty state illustration"
-                        ))
+                            "empty_state.title",
+                            comment: "Empty state heading when no SVG is loaded")
+                    )
+                    .font(.headline)
+                    .foregroundColor(.secondary)
 
-                Text(
-                    NSLocalizedString(
-                        "empty_state.title",
-                        comment: "Empty state heading when no SVG is loaded")
-                )
-                .font(.headline)
-                .foregroundColor(.secondary)
-
-                Text(
-                    NSLocalizedString(
-                        "empty_state.body",
-                        comment: "Empty state instructions when no SVG is loaded")
-                )
-                .font(.caption)
-                .foregroundColor(.secondary)
-                .multilineTextAlignment(.center)
-                .padding(.horizontal, 16)
+                    Text(
+                        NSLocalizedString(
+                            "empty_state.body",
+                            comment: "Empty state instructions when no SVG is loaded")
+                    )
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+                    .multilineTextAlignment(.center)
+                    .padding(.horizontal, 16)
+                }
+                .allowsHitTesting(false)
             }
-            .allowsHitTesting(false)
         }
         .help(Tooltips.previewAreaEmpty)
     }

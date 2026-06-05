@@ -67,8 +67,15 @@ class SVGInteractionView: NSView {
     /// Return the file URL to use as the drag payload, or nil to cancel the drag.
     var onDragStart: (() -> URL?)?
 
-    /// Called with the loaded SVG string when a valid inbound drop lands.
-    var onSVGDropped: ((String) -> Void)?
+    /// Called with one or more SVG strings when a valid inbound drop lands.
+    /// Single drops fire immediately with a one-element array; multi-file drops
+    /// fire once on the main thread after all files are processed serially.
+    /// First element targets the receiving window; extras open new floating windows.
+    var onSVGDropped: (([String]) -> Void)?
+
+    /// Called synchronously on the main thread when a multi-file async drop
+    /// begins. Use this to show a progress indicator while files are processed.
+    var onMultiFileDropStarted: (() -> Void)?
 
     /// Called when the user chooses "Convert and Copy for Keynote" from the context menu.
     var onCopyForKeynote: (() -> Void)?
@@ -85,6 +92,51 @@ class SVGInteractionView: NSView {
     }
 
     private var trashButton: NSButton?
+
+    // MARK: Multi-file helpers (also used by StatusBarDragProxy)
+
+    /// Returns all valid vector file URLs from the pasteboard, up to `limit`.
+    /// Filters by extension first, then falls back to content sniffing.
+    static func validFileURLs(from pasteboard: NSPasteboard, limit: Int = 5) -> [URL] {
+        (pasteboard.readObjects(
+            forClasses: [NSURL.self],
+            options: [.urlReadingFileURLsOnly: true]) as? [URL] ?? [])
+        .filter { url in
+            let ext = url.pathExtension.lowercased()
+            let type = ["svg", "pdf", "ai"].contains(ext) ? ext
+                : (sniffVectorFileType(at: url) ?? ext)
+            return ["svg", "pdf", "ai"].contains(type)
+        }
+        .prefix(limit)
+        .map { $0 }
+    }
+
+    /// Converts a list of vector file URLs to SVG strings serially on a
+    /// background queue. Calls `completion` on the main thread with all
+    /// successfully converted results (failed files are silently skipped).
+    static func processFilesSerially(_ urls: [URL], completion: @escaping ([String]) -> Void) {
+        DispatchQueue.global(qos: .userInitiated).async {
+            var results: [String] = []
+            for url in urls {
+                let ext = url.pathExtension.lowercased()
+                let type = ["svg", "pdf", "ai"].contains(ext) ? ext
+                    : (sniffVectorFileType(at: url) ?? ext)
+                switch type {
+                case "svg":
+                    if let s = try? String(contentsOf: url, encoding: .utf8),
+                       s.contains("<svg") {
+                        results.append(addSVGMargin(s))
+                    }
+                case "pdf", "ai":
+                    if let s = convertToSVGWithInkscape(inputURL: url) {
+                        results.append(s)
+                    }
+                default: break
+                }
+            }
+            DispatchQueue.main.async { completion(results) }
+        }
+    }
 
     // Accepted inbound pasteboard types — also used by StatusBarDragProxy.
     static let acceptedTypes: [NSPasteboard.PasteboardType] = [
@@ -226,8 +278,25 @@ class SVGInteractionView: NSView {
     override func performDragOperation(_ sender: NSDraggingInfo) -> Bool {
         isDropHighlighted = false
         guard sender.draggingSource as? SVGInteractionView !== self else { return false }
+        guard Self.canHandleDropData(sender.draggingPasteboard) else { return false }
+
+        // Multi-file: process serially on a background queue, then fire the
+        // callback once with all results. Return true immediately so the drop
+        // animation completes without waiting for Inkscape conversions.
+        let fileURLs = Self.validFileURLs(from: sender.draggingPasteboard)
+        if fileURLs.count > 1 {
+            onMultiFileDropStarted?()
+            Self.processFilesSerially(fileURLs) { [weak self] svgs in
+                guard !svgs.isEmpty else { return }
+                self?.onSVGDropped?(svgs)
+            }
+            return true
+        }
+
+        // Single file or non-file-URL source (svg-image type, PDF pasteboard data,
+        // SVG text): use the existing synchronous path.
         guard let svg = Self.svgString(from: sender.draggingPasteboard) else { return false }
-        onSVGDropped?(svg)
+        onSVGDropped?([svg])
         return true
     }
 
@@ -374,7 +443,8 @@ extension SVGInteractionView: NSDraggingSource {
 struct SVGInteractionViewWrapper: NSViewRepresentable {
 
     var onDragStart: (() -> URL?)?
-    var onSVGDropped: ((String) -> Void)?
+    var onMultiFileDropStarted: (() -> Void)?
+    var onSVGDropped: (([String]) -> Void)?
     var onCopyForKeynote: (() -> Void)?
     var onClear: (() -> Void)?
     var dragLabel: String = NSLocalizedString(
@@ -388,6 +458,7 @@ struct SVGInteractionViewWrapper: NSViewRepresentable {
         nsView.dragLabel = dragLabel
         nsView.onDragStart = onDragStart
         nsView.onSVGDropped = onSVGDropped
+        nsView.onMultiFileDropStarted = onMultiFileDropStarted
         nsView.onCopyForKeynote = onCopyForKeynote
         nsView.onClear = onClear
     }
