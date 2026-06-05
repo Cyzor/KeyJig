@@ -132,7 +132,7 @@
 "help.section.import.title" = "SVGを読み込む";
 "help.section.import.body" = "• SVGファイルをプレビューエリアにドロップします。\n• Illustrator・Affinity・Inkscapeでアートワークをコピー（⌘C）すると、KeyJigが自動で検出します。\n• ファイル ▸ SVGファイルを開く…（⌘O）でファイルを開きます。\n• Inkscapeがインストールされていれば、PDFや.aiファイルも開けます。";
 "help.section.keynote.title" = "Keynoteに送る";
-"help.section.keynote.body" = "• Keynote用にコピー（⇧⌘C）— Keynoteで貼り付け（⌘V）後、フォーマット ▸ 図形と線 ▸ 分割でパスを編集できます。\n• SVGをKeynoteに配置（⌘D）で現在のスライドに直接配置します。アクセシビリティアクセスが必要です（システム設定 ▸ プライバシーとセキュリティ）。";
+"help.section.keynote.body" = "• Keynote用にコピー（⌘K）— Keynoteで貼り付け（⌘V）後、フォーマット ▸ 図形と線 ▸ 分割でパスを編集できます。\n• SVGをKeynoteに配置（⌘D）で現在のスライドに直接配置します。アクセシビリティアクセスが必要です（システム設定 ▸ プライバシーとセキュリティ）。";
 "help.section.pull.title" = "KeynoteをPDFに変換";
 "help.section.pull.body" = "• Keynoteクリップボードを変換（⌘E）— 先にKeynoteで選択をコピー（⌘C）すると、ベクターデータのみを正確に取得できます。コピーなしの場合は、現在の選択の囲み矩形で取得します。\n• KeynoteスライドをPDFに変換（⌘R）— 現在のスライド全体をベクターPDFとして取得します。事前のコピーは不要です。\n• PDFプレビューをAffinity・Illustrator・Figmaなどのアプリにドラッグしてください。";
 "help.section.setup.title" = "権限と依存関係";

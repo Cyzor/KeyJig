@@ -30,15 +30,14 @@ Keynote 10+ has a native SVG importer, but copying and pasting from Illustrator 
    - **Drag** the preview directly onto a slide.
    - **⌘K** (or right-click the preview) to copy it to the clipboard, then paste in Keynote (`⌘V`).
    - **⌘D / Place in Keynote** to insert it onto the current slide automatically.
-4. **Break Apart** in Keynote via *Format → Shapes and Lines → Break Apart* (or right-click the object).
-5. Optionally **Make Editable**, then adjust color, stroke, and anchor points like any native Keynote shape.
+4. **Break Apart** in Keynote via *Format → Shapes and Lines → Break Apart* (or right-click the object). The paths are now native Keynote shapes — adjust color, stroke, and anchor points freely.
 
 ### Pull content from Keynote
 
 Keynote presentations often hold carefully composed vector artwork. These commands let you get it back out at full quality.
 
-- **⌘R / Pull Slide** — exports the current Keynote slide as a vector PDF and loads it into the preview. Hold Option to reveal this button.
-- **⌘E / Extract Selection** — select objects in Keynote and press `⌘C`, then press ⌘E in KeyJig. It pastes your selection into a scratch document, exports just those objects as a clean vector PDF, and discards the scratch doc — your original slide stays untouched. Hold Option to reveal this button.
+- **⌘R / Pull Slide** — exports the current Keynote slide as a vector PDF and loads it into the preview. Hold Option or Shift to reveal this button.
+- **⌘E / Extract Selection** — select objects in Keynote and press `⌘C`, then press ⌘E in KeyJig. It pastes your selection into a scratch document, exports just those objects as a clean vector PDF, and discards the scratch doc — your original slide stays untouched. Hold Option or Shift to reveal this button.
 
 ---
 
@@ -101,8 +100,9 @@ See [**docs/applescript.md**](./docs/applescript.md) for the full command refere
 
 ## Permissions
 
-- **Accessibility access** — needed for Place in Keynote and Extract Selection. KeyJig uses the Accessibility API to invoke Keynote's Paste command directly, which is the only reliable way to insert content across apps regardless of keyboard layout or focus state.
-- **No sandbox** — KeyJig runs without the App Sandbox so it can invoke Inkscape as a subprocess and write temporary files freely. It holds no entitlements beyond what those two tasks require.
+- **Accessibility access** — required for Place in Keynote (⌘D). Also used by the best-quality path of Extract Selection (⌘E); that feature degrades gracefully without it. KeyJig invokes Keynote's Paste command via the Accessibility API — the only reliable method across keyboard layouts and locales.
+- **Automation access** — required for all Keynote communication via Apple Events (Pull Slide, Extract Selection, probing slide geometry). macOS prompts for this on first use; it only reappears in Settings if you later revoke it.
+- **No sandbox** — KeyJig runs without the App Sandbox so it can invoke Inkscape as a subprocess and write temporary files freely.
 
 KeyJig is notarized and built with Hardened Runtime.
 

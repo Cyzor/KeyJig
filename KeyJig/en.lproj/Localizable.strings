@@ -133,7 +133,7 @@
 "help.section.import.title" = "Import an SVG";
 "help.section.import.body" = "• Drop an SVG file onto the preview area.\n• Copy artwork in Illustrator, Affinity, or Inkscape (⌘C) — KeyJig picks it up automatically.\n• Use File > Open SVG File… (⌘O).\n• With Inkscape installed, KeyJig also opens PDF and .ai files.";
 "help.section.keynote.title" = "Send to Keynote";
-"help.section.keynote.body" = "• Copy for Keynote (⇧⌘C) — paste into Keynote (⌘V) and use Format > Shapes & Lines > Break Apart to edit paths.\n• Place SVG in Keynote (⌘D) drops it directly onto the current slide. Requires Accessibility permission (System Settings ▸ Privacy & Security).";
+"help.section.keynote.body" = "• Copy for Keynote (⌘K) — paste into Keynote (⌘V) and use Format > Shapes & Lines > Break Apart to edit paths.\n• Place SVG in Keynote (⌘D) drops it directly onto the current slide. Requires Accessibility permission (System Settings ▸ Privacy & Security).";
 "help.section.pull.title" = "Convert Keynote to PDF";
 "help.section.pull.body" = "• Convert Keynote Clipboard (⌘E) — copy your selection in Keynote first (⌘C) for a precise, vector-only result. Without a prior copy, captures the bounding rectangle of the current selection instead.\n• Convert Keynote Slide to PDF (⌘R) exports the entire current slide as a vector PDF — no prior copy needed.\n• Drag the PDF preview to Affinity, Illustrator, Figma, or any PDF-capable app.";
 "help.section.setup.title" = "Permissions & Dependencies";
