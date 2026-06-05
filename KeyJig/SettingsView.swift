@@ -4,6 +4,7 @@ private let inkscapeDownloadURL = URL(string: "https://inkscape.org/release/")!
 private let ghostscriptWebURL = URL(string: "https://www.ghostscript.com/")!
 private let mupdfWebURL = URL(string: "https://mupdf.com/")!
 private let accessibilitySettingsURL = URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility")!
+private let automationSettingsURL    = URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_Automation")!
 
 // MARK: - Tooltip Text Constants for Settings
 
@@ -259,6 +260,48 @@ struct SettingsView: View {
                 .padding(12)
                 .background(Color(.controlBackgroundColor))
                 .cornerRadius(6)
+
+                // Automation row — only surfaced when explicitly denied.
+                // "Not yet determined" is fine: the system will prompt on first
+                // use and grant automatically on approval, so no warning needed.
+                if appState.keynoteAutomationGranted == false {
+                    HStack(spacing: 12) {
+                        Image(systemName: "exclamationmark.triangle.fill")
+                            .foregroundColor(.orange)
+                            .font(.title3)
+                            .accessibilityLabel(NSLocalizedString(
+                                "accessibility.automation_denied",
+                                comment: "VoiceOver label when Automation permission for Keynote is denied"))
+
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text(NSLocalizedString(
+                                "settings.automation.name",
+                                comment: "Automation permission row label"))
+                                .font(.body)
+                                .fontWeight(.semibold)
+                            Text(NSLocalizedString(
+                                "settings.automation.denied",
+                                comment: "Status when Automation access for Keynote has been revoked"))
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                        }
+
+                        Spacer()
+
+                        Button(NSLocalizedString(
+                            "settings.accessibility.open_settings",
+                            comment: "Button that opens System Settings")) {
+                            NSWorkspace.shared.open(automationSettingsURL)
+                        }
+                        .font(.caption)
+                        .help(NSLocalizedString(
+                            "tooltip.settings.automation_open",
+                            comment: "Tooltip for the Open Settings button in the Automation row"))
+                    }
+                    .padding(12)
+                    .background(Color(.controlBackgroundColor))
+                    .cornerRadius(6)
+                }
             }
 
             Text(NSLocalizedString(
@@ -267,6 +310,15 @@ struct SettingsView: View {
                 .font(.caption)
                 .foregroundColor(.secondary)
                 .fixedSize(horizontal: false, vertical: true)
+
+            if appState.keynoteAutomationGranted == false {
+                Text(NSLocalizedString(
+                    "settings.automation.description",
+                    comment: "Explanatory text shown when Automation permission for Keynote has been revoked"))
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
         }
         .padding(24)
         .frame(minWidth: 400)

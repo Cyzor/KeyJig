@@ -92,6 +92,12 @@ class AppState: ObservableObject {
     /// of "Place SVG in Keynote" and the visibility of the lock notice.
     @Published var accessibilityGranted: Bool = AXIsProcessTrusted()
 
+    /// Whether macOS has granted Automation permission to send Apple Events to
+    /// Keynote. nil = not yet determined (first use will prompt the user and
+    /// grant automatically on approval); false = explicitly denied. Only the
+    /// denied state is surfaced in Settings — nil and true need no user action.
+    @Published var keynoteAutomationGranted: Bool? = nil
+
     private var clipboardTimer: Timer?
     private var workspaceObservers: [Any] = []
     private var appObservers: [Any] = []
@@ -145,9 +151,10 @@ class AppState: ObservableObject {
             self?.checkClipboardForKeynoteData()
         }
 
-        // ── Accessibility grant state ─────────────────────────────────────
-        // Re-check when KeyJig comes to the foreground — the user may have
-        // just toggled the permission in System Settings and switched back.
+        // ── Accessibility + Automation grant state ────────────────────────
+        // Re-check both when KeyJig comes to the foreground — the user may
+        // have just toggled a permission in System Settings and switched back.
+        checkKeynoteAutomationStatus()   // seed immediately
         appObservers.append(NotificationCenter.default.addObserver(
             forName: NSApplication.didBecomeActiveNotification,
             object: nil, queue: .main) { [weak self] _ in
@@ -155,7 +162,33 @@ class AppState: ObservableObject {
                 if self?.accessibilityGranted != trusted {
                     self?.accessibilityGranted = trusted
                 }
+                self?.checkKeynoteAutomationStatus()
         })
+    }
+
+    /// Checks whether macOS has granted Automation permission to control Keynote
+    /// via Apple Events, without prompting the user. Uses the TCC database via
+    /// AEDeterminePermissionToAutomateTarget so it works even when Keynote is
+    /// not running.
+    private func checkKeynoteAutomationStatus() {
+        // Build an AE address descriptor for Keynote's bundle ID.
+        // typeApplicationBundleID = 'bund' = 0x62756E64 — works without the
+        // target app running, unlike process-ID or URL descriptors.
+        guard let data = "com.apple.iWork.Keynote".data(using: .utf8),
+              let desc = NSAppleEventDescriptor(descriptorType: 0x62756E64, data: data),
+              let ptr = desc.aeDesc else { return }
+
+        // typeWildCard = '****' = 0x2A2A2A2A — match any event class/ID.
+        // askUserIfNeeded: false — query TCC without prompting.
+        let wildcard: AEEventClass = 0x2A2A2A2A
+        let status = AEDeterminePermissionToAutomateTarget(ptr, wildcard, wildcard, false)
+
+        // noErr (0) = granted; -1743 = denied; anything else (e.g. -1744 =
+        // not yet determined) is treated as nil so no warning is shown.
+        let result: Bool? = status == noErr ? true : (status == -1743 ? false : nil)
+        if keynoteAutomationGranted != result {
+            keynoteAutomationGranted = result
+        }
     }
 
     private func checkClipboardForKeynoteData() {

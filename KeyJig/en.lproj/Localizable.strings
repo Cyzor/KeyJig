@@ -185,3 +185,8 @@
 "accessibility.ghostscript_missing" = "Ghostscript not installed";
 "accessibility.mutool_installed" = "MuPDF installed";
 "accessibility.mutool_missing" = "MuPDF not installed";
+"settings.automation.name" = "Automation";
+"settings.automation.denied" = "Keynote access revoked";
+"settings.automation.description" = "KeyJig needs Automation access to control Keynote via Apple Events. Re-grant it in System Settings ▸ Privacy & Security ▸ Automation.";
+"tooltip.settings.automation_open" = "Open System Settings to re-grant KeyJig Automation access for Keynote";
+"accessibility.automation_denied" = "Automation permission for Keynote is denied";
