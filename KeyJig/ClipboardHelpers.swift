@@ -135,7 +135,7 @@ func browseFile(into appState: AppState) -> BrowseResult {
         let content = (try? String(contentsOf: url, encoding: .utf8)) ?? ""
         guard !content.isEmpty else { return .cancelled }
         appState.svgURL = url.path
-        appState.svgString = content
+        appState.svgString = addSVGMargin(content)
         return .loaded
     }
 
@@ -184,14 +184,14 @@ func convertClipboardToSVG() -> String {
         let candidate = String(data: data, encoding: .utf8)
             ?? String(data: data, encoding: .utf16)
         guard let svgString = candidate, validateSVG(svgString) == nil else { continue }
-        return svgString
+        return addSVGMargin(svgString)
     }
 
     // 2. Raw SVG text on the string pasteboard
     if let content = pasteboard.string(forType: .string),
         validateSVG(content) == nil
     {
-        return content
+        return addSVGMargin(content)
     }
 
     return ""

@@ -128,6 +128,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
             }
             button.action = #selector(togglePopover)
             button.target = self
+            button.sendAction(on: [.leftMouseUp, .rightMouseUp])
             button.setAccessibilityLabel(
                 NSLocalizedString(
                     "accessibility.status_bar",
@@ -340,9 +341,50 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
     // MARK: Actions
 
     /// Toggles the menubar popover open or closed.
+    /// Right-click shows a compact context menu instead.
     @objc func togglePopover() {
+        if NSApp.currentEvent?.type == .rightMouseUp {
+            showStatusBarContextMenu()
+            return
+        }
         guard let popover = self.popover else { return }
         if popover.isShown { closePopover() } else { showPopover() }
+    }
+
+    private func showStatusBarContextMenu() {
+        closePopover()
+
+        let menu = NSMenu()
+
+        let settingsItem = NSMenuItem(
+            title: NSLocalizedString("settings.window.title", comment: ""),
+            action: #selector(openPreferences),
+            keyEquivalent: "")
+        settingsItem.target = self
+        menu.addItem(settingsItem)
+
+        menu.addItem(.separator())
+
+        let showItem = NSMenuItem(
+            title: NSLocalizedString("menu.file.show_window", comment: ""),
+            action: #selector(showMainWindow),
+            keyEquivalent: "")
+        showItem.target = self
+        menu.addItem(showItem)
+
+        menu.addItem(.separator())
+
+        let quitItem = NSMenuItem(
+            title: NSLocalizedString("menu.app.quit", comment: ""),
+            action: #selector(NSApplication.terminate(_:)),
+            keyEquivalent: "")
+        menu.addItem(quitItem)
+
+        if let button = statusBarItem?.button {
+            menu.popUp(positioning: nil,
+                       at: NSPoint(x: 0, y: button.bounds.maxY),
+                       in: button)
+        }
     }
 
     /// Opens the menubar popover, mirroring the frontmost document window when
@@ -481,7 +523,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
             do {
                 let content = try String(contentsOf: url, encoding: .utf8)
                 state.svgURL = url.path
-                state.svgString = content
+                state.svgString = addSVGMargin(content)
             } catch {
                 log.error("error reading SVG: \(error.localizedDescription, privacy: .public)")
             }

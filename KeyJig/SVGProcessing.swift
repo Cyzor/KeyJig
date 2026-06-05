@@ -297,24 +297,26 @@ func wrapSVGForResponsiveDisplay(svgString: String) -> String {
                 * { margin: 0; padding: 0; }
                 html, body {
                     overflow: hidden;
-                    background: repeating-conic-gradient(#e8e8e8 0% 25%, #ffffff 0% 50%) 0 0 / 10px 10px;
+                    background: repeating-conic-gradient(#e8e8e8 0% 25%, #ffffff 0% 50%) 0 0 / 20px 20px;
                 }
                 @media (prefers-color-scheme: dark) {
                     html, body {
-                        background: repeating-conic-gradient(#2a2a2a 0% 25%, #202020 0% 50%) 0 0 / 10px 10px;
+                        background: repeating-conic-gradient(#2a2a2a 0% 25%, #202020 0% 50%) 0 0 / 20px 20px;
                     }
                 }
                 /* Target only the root SVG (direct child of body) so nested
                    <svg> elements inside the document aren't affected.
-                   position:fixed + four zero offsets sizes relative to the
-                   WKWebView viewport, bypassing all document-flow height chains
-                   and vh/vw timing issues.  !important overrides any inline
-                   style="width/height" left by the originating application. */
+                   position:fixed bypasses document-flow height chains and
+                   vh/vw timing issues.  The 8 px inset on every side gives
+                   the graphic breathing room inside the preview well without
+                   affecting the underlying SVG data.  !important overrides
+                   any inline style="width/height" from the source app. */
                 body > svg {
                     position: fixed !important;
-                    top: 0 !important; left: 0 !important;
-                    right: 0 !important; bottom: 0 !important;
-                    width: 100% !important; height: 100% !important;
+                    top: 8px !important; left: 8px !important;
+                    right: 8px !important; bottom: 8px !important;
+                    width: calc(100% - 16px) !important;
+                    height: calc(100% - 16px) !important;
                 }
             </style>
         </head>

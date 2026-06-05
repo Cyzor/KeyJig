@@ -272,7 +272,7 @@ class SVGInteractionView: NSView {
         if let data = pasteboard.data(forType: svgType),
             let s = String(data: data, encoding: .utf8),
             s.contains("<svg")
-        { return s }
+        { return addSVGMargin(s) }
 
         if let urls = pasteboard.readObjects(
             forClasses: [NSURL.self],
@@ -285,7 +285,7 @@ class SVGInteractionView: NSView {
                 switch type {
                 case "svg":
                     if let s = try? String(contentsOf: url, encoding: .utf8), s.contains("<svg") {
-                        return s
+                        return addSVGMargin(s)
                     }
                 case "pdf", "ai":
                     if let s = convertToSVGWithInkscape(inputURL: url) { return s }
@@ -316,7 +316,7 @@ class SVGInteractionView: NSView {
             }
         }
 
-        if let s = pasteboard.string(forType: .string), s.contains("<svg") { return s }
+        if let s = pasteboard.string(forType: .string), s.contains("<svg") { return addSVGMargin(s) }
         return nil
     }
 

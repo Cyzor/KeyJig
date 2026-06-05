@@ -17,6 +17,7 @@ private let accessibilitySettingsURL = URL(string: "x-apple.systempreferences:co
 struct ResponsiveSVGWebView: NSViewRepresentable {
 
     let svg: String
+    var onWebViewLoad: (() -> Void)? = nil
 
     func makeCoordinator() -> Coordinator { Coordinator() }
 
@@ -38,6 +39,9 @@ struct ResponsiveSVGWebView: NSViewRepresentable {
             webView.setValue(false, forKey: "drawsBackground")
         }
 
+        webView.navigationDelegate = context.coordinator
+        context.coordinator.onWebViewLoad = onWebViewLoad
+
         let html = wrapSVGForResponsiveDisplay(svgString: svg)
         context.coordinator.lastSVG = svg
         webView.loadHTMLString(html, baseURL: nil)
@@ -46,6 +50,7 @@ struct ResponsiveSVGWebView: NSViewRepresentable {
     }
 
     func updateNSView(_ webView: WKWebView, context: Context) {
+        context.coordinator.onWebViewLoad = onWebViewLoad
         guard svg != context.coordinator.lastSVG else { return }
         context.coordinator.lastSVG = svg
         let html = wrapSVGForResponsiveDisplay(svgString: svg)
@@ -64,8 +69,13 @@ struct ResponsiveSVGWebView: NSViewRepresentable {
         }
     }
 
-    class Coordinator {
+    class Coordinator: NSObject, WKNavigationDelegate {
         var lastSVG: String = ""
+        var onWebViewLoad: (() -> Void)?
+
+        func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
+            onWebViewLoad?()
+        }
     }
 }
 
@@ -191,6 +201,8 @@ struct ContentView: View {
     let isPopoverContext: Bool
     @StateObject private var optionMonitor = OptionKeyMonitor()
     @Environment(\.undoManager) private var undoManager
+    @State private var svgPopReady = false
+    @State private var pdfPopReady = false
     // Status messages are stored in appState.statusMessage so menu commands
     // (which route through AppDelegate) can update the same property.
     init(appState: AppState = AppState(), isPopoverContext: Bool = false) {
@@ -567,6 +579,12 @@ struct ContentView: View {
             .frame(width: 0, height: 0)
             .hidden()
         )
+        .onChange(of: appState.svgString) { newValue in
+            if newValue.isEmpty { svgPopReady = false }
+        }
+        .onChange(of: appState.previewPDFURL) { newURL in
+            if newURL == nil { pdfPopReady = false }
+        }
     }
 
     // MARK: Sub-views — preview wells
@@ -578,6 +596,11 @@ struct ContentView: View {
             CheckerboardPattern()
 
             PDFPreviewView(url: url)
+                .padding(8)
+                .scaleEffect(pdfPopReady ? 1 : 0.6)
+                .onAppear {
+                    withAnimation(.easeOut(duration: 0.25)) { pdfPopReady = true }
+                }
 
             SVGInteractionViewWrapper(
                 onDragStart: { url },
@@ -590,6 +613,10 @@ struct ContentView: View {
                     "preview.drag_label_pdf",
                     comment: "Text on the drag image thumbnail when dragging a pulled PDF")
             )
+
+            Color(NSColor.windowBackgroundColor)
+                .opacity(pdfPopReady ? 0 : 1)
+                .allowsHitTesting(false)
         }
         .help(Tooltips.previewPDFLoaded)
     }
@@ -600,9 +627,13 @@ struct ContentView: View {
         ZStack {
             Color(NSColor.windowBackgroundColor)
 
-            ResponsiveSVGWebView(svg: appState.svgString)
-                .accessibilityElement(children: .ignore)
-                .accessibilityLabel(svgPreviewAccessibilityLabel)
+            ResponsiveSVGWebView(svg: appState.svgString, onWebViewLoad: {
+                guard !svgPopReady else { return }
+                withAnimation(.easeOut(duration: 0.25)) { svgPopReady = true }
+            })
+            .scaleEffect(svgPopReady ? 1 : 0.6)
+            .accessibilityElement(children: .ignore)
+            .accessibilityLabel(svgPreviewAccessibilityLabel)
 
             // Single interaction layer — handles outbound drag, inbound drop,
             // and right-click menu with no Z-order conflict.
@@ -654,6 +685,13 @@ struct ContentView: View {
                 }
             }
             .allowsHitTesting(false)
+
+            // Pop-in reveal: solid veil that fades away once the WebView has rendered.
+            // Opacity animation on NSViewRepresentable composites against white and breaks
+            // transparency; fading an opaque overlay instead avoids that entirely.
+            Color(NSColor.windowBackgroundColor)
+                .opacity(svgPopReady ? 0 : 1)
+                .allowsHitTesting(false)
         }
         .help(Tooltips.previewAreaLoaded)
         .onReceive(appState.$svgString) { newValue in
