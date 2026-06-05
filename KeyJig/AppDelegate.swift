@@ -132,6 +132,14 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
                 NSLocalizedString(
                     "accessibility.status_bar",
                     comment: "VoiceOver label for the menu bar icon"))
+
+            // Transparent drag-destination overlay. hitTest returns nil so
+            // regular clicks fall through to the button unimpeded; drag events
+            // are routed directly by the drag manager and bypass hitTest.
+            let proxy = StatusBarDragProxy(frame: button.bounds)
+            proxy.autoresizingMask = [.width, .height]
+            proxy.appDelegate = self
+            button.addSubview(proxy)
         }
 
         // ── Primary floating window ───────────────────────────────────────
@@ -314,7 +322,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
     ///   3. NSApp.keyWindow if it belongs to one of our controllers (covers
     ///      the brief window between activation and key-window assignment).
     ///   4. The primary window as the final fallback.
-    private var frontWindowState: AppState? {
+    fileprivate var frontWindowState: AppState? {
         if popover?.isShown == true {
             return activePopoverState ?? popoverAppState
         }
@@ -331,25 +339,25 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
 
     // MARK: Actions
 
-    /// Toggles the menubar popover.
-    ///
-    /// When a document window was most recently active, the popover mirrors it —
-    /// the same AppState object is shared, so content and actions are identical.
-    /// When no document window exists the popover is fully independent.
-    /// The chosen AppState is locked in for the lifetime of this open; it does
-    /// not change if the user switches windows while the popover is visible.
+    /// Toggles the menubar popover open or closed.
     @objc func togglePopover() {
-        guard let popover = self.popover,
-            let button = statusBarItem?.button
-        else { return }
-        if popover.isShown {
-            closePopover()
-            return
-        }
+        guard let popover = self.popover else { return }
+        if popover.isShown { closePopover() } else { showPopover() }
+    }
 
-        // Resolve the mirror target: prefer the most recently active document
-        // window (NSApp.mainWindow persists across app switches), then the
-        // primary window, then fall back to the independent popoverAppState.
+    /// Opens the menubar popover, mirroring the frontmost document window when
+    /// one exists. No-op when the popover is already shown.
+    ///
+    /// Mirror target priority: most recently active document window
+    /// (NSApp.mainWindow persists across app switches) → primary window →
+    /// independent popoverAppState. The chosen AppState is locked in for the
+    /// lifetime of this open; it does not change if the user switches windows
+    /// while the popover is visible.
+    private func showPopover() {
+        guard let popover = self.popover, !popover.isShown,
+              let button = statusBarItem?.button
+        else { return }
+
         let target: AppState
         let mirrorWindow = NSApp.mainWindow ?? NSApp.keyWindow
         if let win = mirrorWindow,
@@ -373,6 +381,12 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
         checkAndLoadClipboardSVG(into: target)
         popover.show(relativeTo: button.bounds, of: button, preferredEdge: .minY)
         installPopoverDismissMonitor()
+    }
+
+    /// Called by StatusBarDragProxy when valid vector content enters the icon area.
+    /// Opens the popover so the user can complete the drop inside the preview well.
+    func openPopoverForDrag() {
+        showPopover()
     }
 
     /// Closes the popover and tears down the dismiss event monitor.
@@ -761,4 +775,64 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
         return menu
     }
 
+}
+
+// MARK: - StatusBarDragProxy
+
+/// Transparent overlay placed on the status bar button to accept inbound vector drags.
+///
+/// When recognized content enters the icon area the popover opens immediately,
+/// revealing the preview well as the drop target. The user can then move the drag
+/// into the popover and release there — SVGInteractionView handles the drop exactly
+/// as it does for any other inbound drag.
+///
+/// If the user releases directly on the icon (without moving into the popover),
+/// performDragOperation loads the content into the frontmost window as a fallback.
+///
+/// hitTest always returns nil so regular mouse clicks fall through to the underlying
+/// NSStatusBarButton unimpeded. Drag events bypass hitTest and are delivered by the
+/// drag manager directly to registered destination views.
+private final class StatusBarDragProxy: NSView {
+
+    weak var appDelegate: AppDelegate?
+
+    override init(frame frameRect: NSRect) {
+        super.init(frame: frameRect)
+        registerForDraggedTypes(SVGInteractionView.acceptedTypes)
+    }
+
+    required init?(coder: NSCoder) {
+        super.init(coder: coder)
+        registerForDraggedTypes(SVGInteractionView.acceptedTypes)
+    }
+
+    // Let all regular mouse events fall through to the button below.
+    override func hitTest(_ point: NSPoint) -> NSView? { nil }
+
+    // MARK: NSDraggingDestination
+
+    override func draggingEntered(_ sender: NSDraggingInfo) -> NSDragOperation {
+        guard SVGInteractionView.canHandleDropData(sender.draggingPasteboard) else { return [] }
+        appDelegate?.openPopoverForDrag()
+        return .copy
+    }
+
+    override func draggingUpdated(_ sender: NSDraggingInfo) -> NSDragOperation {
+        SVGInteractionView.canHandleDropData(sender.draggingPasteboard) ? .copy : []
+    }
+
+    override func prepareForDragOperation(_ sender: NSDraggingInfo) -> Bool {
+        SVGInteractionView.canHandleDropData(sender.draggingPasteboard)
+    }
+
+    /// Handles the rare case where the user releases on the icon itself rather
+    /// than moving into the opened popover. Loads the content directly into the
+    /// frontmost window so the interaction still completes without extra steps.
+    override func performDragOperation(_ sender: NSDraggingInfo) -> Bool {
+        guard let svg = SVGInteractionView.svgString(from: sender.draggingPasteboard),
+              let state = appDelegate?.frontWindowState
+        else { return false }
+        state.svgString = svg
+        return true
+    }
 }

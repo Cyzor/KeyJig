@@ -86,8 +86,8 @@ class SVGInteractionView: NSView {
 
     private var trashButton: NSButton?
 
-    // Accepted inbound pasteboard types
-    private static let acceptedTypes: [NSPasteboard.PasteboardType] = [
+    // Accepted inbound pasteboard types — also used by StatusBarDragProxy.
+    static let acceptedTypes: [NSPasteboard.PasteboardType] = [
         .fileURL,
         NSPasteboard.PasteboardType("public.svg-image"),
         NSPasteboard.PasteboardType("public.file-url"),
@@ -203,14 +203,14 @@ class SVGInteractionView: NSView {
 
     override func draggingEntered(_ sender: NSDraggingInfo) -> NSDragOperation {
         guard sender.draggingSource as? SVGInteractionView !== self else { return [] }
-        guard canHandleDropData(sender.draggingPasteboard) else { return [] }
+        guard Self.canHandleDropData(sender.draggingPasteboard) else { return [] }
         isDropHighlighted = true
         return .copy
     }
 
     override func draggingUpdated(_ sender: NSDraggingInfo) -> NSDragOperation {
         guard sender.draggingSource as? SVGInteractionView !== self else { return [] }
-        guard canHandleDropData(sender.draggingPasteboard) else { return [] }
+        guard Self.canHandleDropData(sender.draggingPasteboard) else { return [] }
         return .copy
     }
 
@@ -220,13 +220,13 @@ class SVGInteractionView: NSView {
 
     override func prepareForDragOperation(_ sender: NSDraggingInfo) -> Bool {
         guard sender.draggingSource as? SVGInteractionView !== self else { return false }
-        return canHandleDropData(sender.draggingPasteboard)
+        return Self.canHandleDropData(sender.draggingPasteboard)
     }
 
     override func performDragOperation(_ sender: NSDraggingInfo) -> Bool {
         isDropHighlighted = false
         guard sender.draggingSource as? SVGInteractionView !== self else { return false }
-        guard let svg = svgString(from: sender.draggingPasteboard) else { return false }
+        guard let svg = Self.svgString(from: sender.draggingPasteboard) else { return false }
         onSVGDropped?(svg)
         return true
     }
@@ -264,9 +264,10 @@ class SVGInteractionView: NSView {
     @objc private func handleCopyForKeynote() { onCopyForKeynote?() }
     @objc private func handleClear() { onClear?() }
 
-    // MARK: SVG pasteboard helper
+    // MARK: SVG pasteboard helpers
+    // Both are static so StatusBarDragProxy can call them without an instance.
 
-    private func svgString(from pasteboard: NSPasteboard) -> String? {
+    static func svgString(from pasteboard: NSPasteboard) -> String? {
         let svgType = NSPasteboard.PasteboardType("public.svg-image")
         if let data = pasteboard.data(forType: svgType),
             let s = String(data: data, encoding: .utf8),
@@ -319,7 +320,7 @@ class SVGInteractionView: NSView {
         return nil
     }
 
-    private func canHandleDropData(_ pasteboard: NSPasteboard) -> Bool {
+    static func canHandleDropData(_ pasteboard: NSPasteboard) -> Bool {
         let svgType = NSPasteboard.PasteboardType("public.svg-image")
         if let data = pasteboard.data(forType: svgType),
             let s = String(data: data, encoding: .utf8), s.contains("<svg")
