@@ -18,6 +18,7 @@ class SettingsWindowController: NSWindowController, NSWindowDelegate {
             "settings.window.title",
             comment: "Settings window title")
         window.isReleasedWhenClosed = false
+        window.tabbingMode = .disallowed
         window.identifier = NSUserInterfaceItemIdentifier("SettingsWindow")
 
         // Wire up content before measuring so the SwiftUI layout engine
