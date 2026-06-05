@@ -14,6 +14,33 @@ let inkscapeCandidatePaths: [String] = [
     "/usr/local/bin/inkscape",
 ]
 
+// MARK: - External Tool Probes
+
+private let ghostscriptCandidatePaths = [
+    "/opt/homebrew/bin/gs",
+    "/usr/local/bin/gs",
+    "/opt/local/bin/gs",
+]
+
+private let mutoolCandidatePaths = [
+    "/opt/homebrew/bin/mutool",
+    "/usr/local/bin/mutool",
+]
+
+func ghostscriptURL() -> URL? {
+    ghostscriptCandidatePaths.lazy
+        .map { URL(fileURLWithPath: $0) }
+        .first { FileManager.default.isExecutableFile(atPath: $0.path) }
+}
+
+func mutoolURL() -> URL? {
+    mutoolCandidatePaths.lazy
+        .map { URL(fileURLWithPath: $0) }
+        .first { FileManager.default.isExecutableFile(atPath: $0.path) }
+}
+
+// MARK: - Inkscape Probe
+
 /// Returns the path to the first Inkscape executable found on this machine,
 /// or nil if Inkscape is not installed. Not cached — re-probed on each call
 /// so that an Inkscape install performed mid-session is picked up.
@@ -106,21 +133,3 @@ func convertClipboardPDFToSVG(completion: @escaping (String?) -> Void) {
     }
 }
 
-// MARK: - Clipboard PDF Extraction
-
-/// Extracts the best available PDF data from the clipboard.
-/// Prefers the Adobe PDF type; falls back to Apple's.
-func pdfDataFromClipboard() -> Data? {
-    let pasteboard = NSPasteboard.general
-    if let data = pasteboard.data(
-        forType: NSPasteboard.PasteboardType("com.adobe.pdf")), !data.isEmpty
-    {
-        return data
-    }
-    if let data = pasteboard.data(
-        forType: NSPasteboard.PasteboardType("Apple PDF pasteboard type")), !data.isEmpty
-    {
-        return data
-    }
-    return nil
-}

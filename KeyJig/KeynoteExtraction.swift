@@ -626,31 +626,6 @@ private struct SelectionBox {
     }
 }
 
-// MARK: - External tool probes
-
-private let ghostscriptCandidatePaths = [
-    "/opt/homebrew/bin/gs",
-    "/usr/local/bin/gs",
-    "/opt/local/bin/gs",
-]
-
-private let mutoolCandidatePaths = [
-    "/opt/homebrew/bin/mutool",
-    "/usr/local/bin/mutool",
-]
-
-func ghostscriptURL() -> URL? {
-    ghostscriptCandidatePaths.lazy
-        .map { URL(fileURLWithPath: $0) }
-        .first { FileManager.default.isExecutableFile(atPath: $0.path) }
-}
-
-func mutoolURL() -> URL? {
-    mutoolCandidatePaths.lazy
-        .map { URL(fileURLWithPath: $0) }
-        .first { FileManager.default.isExecutableFile(atPath: $0.path) }
-}
-
 // MARK: - PDF extraction
 
 private func extractSlidePDF(
@@ -861,25 +836,6 @@ private func sanitizedDocName(_ name: String, maxLength: Int) -> String {
     return s.isEmpty ? "Keynote" : s
 }
 
-// MARK: - Clipboard helper
-
-/// Writes the PDF data and a file URL to the general pasteboard.
-/// Returns true on success.
-@discardableResult
-func pdfToClipboard(url: URL) -> Bool {
-    guard let data = try? Data(contentsOf: url) else {
-        log.error("could not read PDF for clipboard")
-        return false
-    }
-    let pb = NSPasteboard.general
-    pb.clearContents()
-    let item = NSPasteboardItem()
-    item.setData(data, forType: NSPasteboard.PasteboardType("com.adobe.pdf"))
-    item.setString(url.absoluteString, forType: .fileURL)
-    pb.writeObjects([item])
-    return true
-}
-
 // MARK: - Helpers
 
 private extension NSRunningApplication {
@@ -898,6 +854,54 @@ private extension NSRunningApplication {
             activate()
         } else {
             activate(options: .activateIgnoringOtherApps)
+        }
+    }
+}
+
+// MARK: - Pull trigger actions
+
+/// Shared action: convert the current Keynote slide to a vector PDF.
+/// Called by both the button in ContentView and the File menu in AppDelegate.
+func triggerKeynoteSlide(appState: AppState, setStatus: @escaping (String) -> Void) {
+    appState.keynotePullStatus = .pulling
+    setStatus(NSLocalizedString("status.keynote.pulling",
+        comment: "Status: PDF export from Keynote in progress"))
+    appState.previewPDFURL = nil
+    pullFromKeynote(wantSelection: false, clipboardPDFData: nil) { result in
+        switch result {
+        case .success(let url):
+            appState.previewPDFURL = url
+            appState.keynotePullStatus = .succeeded
+            setStatus("")
+        case .failure(let error):
+            appState.keynotePullStatus = .failed
+            setStatus(error.localizedDescription)
+        }
+    }
+}
+
+/// Shared action: convert the user's copied Keynote selection to a vector PDF.
+/// Called by both the button in ContentView and the File menu in AppDelegate.
+func triggerKeynoteClipboard(appState: AppState, setStatus: @escaping (String) -> Void) {
+    appState.keynotePullStatus = .pulling
+    setStatus(NSLocalizedString("status.keynote.pulling",
+        comment: "Status: PDF export from Keynote in progress"))
+    let clipboardPDF: Data? = {
+        let pb = NSPasteboard.general
+        return ["com.adobe.pdf", "Apple PDF pasteboard type"]
+            .lazy
+            .compactMap { pb.data(forType: NSPasteboard.PasteboardType($0)) }
+            .first { !$0.isEmpty }
+    }()
+    pullFromKeynote(wantSelection: true, clipboardPDFData: clipboardPDF) { result in
+        switch result {
+        case .success(let url):
+            appState.previewPDFURL = url
+            appState.keynotePullStatus = .succeeded
+            setStatus("")
+        case .failure(let error):
+            appState.keynotePullStatus = .failed
+            setStatus(error.localizedDescription)
         }
     }
 }
