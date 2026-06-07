@@ -7,7 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		051673C02FA9205400E4FD20 /* AppIcon.icon in Resources */ = {isa = PBXBuildFile; fileRef = 051673BF2FA9205400E4FD20 /* AppIcon.icon */; };
+		051673C02FA9205400E4FD20 /* AppIcon.icns in Resources */ = {isa = PBXBuildFile; fileRef = 051673BF2FA9205400E4FD20 /* AppIcon.icns */; };
 		05F195182F65DE4C008DEF94 /* KeyJig.sdef in Resources */ = {isa = PBXBuildFile; fileRef = 05F195172F65DE4C008DEF94 /* KeyJig.sdef */; };
 		05F195192F65DE4C008DEF94 /* ScriptingCommands.swift in Sources */ = {isa = PBXBuildFile; fileRef = 05F1951A2F65DE4C008DEF94 /* ScriptingCommands.swift */; };
 		05FB65842FA5BC1F00C7674D /* ClipboardHelpers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 05FB657E2FA5BC1F00C7674D /* ClipboardHelpers.swift */; };
@@ -33,7 +33,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		051673BF2FA9205400E4FD20 /* AppIcon.icon */ = {isa = PBXFileReference; lastKnownFileType = folder.iconcomposer.icon; path = AppIcon.icon; sourceTree = "<group>"; };
+		051673BF2FA9205400E4FD20 /* AppIcon.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; path = AppIcon.icns; sourceTree = "<group>"; };
 		057851852F48F0D900ED1254 /* SwiftUIMenuBar.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = SwiftUIMenuBar.entitlements; sourceTree = "<group>"; };
 		05F195172F65DE4C008DEF94 /* KeyJig.sdef */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = KeyJig.sdef; sourceTree = "<group>"; };
 		05F1951A2F65DE4C008DEF94 /* ScriptingCommands.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScriptingCommands.swift; sourceTree = "<group>"; };
@@ -84,7 +84,7 @@
 				459A278F23AA910B003D50EC /* KeyJig */,
 				459A278E23AA910B003D50EC /* Products */,
 				AB8978BB26A42A26003D201E /* Frameworks */,
-				051673BF2FA9205400E4FD20 /* AppIcon.icon */,
+				051673BF2FA9205400E4FD20 /* AppIcon.icns */,
 			);
 			sourceTree = "<group>";
 		};
@@ -207,7 +207,7 @@
 				AA10010000000000000000B0 /* Localizable.strings in Resources */,
 				AA10010000000000000000C0 /* Localizable.stringsdict in Resources */,
 				05F195182F65DE4C008DEF94 /* KeyJig.sdef in Resources */,
-				051673C02FA9205400E4FD20 /* AppIcon.icon in Resources */,
+				051673C02FA9205400E4FD20 /* AppIcon.icns in Resources */,
 				459A279B23AA910B003D50EC /* Main.storyboard in Resources */,
 				459A279823AA910B003D50EC /* Preview Assets.xcassets in Resources */,
 				459A279523AA910B003D50EC /* Assets.xcassets in Resources */,
