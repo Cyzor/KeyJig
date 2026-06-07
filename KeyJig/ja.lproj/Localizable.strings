@@ -123,7 +123,9 @@
 
 /* ── About dialog ───────────────────────────────────────────────────── */
 "dialog.about.title" = "KeyJig";
-"dialog.about.info" = "Keynote互換フォーマットへのベクターグラフィック変換ユーティリティ。\n\nバージョン %@\n\nCopyright © 2026 KeyJig Contributors\nCopyright © 2021–2026 Jonathan Lampérth\n\nThe Noun Project（CC-BY-3.0 US ライセンス）：\nhttps://thenounproject.com/legal/terms-of-use/#icon-licenses";
+"dialog.about.info" = "編集可能なベクターグラフィックをApple Keynoteに取り込み、また書き出す。\n\nバージョン %@\n\nCopyright © 2026 KeyJig Contributors\nCopyright © 2021–2026 Jonathan Lampérth\n\nThe Noun Project（CC-BY-3.0 US ライセンス）：\nhttps://thenounproject.com/legal/terms-of-use/#icon-licenses";
+"dialog.about.body" = "編集可能なベクターグラフィックをApple Keynoteに取り込み、また書き出す。\n\nCopyright © 2026 KeyJig Contributors\nCopyright © 2021–2026 Jonathan Lampérth";
+"dialog.about.noun_project" = "The Noun Project（CC-BY-3.0 US ライセンス）";
 "dialog.about.button" = "閉じる";
 "dialog.about.website" = "プロジェクトサイト";
 
@@ -183,4 +185,5 @@
 "settings.automation.denied" = "Keynoteのアクセスが取り消されました";
 "settings.automation.description" = "KeyJigはApple Events経由でKeynoteを操作するためにオートメーションアクセスが必要です。システム設定 ▸ プライバシーとセキュリティ ▸ オートメーションで再許可してください。";
 "tooltip.settings.automation_open" = "システム設定を開き、KeyJigのKeynoteへのオートメーションアクセスを再許可する";
+"accessibility.automation_notice" = "Keynoteの操作にはオートメーション権限が必要です。";
 "accessibility.automation_denied" = "Keynoteへのオートメーション権限が拒否されています";

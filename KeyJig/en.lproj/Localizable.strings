@@ -124,7 +124,9 @@
 
 /* ── About dialog ───────────────────────────────────────────────────── */
 "dialog.about.title" = "KeyJig";
-"dialog.about.info" = "A utility for converting vector graphics to Keynote-compatible formats.\n\nVersion %@\n\nCopyright © 2026 KeyJig Contributors\nCopyright © 2021–2026 Jonathan Lampérth\n\nThe Noun Project licensed under CC-BY-3.0 US:\nhttps://thenounproject.com/legal/terms-of-use/#icon-licenses";
+"dialog.about.info" = "Bridge editable vector graphics into — and out of — Apple Keynote.\n\nVersion %@\n\nCopyright © 2026 KeyJig Contributors\nCopyright © 2021–2026 Jonathan Lampérth\n\nThe Noun Project licensed under CC-BY-3.0 US:\nhttps://thenounproject.com/legal/terms-of-use/#icon-licenses";
+"dialog.about.body" = "Bridge editable vector graphics into — and out of — Apple Keynote.\n\nCopyright © 2026 KeyJig Contributors\nCopyright © 2021–2026 Jonathan Lampérth";
+"dialog.about.noun_project" = "The Noun Project licensed under CC-BY-3.0 US";
 "dialog.about.button" = "OK";
 "dialog.about.website" = "Project Website";
 
@@ -184,4 +186,5 @@
 "settings.automation.denied" = "Keynote access revoked";
 "settings.automation.description" = "KeyJig needs Automation access to control Keynote via Apple Events. Re-grant it in System Settings ▸ Privacy & Security ▸ Automation.";
 "tooltip.settings.automation_open" = "Open System Settings to re-grant KeyJig Automation access for Keynote";
+"accessibility.automation_notice" = "Keynote interaction requires Automation permission.";
 "accessibility.automation_denied" = "Automation permission for Keynote is denied";

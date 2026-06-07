@@ -96,7 +96,7 @@ class MainWindowController: NSWindowController, NSWindowDelegate {
                 let titleH = win.frame.height - win.contentLayoutRect.height
                 let previewMinH: CGFloat = 200  // .frame(minHeight:) in ContentView
                 let previewTopPad: CGFloat = 16 // .padding([.horizontal, .top])
-                let outerSpacing: CGFloat = 4   // VStack(spacing: 4) gap
+                let outerSpacing: CGFloat = 16  // VStack(spacing: 16) gap
                 let contentMinH = previewTopPad + previewMinH + outerSpacing + belowH
                 let newMinH = max(520, (titleH + contentMinH).rounded(.up))
                 win.minSize.height = newMinH

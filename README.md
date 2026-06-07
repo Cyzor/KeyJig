@@ -4,7 +4,7 @@
 
 **Bridge editable vector graphics into — and out of — Apple Keynote.**
 
-KeyJig is a Mac utility that sits between your vector tools and Apple Keynote. It works both ways: send SVG artwork onto a Keynote slide as editable paths, or extract vector content from a slide for use in page layout tools, print workflows, or wherever you need clean vector output.
+KeyJig is a Mac utility that sits between your vector tools and Apple Keynote. It sends vector artwork onto a Keynote slide as editable paths, and extracts vector content from a slide for desktop publishing or external editing.
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![macOS](https://img.shields.io/badge/macOS-11.5+-blue.svg)](#installation)
@@ -16,6 +16,8 @@ KeyJig is a Mac utility that sits between your vector tools and Apple Keynote. I
 
 Keynote 10+ has a native SVG importer, but copying and pasting from Illustrator or Affinity Designer sends Keynote a flattened, uneditable PDF. KeyJig re-encodes the artwork so Keynote imports it as native, editable paths you can Break Apart and modify freely.
 
+KeyJig also extracts graphics (charts, tables, and whole slides) from Keynote as high-quality PDFs for desktop publishing or external editing.
+
 ---
 
 ## Workflows
@@ -24,8 +26,8 @@ Keynote 10+ has a native SVG importer, but copying and pasting from Illustrator 
 
 ![workflow diagram](docs/img/workflow-diagram.svg)
 
-1. **Copy** vector artwork in Illustrator, Affinity Designer, or any app that puts SVG on the clipboard (`⌘C`).
-2. **Switch** to KeyJig — it detects the SVG and shows a preview.
+1. **Copy** vector artwork in Illustrator, Affinity Designer, or any app that copies vector graphics to the clipboard (`⌘C`).
+2. **Switch** to KeyJig, which detects and converts it automatically. Alternatively, drag the artwork directly onto the KeyJig icon in the menu bar.
 3. **Send it to Keynote** in any of three ways:
    - **Drag** the preview directly onto a slide.
    - **⌘K** (or right-click the preview) to copy it to the clipboard, then paste in Keynote (`⌘V`).
@@ -34,17 +36,36 @@ Keynote 10+ has a native SVG importer, but copying and pasting from Illustrator 
 
 ### Pull content from Keynote
 
-Keynote presentations often hold carefully composed vector artwork. These commands let you get it back out at full quality.
+Copying graphics from Keynote tends to result in a low-resolution raster version that looks worse than the original. Exporting the whole presentation as a separate PDF is often the most reliable way to retain high-quality vector charts, tables, and graphics.
 
-- **⌘R / Pull Slide** — exports the current Keynote slide as a vector PDF and loads it into the preview. Hold Option or Shift to reveal this button.
-- **⌘E / Extract Selection** — select objects in Keynote and press `⌘C`, then press ⌘E in KeyJig. It pastes your selection into a scratch document, exports just those objects as a clean vector PDF, and discards the scratch doc — your original slide stays untouched. Hold Option or Shift to reveal this button.
+KeyJig provides a faster way to extract standalone graphics:
+
+- **Select & Copy Slide in Navigator** — automatically presents a standalone version of the copied slide in the preview. Drag directly into Adobe InDesign, Affinity, or the Finder.
+- **⌘R / Convert Keynote Slide to PDF** — exports the current Keynote slide as a vector PDF and loads it into the preview.
+- **⌘E / Convert Keynote Clipboard to PDF** — select one or more items on a Keynote slide and copy them to the clipboard. Then activate KeyJig and press **⌘E** to import them.
+
+*Note: Some actions rely on AppleScript to communicate with Keynote, which requires permission within **Privacy & Security** in System Settings. Hold down **Option** to reveal these hidden buttons.*
 
 ---
 
 ## Screenshots
 
-_Screenshots coming soon._
 
+
+_Workflow: Adobe Illustrator → KeyJig → Apple Keynote:_
+![Workflow screenshot](docs/img/illustrator-keyjig-keynote.png "Screenshot")
+
+_Keynote > Format > Shapes and Lines > Break Apart:_
+![Keynote break apart](docs/img/keynote-break-apart.png "Screenshot")
+
+_Keynote Chart Export:_
+![Export from Keynote](docs/img/keynote-extraction.png "Screenshot")
+
+_Affinity PDF Editing:_
+![Edit Result in Affinity](docs/img/affinity-editing.png "Screenshot")
+
+_App Settings:_
+![App settings](docs/img/settings.png)
 ---
 
 ## Installation
@@ -52,7 +73,14 @@ _Screenshots coming soon._
 ### Requirements
 
 - macOS 11.5 (Big Sur) or later
-- [Inkscape](https://inkscape.org/) — optional; needed only for PDF and `.ai` conversion. KeyJig auto-detects it at `/Applications/Inkscape.app`, `/opt/homebrew/bin/inkscape`, or `/usr/local/bin/inkscape`.
+- Keynote 10.0 or later — the version that added native SVG import, available free from the Mac App Store. Numbers and Pages support the same SVG format and work identically.
+- Two permissions in System Settings → Privacy & Security:
+  - **Accessibility** — required to place SVGs directly onto slides (⌘D)
+  - **Automation** — required to pull slides and selections from Keynote; macOS prompts on first use
+- Optional external tools for additional format support (all available via [Homebrew](https://brew.sh)):
+  - [Inkscape](https://inkscape.org/) — opens PDF and `.ai` files (`brew install inkscape`)
+  - [Ghostscript](https://www.ghostscript.com/) — higher-quality PDF cropping (`brew install ghostscript`)
+  - [MuPDF](https://mupdf.com/) — alternative to Ghostscript (`brew install mupdf-tools`)
 
 ### Download
 
@@ -71,15 +99,16 @@ Open `KeyJig.xcodeproj` in Xcode, select the **KeyJig** scheme, and Build (`⌘B
 ## Features
 
 - **Clipboard auto-detect** — the preview updates the moment an SVG lands on the clipboard, so switching to KeyJig from your drawing app is all it takes.
+- **Menu bar drop target** — drag artwork directly onto the KeyJig menu bar icon to load it without opening the main window.
 - **Drag-and-drop send** — drag the preview straight onto a Keynote slide.
-- **Place in Keynote** — inserts the SVG onto the current slide via the Accessibility API, no manual paste needed.
+- **Place in Keynote** — drops the SVG onto the current Keynote slide directly, no manual paste needed.
 - **Pull Slide** — exports the current Keynote slide as a vector PDF.
 - **Extract Selection** — extracts only the selected Keynote objects as a clean vector PDF; non-contiguous selections work correctly.
 - **PDF/AI conversion** — converts PDF and Adobe Illustrator files to SVG via Inkscape when Keynote's native importer isn't enough.
-- **File open** — load any `.svg`, `.pdf`, or `.ai` file directly.
+- **File open** — load an SVG file directly.  Support for additional vector formats may vary depending on system configuration.
 - **Multiple windows** — open independent viewer windows for side-by-side work.
-- **AppleScript** — 17 commands covering conversion, file import/export, and window control.
-- **No bundled libraries** — pure Swift; no third-party frameworks ship inside the app binary.
+- **AppleScript** — multiple commands covering conversion, file import/export, and window control.
+- **No bundled code** — KeyJig is a Swift app containing no third-party packages or frameworks.  However, it can call Inkscape, Ghostscript, and MuPDF for more sophisticated conversion support.
 
 ---
 
@@ -100,11 +129,11 @@ See [**docs/applescript.md**](./docs/applescript.md) for the full command refere
 
 ## Permissions
 
-- **Accessibility access** — required for Place in Keynote (⌘D). Also used by the best-quality path of Extract Selection (⌘E); that feature degrades gracefully without it. KeyJig invokes Keynote's Paste command via the Accessibility API — the only reliable method across keyboard layouts and locales.
-- **Automation access** — required for all Keynote communication via Apple Events (Pull Slide, Extract Selection, probing slide geometry). macOS prompts for this on first use; it only reappears in Settings if you later revoke it.
-- **No sandbox** — KeyJig runs without the App Sandbox so it can invoke Inkscape as a subprocess and write temporary files freely.
+- **Accessibility access** — required for Place in Keynote (⌘D). Grant it in System Settings → Privacy & Security → Accessibility.
+- **Automation access** — required for all Keynote communication (Pull Slide, Extract Selection). macOS prompts on first use; it only reappears in Settings if you revoke it.
+- **No sandbox** — KeyJig runs outside the App Sandbox so it can call Inkscape and write temporary files.
 
-KeyJig is notarized and built with Hardened Runtime.
+KeyJig is a signed and notarized app that uses a Hardened Runtime environment.
 
 ---
 
@@ -118,9 +147,9 @@ KeyJig is notarized and built with Hardened Runtime.
 
 ## Acknowledgments
 
-KeyJig draws inspiration from [**SVG2Keynote**](https://github.com/eth-siplab/SVG2Keynote-gui) by [Jonathan Lampérth](https://www.linkedin.com/in/jonathan-lamperth-7059b418a) and [Christian Holz](https://www.christianholz.net) at the [Sensing, Interaction & Perception Lab](https://siplab.org), ETH Zürich, but takes a different technical approach. Where SVG2Keynote writes Keynote's `.iwa` format directly via Protobuf, KeyJig drives Keynote's built-in SVG importer (Keynote 10.0+).
+KeyJig draws inspiration from [**SVG2Keynote**](https://github.com/eth-siplab/SVG2Keynote-gui) by [Jonathan Lampérth](https://www.linkedin.com/in/jonathan-lamperth-7059b418a) and [Christian Holz](https://www.christianholz.net) at the [Sensing, Interaction & Perception Lab](https://siplab.org), ETH Zürich. Where SVG2Keynote writes Keynote's native file format directly, KeyJig drives Keynote's built-in SVG importer instead.
 
-When installed, KeyJig delegates certain operations to three open-source tools it auto-detects but does not bundle or distribute:
+KeyJig optionally delegates certain operations to three open-source command-line tools it auto-detects on your system. None are bundled or distributed with the app:
 
 - [**Inkscape**](https://inkscape.org/) — PDF and `.ai` → SVG conversion.
 - [**Ghostscript**](https://www.ghostscript.com/) — high-fidelity PDF crop and rewrite.

@@ -39,6 +39,9 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
     /// Help window controller (created lazily on first open).
     var helpWindowController: HelpWindowController?
 
+    /// About window controller (created lazily on first open).
+    var aboutWindowController: AboutWindowController?
+
     /// The AppState currently displayed in the popover.
     /// When a document window was frontmost at open time this is a reference to
     /// that window's AppState — the popover mirrors it.
@@ -604,17 +607,11 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
     }
 
     @objc func menuCopyForKeynote(_ sender: Any?) {
-        guard let state = frontWindowState else { return }
-        let svg = convertClipboardToSVG()
-        if !svg.isEmpty {
-            state.svgString = svg
-            state.conversionStatus = .idle
-            _ = svgToClipboard(svgData: svg, appState: state)
-        } else {
-            state.statusMessage = NSLocalizedString(
-                "status.no_svg_on_clipboard",
-                comment: "Error message when no SVG is found on the clipboard")
-        }
+        guard let state = frontWindowState, !state.svgString.isEmpty else { return }
+        _ = svgToClipboard(svgData: state.svgString, appState: state)
+        state.statusMessage = NSLocalizedString(
+            "status.copied",
+            comment: "Confirmation shown after copying to clipboard")
     }
 
     @objc func menuPlaceInKeynote(_ sender: Any?) {
@@ -641,8 +638,11 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
         switch menuItem.action {
         case #selector(menuConvertKeynoteSlide):
             return frontWindowState?.keynoteRunning == true
+                && frontWindowState?.keynoteAutomationGranted != false
         case #selector(menuConvertKeynoteClipboard):
-            return frontWindowState?.keynoteClipboardReady == true
+            return frontWindowState?.keynoteRunning == true
+                && frontWindowState?.keynoteClipboardReady == true
+                && frontWindowState?.keynoteAutomationGranted != false
         case #selector(menuCopyForKeynote):
             return !(frontWindowState?.svgString.isEmpty ?? true)
         case #selector(menuPlaceInKeynote):
@@ -654,28 +654,10 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
     }
 
     @objc func showAbout() {
-        let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.0"
-        let alert = NSAlert()
-        alert.messageText = NSLocalizedString(
-            "dialog.about.title",
-            comment: "About dialog message text (app name)")
-        alert.informativeText = String(
-            format: NSLocalizedString(
-                "dialog.about.info",
-                comment: "About dialog informative text; %@ is replaced with the version number"),
-            version)
-        alert.alertStyle = .informational
-        alert.addButton(
-            withTitle: NSLocalizedString(
-                "dialog.about.button",
-                comment: "About dialog dismiss button"))
-        alert.addButton(
-            withTitle: NSLocalizedString(
-                "dialog.about.website",
-                comment: "About dialog button that opens the project website"))
-        if alert.runModal() == .alertSecondButtonReturn {
-            openKeyJigWebsite()
+        if aboutWindowController == nil {
+            aboutWindowController = AboutWindowController()
         }
+        aboutWindowController?.showWindow()
     }
 
     @objc func showHelp() {

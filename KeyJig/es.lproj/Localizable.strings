@@ -123,7 +123,9 @@
 
 /* ── About dialog ───────────────────────────────────────────────────── */
 "dialog.about.title" = "KeyJig";
-"dialog.about.info" = "Una utilidad para convertir gráficos vectoriales a formatos compatibles con Keynote.\n\nVersión %@\n\nCopyright © 2026 KeyJig Contributors\nCopyright © 2021–2026 Jonathan Lampérth\n\nThe Noun Project con licencia CC-BY-3.0 US:\nhttps://thenounproject.com/legal/terms-of-use/#icon-licenses";
+"dialog.about.info" = "Lleva gráficos vectoriales editables a Apple Keynote — y los extrae de vuelta.\n\nVersión %@\n\nCopyright © 2026 KeyJig Contributors\nCopyright © 2021–2026 Jonathan Lampérth\n\nThe Noun Project con licencia CC-BY-3.0 US:\nhttps://thenounproject.com/legal/terms-of-use/#icon-licenses";
+"dialog.about.body" = "Lleva gráficos vectoriales editables a Apple Keynote — y los extrae de vuelta.\n\nCopyright © 2026 KeyJig Contributors\nCopyright © 2021–2026 Jonathan Lampérth";
+"dialog.about.noun_project" = "The Noun Project con licencia CC-BY-3.0 US";
 "dialog.about.button" = "Entendido";
 "dialog.about.website" = "Sitio web del proyecto";
 
@@ -183,4 +185,5 @@
 "settings.automation.denied" = "Acceso a Keynote revocado";
 "settings.automation.description" = "KeyJig necesita acceso de automatización para controlar Keynote mediante Apple Events. Vuelve a concederlo en Ajustes del Sistema ▸ Privacidad y Seguridad ▸ Automatización.";
 "tooltip.settings.automation_open" = "Abrir Ajustes del Sistema para volver a conceder acceso de automatización a KeyJig para Keynote";
+"accessibility.automation_notice" = "La interacción con Keynote requiere permiso de Automatización.";
 "accessibility.automation_denied" = "Permiso de automatización para Keynote denegado";

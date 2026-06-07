@@ -6,7 +6,7 @@ KeyJig is fully scriptable via AppleScript. Use Script Editor, Automator, shell 
 
 ## Requirements
 
-- macOS 11.3 or later
+- macOS 11.5 or later
 - **Inkscape** (optional) — required only for `convert clipboard` when the clipboard holds PDF/AI data
   - Install via [inkscape.org](https://inkscape.org/) or `brew install inkscape`
 

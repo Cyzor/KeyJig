@@ -124,7 +124,9 @@
 
 /* ── About dialog ───────────────────────────────────────────────────── */
 "dialog.about.title" = "KeyJig";
-"dialog.about.info" = "Ein Werkzeug zur Konvertierung von Vektorgrafiken in Keynote-kompatible Formate.\n\nVersion %@\n\nCopyright © 2026 KeyJig Contributors\nCopyright © 2021–2026 Jonathan Lampérth\n\nThe Noun Project lizenziert unter CC-BY-3.0 US:\nhttps://thenounproject.com/legal/terms-of-use/#icon-licenses";
+"dialog.about.info" = "Editierbare Vektorgrafiken in Apple Keynote übertragen — und wieder heraus.\n\nVersion %@\n\nCopyright © 2026 KeyJig Contributors\nCopyright © 2021–2026 Jonathan Lampérth\n\nThe Noun Project lizenziert unter CC-BY-3.0 US:\nhttps://thenounproject.com/legal/terms-of-use/#icon-licenses";
+"dialog.about.body" = "Editierbare Vektorgrafiken in Apple Keynote übertragen — und wieder heraus.\n\nCopyright © 2026 KeyJig Contributors\nCopyright © 2021–2026 Jonathan Lampérth";
+"dialog.about.noun_project" = "The Noun Project lizenziert unter CC-BY-3.0 US";
 "dialog.about.button" = "OK";
 "dialog.about.website" = "Projektwebsite";
 
@@ -184,4 +186,5 @@
 "settings.automation.denied" = "Keynote-Zugriff widerrufen";
 "settings.automation.description" = "KeyJig benötigt Automatisierungszugriff, um Keynote über Apple Events zu steuern. Zugriff erneut erteilen unter Systemeinstellungen ▸ Datenschutz & Sicherheit ▸ Automatisierung.";
 "tooltip.settings.automation_open" = "Systemeinstellungen öffnen, um KeyJig den Automatisierungszugriff auf Keynote erneut zu erteilen";
+"accessibility.automation_notice" = "Für Keynote-Aktionen ist Automatisierungszugriff erforderlich.";
 "accessibility.automation_denied" = "Automatisierungsberechtigung für Keynote verweigert";

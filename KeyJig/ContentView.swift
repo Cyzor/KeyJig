@@ -7,6 +7,7 @@ import os
 
 private let log = Logger(subsystem: "com.cyzor.KeyJig", category: "ContentView")
 private let accessibilitySettingsURL = URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility")!
+private let automationSettingsURL = URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_Automation")!
 
 // MARK: - Responsive SVG renderer
 
@@ -361,7 +362,7 @@ struct ContentView: View {
     }
 
     var body: some View {
-        VStack(spacing: 4) {
+        VStack(spacing: 16) {
 
             // ── Preview / drop well ───────────────────────────────────────
             Group {
@@ -458,6 +459,31 @@ struct ContentView: View {
                 .padding(.bottom, 6)
             }
 
+            if appState.keynoteAutomationGranted == false && appState.keynoteRunning {
+                HStack(spacing: 6) {
+                    Image(systemName: "xmark.circle.fill")
+                        .foregroundColor(.orange)
+                        .font(.caption)
+                    Text(NSLocalizedString(
+                        "accessibility.automation_notice",
+                        comment: "Notice: Keynote automation permission is denied"))
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                    Spacer()
+                    Button(NSLocalizedString(
+                        "settings.accessibility.open_settings",
+                        comment: "Button: open System Settings")) {
+                        NSWorkspace.shared.open(automationSettingsURL)
+                    }
+                    .font(.caption)
+                    .help(NSLocalizedString(
+                        "tooltip.settings.automation_open",
+                        comment: "Tooltip for automation settings button"))
+                }
+                .padding(.horizontal)
+                .padding(.bottom, 6)
+            }
+
             Divider().padding(.vertical, 8)
 
             // ── Action buttons ────────────────────────────────────────────
@@ -490,7 +516,7 @@ struct ContentView: View {
                     }
                     .help(Tooltips.pullFromKeynote)
                     .keyboardShortcut("r", modifiers: .command)
-                    .disabled(isConverting || isPulling || !appState.keynoteRunning)
+                    .disabled(isConverting || isPulling || !appState.keynoteRunning || appState.keynoteAutomationGranted == false)
 
                     // ── Convert Keynote Clipboard to PDF ⌘E ────────────────────
                     VStack(alignment: .leading, spacing: 2) {
@@ -511,21 +537,23 @@ struct ContentView: View {
                         }
                         .help(Tooltips.importSelectionFromKeynote)
                         .keyboardShortcut("e", modifiers: .command)
-                        .disabled(isConverting || isPulling || !appState.keynoteRunning || !appState.keynoteClipboardReady)
+                        .disabled(isConverting || isPulling || !appState.keynoteRunning || !appState.keynoteClipboardReady || appState.keynoteAutomationGranted == false)
 
                         // Live clipboard readiness indicator
                         if appState.keynoteRunning {
-                            HStack(spacing: 4) {
+                            HStack(alignment: .top, spacing: 4) {
                                 if appState.keynoteClipboardReady {
                                     Image(systemName: "checkmark.circle.fill")
-                                    Text(NSLocalizedString(
+                                        .padding(.top, 1)
+                                }
+                                Text(appState.keynoteClipboardReady
+                                    ? NSLocalizedString(
                                         "hint.keynote.clipboard_ready",
-                                        comment: "Hint: Keynote selection is on the clipboard"))
-                                } else {
-                                    Text(NSLocalizedString(
+                                        comment: "Hint: Keynote selection is on the clipboard")
+                                    : NSLocalizedString(
                                         "hint.keynote.clipboard_not_ready",
                                         comment: "Hint: no Keynote selection on the clipboard yet"))
-                                }
+                                    .frame(maxWidth: .infinity, alignment: .leading)
                             }
                             .font(.caption2)
                             .foregroundColor(appState.keynoteClipboardReady ? .accentColor : .secondary)
