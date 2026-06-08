@@ -1083,6 +1083,8 @@ func triggerKeynoteSlide(appState: AppState, setStatus: @escaping (String) -> Vo
 /// Called by both the button in ContentView and the File menu in AppDelegate.
 func triggerKeynoteClipboard(appState: AppState, setStatus: @escaping (String) -> Void) {
     guard appState.keynotePullStatus != .pulling else { return }
+    let token = PullCancellationToken()
+    appState.activePullToken = token
     appState.keynotePullStatus = .pulling
     setStatus(NSLocalizedString("status.keynote.pulling",
         comment: "Status: PDF export from Keynote in progress"))
@@ -1090,10 +1092,15 @@ func triggerKeynoteClipboard(appState: AppState, setStatus: @escaping (String) -
 
     let queue = DispatchQueue(label: "com.cyzor.KeyJig.keynotePull", qos: .userInitiated)
     queue.async {
+        if token.isCancelled {
+            DispatchQueue.main.async { appState.activePullToken = nil; appState.keynotePullStatus = .idle; setStatus("") }
+            return
+        }
         guard let keynoteApp = NSRunningApplication
             .runningApplications(withBundleIdentifier: "com.apple.iWork.Keynote").first
         else {
             DispatchQueue.main.async {
+                appState.activePullToken = nil
                 appState.keynotePullStatus = .failed
                 setStatus(KeynotePullError.keynoteNotRunning.localizedDescription)
             }
@@ -1110,6 +1117,7 @@ func triggerKeynoteClipboard(appState: AppState, setStatus: @escaping (String) -
         if let url = extractClipboardViaScratchDoc(keynotePID: kpid) {
             DispatchQueue.main.async {
                 prevFrontApp?.activateFrontmost()
+                appState.activePullToken = nil
                 appState.previewPDFURL = url
                 appState.keynotePullStatus = .succeeded
                 setStatus("")
@@ -1117,11 +1125,9 @@ func triggerKeynoteClipboard(appState: AppState, setStatus: @escaping (String) -
         } else {
             DispatchQueue.main.async {
                 prevFrontApp?.activateFrontmost()
+                appState.activePullToken = nil
                 appState.keynotePullStatus = .failed
-                setStatus(KeynotePullError.exportFailed(
-                    NSLocalizedString("error.keynote.clipboard_empty",
-                        comment: "Error: clipboard did not contain a Keynote selection")
-                ).localizedDescription)
+                setStatus(KeynotePullError.exportFailed("no objects were pasted").localizedDescription)
             }
         }
     }
