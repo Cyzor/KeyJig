@@ -1078,36 +1078,157 @@ func triggerKeynoteSlide(appState: AppState, setStatus: @escaping (String) -> Vo
 }
 
 /// Shared action: convert the user's copied Keynote selection to a vector PDF.
+/// Pastes the clipboard's native Keynote object data into a throwaway document
+/// and exports it. No probe, no selection-geometry reads, no state restoration.
 /// Called by both the button in ContentView and the File menu in AppDelegate.
 func triggerKeynoteClipboard(appState: AppState, setStatus: @escaping (String) -> Void) {
     guard appState.keynotePullStatus != .pulling else { return }
-    let token = PullCancellationToken()
-    appState.activePullToken = token
     appState.keynotePullStatus = .pulling
     setStatus(NSLocalizedString("status.keynote.pulling",
         comment: "Status: PDF export from Keynote in progress"))
-    let clipboardPDF: Data? = {
-        let pb = NSPasteboard.general
-        return ["com.adobe.pdf", "Apple PDF pasteboard type"]
-            .lazy
-            .compactMap { pb.data(forType: NSPasteboard.PasteboardType($0)) }
-            .first { !$0.isEmpty }
-    }()
-    pullFromKeynote(wantSelection: true, clipboardPDFData: clipboardPDF, cancellationToken: token) { result in
-        appState.activePullToken = nil
-        switch result {
-        case .success(let url):
-            appState.previewPDFURL = url
-            appState.keynotePullStatus = .succeeded
-            setStatus("")
-        case .failure(let error):
-            if case .cancelled = error {
-                appState.keynotePullStatus = .idle
-                setStatus("")
-            } else {
+    appState.previewPDFURL = nil
+
+    let queue = DispatchQueue(label: "com.cyzor.KeyJig.keynotePull", qos: .userInitiated)
+    queue.async {
+        guard let keynoteApp = NSRunningApplication
+            .runningApplications(withBundleIdentifier: "com.apple.iWork.Keynote").first
+        else {
+            DispatchQueue.main.async {
                 appState.keynotePullStatus = .failed
-                setStatus(error.localizedDescription)
+                setStatus(KeynotePullError.keynoteNotRunning.localizedDescription)
+            }
+            return
+        }
+        if keynoteApp.isHidden {
+            keynoteApp.unhide()
+            Thread.sleep(forTimeInterval: 0.3)
+        }
+        let kpid = keynoteApp.processIdentifier
+        let prevFrontApp: NSRunningApplication? = DispatchQueue.main.sync {
+            NSWorkspace.shared.frontmostApplication
+        }
+        if let url = extractClipboardViaScratchDoc(keynotePID: kpid) {
+            DispatchQueue.main.async {
+                prevFrontApp?.activateFrontmost()
+                appState.previewPDFURL = url
+                appState.keynotePullStatus = .succeeded
+                setStatus("")
+            }
+        } else {
+            DispatchQueue.main.async {
+                prevFrontApp?.activateFrontmost()
+                appState.keynotePullStatus = .failed
+                setStatus(KeynotePullError.exportFailed(
+                    NSLocalizedString("error.keynote.clipboard_empty",
+                        comment: "Error: clipboard did not contain a Keynote selection")
+                ).localizedDescription)
             }
         }
+    }
+}
+
+/// Pastes the clipboard into a throwaway Keynote document and exports it as
+/// a cropped vector PDF. No selection-geometry reads; the button is only
+/// reachable when `keynoteClipboardReady` confirms native Keynote data is present.
+private func extractClipboardViaScratchDoc(keynotePID: pid_t) -> URL? {
+    // Read source slide dimensions so pasted objects keep their proportions.
+    let sizeScript = """
+        tell application "Keynote"
+            if not (exists front document) then error number -1728
+            tell front document to return (width as string) & "," & (height as string)
+        end tell
+        """
+    var eSize: NSDictionary?
+    let rSize = NSAppleScript(source: sizeScript)!.executeAndReturnError(&eSize)
+    guard eSize == nil, let szStr = rSize.stringValue else { return nil }
+    let szs = szStr.split(separator: ",").compactMap { Int(Double($0) ?? 0) }
+    let w = szs.count == 2 ? szs[0] : 1024
+    let h = szs.count == 2 ? szs[1] : 768
+
+    let setupScript = """
+        tell application "Keynote"
+            set d to make new document
+            tell d
+                set its width to \(w)
+                set its height to \(h)
+                try
+                    delete every iWork item of slide 1
+                end try
+            end tell
+            activate
+            return name of d
+        end tell
+        """
+    var eSetup: NSDictionary?
+    let rSetup = NSAppleScript(source: setupScript)!.executeAndReturnError(&eSetup)
+    guard eSetup == nil, let scratchName = rSetup.stringValue, !scratchName.isEmpty else {
+        return nil
+    }
+    log.info("clipboard scratch doc: '\(scratchName, privacy: .public)'")
+    Thread.sleep(forTimeInterval: 0.3)
+
+    defer {
+        let closeScript = """
+            tell application "Keynote"
+                set closed to false
+                try
+                    close document "\(scratchName)" saving no
+                    set closed to true
+                end try
+                if not closed then
+                    try
+                        close document "\(scratchName).key" saving no
+                    end try
+                end if
+            end tell
+            """
+        NSAppleScript(source: closeScript)!.executeAndReturnError(nil)
+    }
+
+    _ = pressMenuItemWithCmdChar("v", appPID: keynotePID)
+    Thread.sleep(forTimeInterval: 0.4)
+
+    let exportURL = makeTempKeynotePDFURL()
+    let finishScript = """
+        tell application "Keynote"
+            set m to 0
+            set okExport to false
+            try
+                tell document "\(scratchName)"
+                    set m to count of iWork items of slide 1
+                    if m > 0 then
+                        export to (POSIX file "\(exportURL.path)") as PDF
+                        set okExport to true
+                    end if
+                end tell
+            end try
+            return (m as string) & "|" & (okExport as string)
+        end tell
+        """
+    var eFinish: NSDictionary?
+    let rFinish = NSAppleScript(source: finishScript)!.executeAndReturnError(&eFinish)
+    guard eFinish == nil, let out = rFinish.stringValue else {
+        try? FileManager.default.removeItem(at: exportURL)
+        return nil
+    }
+    let parts = out.components(separatedBy: "|")
+    let m = Int(parts.first ?? "") ?? 0
+    let okExport = parts.count > 1 && parts[1] == "true"
+    guard m > 0, okExport else {
+        log.info("clipboard scratch doc: nothing pasted (m=\(m, privacy: .public), export=\(okExport, privacy: .public))")
+        try? FileManager.default.removeItem(at: exportURL)
+        return nil
+    }
+
+    let result = extractSlidePDF(from: exportURL, pageNumber: 1, selectionBoxes: [],
+        padding: 40.0, useContentBounds: true)
+    try? FileManager.default.removeItem(at: exportURL)
+    switch result {
+    case .success(let url):
+        log.info("clipboard scratch doc: ✅ \(m, privacy: .public) item(s)")
+        return url
+    case .failure(let err):
+        log.info("clipboard scratch doc: crop failed (\(err.localizedDescription, privacy: .public))")
+        return nil
     }
 }
