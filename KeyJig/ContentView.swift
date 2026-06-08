@@ -220,6 +220,10 @@ struct ContentView: View {
         self.appState = appState
         self.isPopoverContext = isPopoverContext
         self.isPopoverSurface = isPopoverSurface
+        // When the popover creates a fresh ContentView for an already-loaded AppState,
+        // start the pop-ready flags as true so the appear-animation doesn't replay.
+        _pdfPopReady = State(initialValue: appState.previewPDFURL != nil)
+        _svgPopReady = State(initialValue: !appState.svgString.isEmpty)
     }
 
     private static let breakApartInstruction = NSLocalizedString(

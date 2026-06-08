@@ -1089,6 +1089,8 @@ func triggerKeynoteClipboard(appState: AppState, setStatus: @escaping (String) -
     setStatus(NSLocalizedString("status.keynote.pulling",
         comment: "Status: PDF export from Keynote in progress"))
     appState.previewPDFURL = nil
+    // Capture now, on the main thread, while KeyJig is still frontmost.
+    let prevFrontApp = NSWorkspace.shared.frontmostApplication
 
     let queue = DispatchQueue(label: "com.cyzor.KeyJig.keynotePull", qos: .userInitiated)
     queue.async {
@@ -1111,21 +1113,18 @@ func triggerKeynoteClipboard(appState: AppState, setStatus: @escaping (String) -
             Thread.sleep(forTimeInterval: 0.3)
         }
         let kpid = keynoteApp.processIdentifier
-        let prevFrontApp: NSRunningApplication? = DispatchQueue.main.sync {
-            NSWorkspace.shared.frontmostApplication
-        }
-        if let url = extractClipboardViaScratchDoc(keynotePID: kpid) {
-            DispatchQueue.main.async {
-                prevFrontApp?.activateFrontmost()
-                appState.activePullToken = nil
+        let result = extractClipboardViaScratchDoc(keynotePID: kpid)
+        // Delay the re-activation slightly: when the scratch doc closes, Keynote's
+        // window server asynchronously promotes its remaining document window, which
+        // would otherwise override an immediate activate call.
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) {
+            prevFrontApp?.activateFrontmost()
+            appState.activePullToken = nil
+            if let url = result {
                 appState.previewPDFURL = url
                 appState.keynotePullStatus = .succeeded
                 setStatus("")
-            }
-        } else {
-            DispatchQueue.main.async {
-                prevFrontApp?.activateFrontmost()
-                appState.activePullToken = nil
+            } else {
                 appState.keynotePullStatus = .failed
                 setStatus(KeynotePullError.exportFailed("no objects were pasted").localizedDescription)
             }
