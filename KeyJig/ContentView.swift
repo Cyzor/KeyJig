@@ -442,9 +442,12 @@ struct ContentView: View {
             }
 
             // ── Accessibility notice ──────────────────────────────────────
-            // Shown in SVG mode only (svgString non-empty ↔ ⌘D is visible).
-            // In PDF mode svgString is empty, so the notice is naturally hidden.
-            if !appState.accessibilityGranted && !appState.svgString.isEmpty {
+            // Shown when SVG content is loaded (⌘D requires AX) or when the
+            // Keynote pull buttons are visible (⌘E uses AX paste).
+            let keynoteButtonsVisible = (optionMonitor.isHeld && !isPopoverContext)
+                || alwaysShowOptionalKeynoteButtons
+            if !appState.accessibilityGranted
+                && (!appState.svgString.isEmpty || keynoteButtonsVisible) {
                 HStack(spacing: 6) {
                     Image(systemName: "lock.fill")
                         .foregroundColor(.orange)
@@ -545,7 +548,7 @@ struct ContentView: View {
                         }
                         .help(Tooltips.importSelectionFromKeynote)
                         .keyboardShortcut("e", modifiers: .command)
-                        .disabled(isConverting || isPulling || !appState.keynoteRunning || !appState.keynoteClipboardReady || appState.keynoteAutomationGranted == false)
+                        .disabled(isConverting || isPulling || !appState.keynoteRunning || !appState.keynoteClipboardReady || appState.keynoteAutomationGranted == false || !appState.accessibilityGranted)
 
                     }
                 }
