@@ -215,6 +215,11 @@ struct ContentView: View {
     @Environment(\.undoManager) private var undoManager
     @State private var svgPopReady = false
     @State private var pdfPopReady = false
+    /// True only while the first SVG of this session is loaded.
+    /// Cleared when the canvas is cleared; never re-raised after that.
+    @State private var showBreakApartHint = false
+    /// Ensures the hint fires at most once per process lifetime across all windows.
+    private static var breakApartHintShownThisSession = false
     // Status messages are stored in appState.statusMessage so menu commands
     // (which route through AppDelegate) can update the same property.
     init(appState: AppState = AppState(), isPopoverContext: Bool = false, isPopoverSurface: Bool = false) {
@@ -323,8 +328,8 @@ struct ContentView: View {
         } else {
             return ""
         }
-        // The Break Apart hint only applies to SVG content destined for Keynote.
-        return (hasContent && !isPDFMode) ? base + "\n\n" + Self.breakApartInstruction : base
+        return (showBreakApartHint && hasContent && !isPDFMode)
+            ? base + "\n\n" + Self.breakApartInstruction : base
     }
 
     /// Clears whichever content mode is currently active and registers an undo
@@ -462,9 +467,7 @@ struct ContentView: View {
                 }
                 .padding(.horizontal)
                 .padding(.bottom, 6)
-            }
-
-            if appState.keynoteAutomationGranted == false && appState.keynoteRunning {
+            } else if appState.keynoteAutomationGranted == false && appState.keynoteRunning {
                 HStack(spacing: 6) {
                     Image(systemName: "xmark.circle.fill")
                         .foregroundColor(.orange)
@@ -544,28 +547,6 @@ struct ContentView: View {
                         .keyboardShortcut("e", modifiers: .command)
                         .disabled(isConverting || isPulling || !appState.keynoteRunning || !appState.keynoteClipboardReady || appState.keynoteAutomationGranted == false)
 
-                        // Live clipboard readiness indicator
-                        if appState.keynoteRunning {
-                            HStack(alignment: .top, spacing: 4) {
-                                if appState.keynoteClipboardReady {
-                                    Image(systemName: "checkmark.circle.fill")
-                                        .padding(.top, 1)
-                                }
-                                Text(appState.keynoteClipboardReady
-                                    ? NSLocalizedString(
-                                        "hint.keynote.clipboard_ready",
-                                        comment: "Hint: Keynote selection is on the clipboard")
-                                    : NSLocalizedString(
-                                        "hint.keynote.clipboard_not_ready",
-                                        comment: "Hint: no Keynote selection on the clipboard yet"))
-                                    .frame(maxWidth: .infinity, alignment: .leading)
-                            }
-                            .font(.caption2)
-                            .foregroundColor(appState.keynoteClipboardReady ? .accentColor : .secondary)
-                            .padding(.leading, 40)
-                            .padding(.top, 6)
-                            .animation(.easeInOut(duration: 0.15), value: appState.keynoteClipboardReady)
-                        }
                     }
                 }
 
@@ -669,7 +650,13 @@ struct ContentView: View {
             .hidden()
         )
         .onChange(of: appState.svgString) { newValue in
-            if newValue.isEmpty { svgPopReady = false }
+            if newValue.isEmpty {
+                svgPopReady = false
+                showBreakApartHint = false
+            } else if !Self.breakApartHintShownThisSession {
+                Self.breakApartHintShownThisSession = true
+                showBreakApartHint = true
+            }
         }
         .onChange(of: appState.previewPDFURL) { newURL in
             if newURL == nil { pdfPopReady = false }
