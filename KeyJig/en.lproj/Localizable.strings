@@ -188,3 +188,6 @@
 "tooltip.settings.automation_open" = "Open System Settings to re-grant KeyJig Automation access for Keynote";
 "accessibility.automation_notice" = "Keynote interaction requires Automation permission.";
 "accessibility.automation_denied" = "Automation permission for Keynote is denied";
+"settings.section.appearance" = "Appearance";
+"settings.appearance.always_show_keynote_buttons" = "Show optional Keynote buttons";
+"settings.appearance.always_show_keynote_buttons.description" = "Always show Pull Slide and Extract Selection. These are hidden by default and revealed by holding ⌥ Option.";

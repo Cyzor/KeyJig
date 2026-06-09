@@ -187,3 +187,6 @@
 "tooltip.settings.automation_open" = "Abrir Ajustes del Sistema para volver a conceder acceso de automatización a KeyJig para Keynote";
 "accessibility.automation_notice" = "La interacción con Keynote requiere permiso de Automatización.";
 "accessibility.automation_denied" = "Permiso de automatización para Keynote denegado";
+"settings.section.appearance" = "Apariencia";
+"settings.appearance.always_show_keynote_buttons" = "Mostrar botones opcionales de Keynote";
+"settings.appearance.always_show_keynote_buttons.description" = "Muestra siempre Extraer diapositiva y Extraer selección. Ocultos por defecto; se revelan manteniendo pulsada la tecla ⌥ Opción.";

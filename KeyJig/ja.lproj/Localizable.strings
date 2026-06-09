@@ -187,3 +187,6 @@
 "tooltip.settings.automation_open" = "システム設定を開き、KeyJigのKeynoteへのオートメーションアクセスを再許可する";
 "accessibility.automation_notice" = "Keynoteの操作にはオートメーション権限が必要です。";
 "accessibility.automation_denied" = "Keynoteへのオートメーション権限が拒否されています";
+"settings.section.appearance" = "表示";
+"settings.appearance.always_show_keynote_buttons" = "Keynoteのオプションボタンを常に表示";
+"settings.appearance.always_show_keynote_buttons.description" = "「スライドを取り出す」と「選択範囲を取り出す」を常に表示します。通常は非表示で、⌥ Optionキーを押すと表示されます。";

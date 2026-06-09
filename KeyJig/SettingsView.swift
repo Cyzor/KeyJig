@@ -27,6 +27,7 @@ struct SettingsTooltips {
 struct SettingsView: View {
     @ObservedObject var appState: AppState
     @State private var showingInkscapeDetails = false
+    @AppStorage("alwaysShowOptionalKeynoteButtons") private var alwaysShowOptionalKeynoteButtons = false
 
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
@@ -318,6 +319,31 @@ struct SettingsView: View {
                     .font(.caption)
                     .foregroundColor(.secondary)
                     .fixedSize(horizontal: false, vertical: true)
+            }
+
+            Divider()
+
+            // Appearance Section
+            VStack(alignment: .leading, spacing: 8) {
+                Text(NSLocalizedString(
+                    "settings.section.appearance",
+                    comment: "Settings section heading for appearance options"))
+                    .font(.headline)
+
+                Toggle(isOn: $alwaysShowOptionalKeynoteButtons) {
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(NSLocalizedString(
+                            "settings.appearance.always_show_keynote_buttons",
+                            comment: "Toggle label: always show the optional Keynote pull buttons"))
+                            .font(.body)
+                        Text(NSLocalizedString(
+                            "settings.appearance.always_show_keynote_buttons.description",
+                            comment: "Description for the always-show Keynote buttons toggle"))
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
+                }
             }
         }
         .padding(24)

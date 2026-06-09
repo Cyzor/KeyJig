@@ -88,6 +88,15 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
         return extractSVGCreator(svgString: svg) ?? ""
     }
 
+    /// Returns the POSIX path of the most recently produced output file.
+    /// Prefers the Keynote-pulled PDF; falls back to the staged SVG bridge file.
+    @objc dynamic var scriptingResultFilePath: String {
+        guard let state = frontWindowState else { return "" }
+        if let pdfURL = state.previewPDFURL { return pdfURL.path }
+        if let svgURL = state.bridgeFileURL { return svgURL.path }
+        return ""
+    }
+
     /// Returns the document name (filename without extension) for the frontmost window.
     @objc dynamic var scriptingDocumentName: String {
         guard let state = frontWindowState, !state.svgString.isEmpty else { return "" }

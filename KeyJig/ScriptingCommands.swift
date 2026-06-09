@@ -34,6 +34,9 @@ extension NSApplication {
     @objc dynamic var scriptingDocumentName: String {
         return (delegate as? AppDelegate)?.scriptingDocumentName ?? ""
     }
+    @objc dynamic var scriptingResultFilePath: String {
+        return (delegate as? AppDelegate)?.scriptingResultFilePath ?? ""
+    }
 }
 
 // MARK: - Helpers

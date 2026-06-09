@@ -211,6 +211,7 @@ struct ContentView: View {
     /// shortcut visibility and the option-reveal.
     let isPopoverSurface: Bool
     @StateObject private var optionMonitor = OptionKeyMonitor()
+    @AppStorage("alwaysShowOptionalKeynoteButtons") private var alwaysShowOptionalKeynoteButtons = false
     @Environment(\.undoManager) private var undoManager
     @State private var svgPopReady = false
     @State private var pdfPopReady = false
@@ -500,7 +501,7 @@ struct ContentView: View {
                 // shortcuts remain available at all times regardless. The
                 // Option reveal keeps the default view focused on the
                 // SVG-import workflow while giving power users easy access.
-                if optionMonitor.isHeld && !isPopoverContext {
+                if (optionMonitor.isHeld && !isPopoverContext) || alwaysShowOptionalKeynoteButtons {
                     // ── Convert Keynote Slide  ⌘R ─────────────────────────
                     Button {
                         triggerKeynoteSlide(appState: appState) { appState.statusMessage = $0 }
