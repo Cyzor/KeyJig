@@ -67,14 +67,34 @@ func validateSVG(_ string: String) -> SVGValidationError? {
     // sanitiser; if a new attack surface comes up, extend this list.
     let dangerousPatterns = [
         "<script", "javascript:", "onerror=", "onclick=",
-        "onload=", "onmouseover=", "xlink:href=[\"']https?://",
+        "onload=", "onmouseover=",
     ]
     for pattern in dangerousPatterns {
         if string.range(of: pattern, options: .caseInsensitive) != nil {
             return .containsDangerousContent
         }
     }
+    // External references: any href (SVG 2) or xlink:href (SVG 1.1) pointing
+    // at a remote URL. Matched as a regex — namespace *declarations*
+    // (xmlns:xlink="http://…") don't contain "href=" and pass untouched.
+    if string.range(
+        of: #"(?:xlink:)?href\s*=\s*["']\s*(?:https?|ftp)://"#,
+        options: [.regularExpression, .caseInsensitive]) != nil
+    {
+        return .containsDangerousContent
+    }
     return nil
+}
+
+// MARK: - SVG Ingest Gate
+
+/// Single entry point for SVG text arriving from outside the app (clipboard,
+/// drag-and-drop, file open). Enforces the size cap and the dangerous-content
+/// screen, then applies the standard edge margin. Returns nil when rejected.
+func ingestSVG(_ string: String) -> String? {
+    guard string.utf8.count <= maxSVGBytes else { return nil }
+    guard validateSVG(string) == nil else { return nil }
+    return addSVGMargin(string)
 }
 
 // MARK: - SVG Processing Utilities
@@ -87,7 +107,8 @@ func extractSVGDimensions(svgString: String) -> (width: Double, height: Double)?
     {
         let viewBoxValue = String(svgString[viewBoxRange])
         let cleanValue = String(viewBoxValue.dropFirst(9).dropLast(1))
-        let parts = cleanValue.split(separator: " ")
+        // The spec allows whitespace and/or commas between viewBox numbers.
+        let parts = cleanValue.split(whereSeparator: { $0 == "," || $0.isWhitespace })
         if parts.count >= 4,
             let w = Double(parts[2]), let h = Double(parts[3])
         {
@@ -178,10 +199,14 @@ func addSVGMargin(_ svg: String, margin: Double = 5) -> String {
     guard let vbAttrRange = tag.range(of: #"viewBox=["'][^"']+["']"#, options: .regularExpression)
     else { return svg }
     let vbAttr = String(tag[vbAttrRange])
+    // The spec allows whitespace and/or commas between viewBox numbers.
     let vbParts = vbAttr
         .components(separatedBy: CharacterSet(charactersIn: "\"'"))
-        .first { !$0.isEmpty && $0.contains(" ") }
-        .flatMap { $0.split(separator: " ").compactMap { Double($0) } }
+        .first { !$0.isEmpty && ($0.contains(" ") || $0.contains(",")) }
+        .flatMap {
+            $0.split(whereSeparator: { $0 == "," || $0.isWhitespace })
+                .compactMap { Double($0) }
+        }
     guard let parts = vbParts, parts.count == 4 else { return svg }
 
     let newX = parts[0] - margin

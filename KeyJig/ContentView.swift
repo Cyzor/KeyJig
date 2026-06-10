@@ -9,6 +9,51 @@ private let log = Logger(subsystem: "com.cyzor.KeyJig", category: "ContentView")
 private let accessibilitySettingsURL = URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility")!
 private let automationSettingsURL = URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_Automation")!
 
+// MARK: - Preview network blocker
+
+/// Compiled-once WKContentRuleList that blocks every network request inside
+/// the SVG preview. The preview content always arrives via loadHTMLString, so
+/// it has no legitimate reason to touch the network — this stops remote
+/// image/style references in untrusted SVGs from phoning home (JavaScript is
+/// already disabled, but resource fetches don't need JS). data: URIs stay
+/// allowed so embedded base64 images keep rendering.
+private enum PreviewNetworkBlocker {
+    private(set) static var cached: WKContentRuleList?
+
+    // One rule per scheme: WebKit's content-blocker regex dialect rejects
+    // alternation ("Disjunctions are not supported yet"), so a combined
+    // ^(https?|file)://-style filter fails to compile.
+    private static let rules = """
+        [{"trigger":{"url-filter":"^https?://"},"action":{"type":"block"}},
+         {"trigger":{"url-filter":"^wss?://"},"action":{"type":"block"}},
+         {"trigger":{"url-filter":"^ftp://"},"action":{"type":"block"}},
+         {"trigger":{"url-filter":"^file://"},"action":{"type":"block"}}]
+        """
+
+    /// Calls `onReady` on the main queue once compilation finishes — with nil
+    /// on failure. Callers must load their content either way (fail open):
+    /// a missing blocker degrades to the validateSVG screen, never to a
+    /// blank preview.
+    static func prepare(_ onReady: @escaping (WKContentRuleList?) -> Void) {
+        if let list = cached {
+            onReady(list)
+            return
+        }
+        WKContentRuleListStore.default().compileContentRuleList(
+            forIdentifier: "com.cyzor.KeyJig.block-network",
+            encodedContentRuleList: rules
+        ) { list, error in
+            if let error {
+                log.error("content rule list compile failed: \(error.localizedDescription, privacy: .public)")
+            }
+            DispatchQueue.main.async {
+                cached = list
+                onReady(list)
+            }
+        }
+    }
+}
+
 // MARK: - Responsive SVG renderer
 
 /// A WKWebView-backed renderer that scales the SVG to fill its frame while
@@ -45,7 +90,24 @@ struct ResponsiveSVGWebView: NSViewRepresentable {
 
         let html = wrapSVGForResponsiveDisplay(svgString: svg)
         context.coordinator.lastSVG = svg
-        webView.loadHTMLString(html, baseURL: nil)
+        if let list = PreviewNetworkBlocker.cached {
+            webView.configuration.userContentController.add(list)
+            webView.loadHTMLString(html, baseURL: nil)
+        } else {
+            // First webview of the session: defer the initial load until the
+            // blocker is compiled so the very first render is covered too.
+            // The callback fires with nil on compile failure — load anyway,
+            // or the preview would sit blank with content in the well.
+            PreviewNetworkBlocker.prepare { [weak webView, weak coordinator = context.coordinator] list in
+                guard let webView else { return }
+                if let list {
+                    webView.configuration.userContentController.add(list)
+                }
+                let current = coordinator?.lastSVG ?? svg
+                webView.loadHTMLString(
+                    wrapSVGForResponsiveDisplay(svgString: current), baseURL: nil)
+            }
+        }
         resetViewport(webView)
         return webView
     }
@@ -519,7 +581,9 @@ struct ContentView: View {
                                 shortcut: "⌘R",
                                 showShortcut: !isPopoverContext)
                         } icon: {
-                            Image(systemName: "document.badge.ellipsis.fill")
+                            // "document.*" symbol names need SF Symbols 6 (macOS 15);
+                            // "doc.*" works back to the 11.5 deployment target.
+                            Image(systemName: "doc.badge.ellipsis")
                                 .font(.system(size: 20))
                                 .padding(.leading, 4)
                         }

@@ -39,6 +39,34 @@ func mutoolURL() -> URL? {
         .first { FileManager.default.isExecutableFile(atPath: $0.path) }
 }
 
+// MARK: - Process execution with timeout
+
+/// Runs `task` and waits up to `timeout` seconds for it to exit.
+/// Returns true when the process exited (in time) on its own; the caller still
+/// checks `terminationStatus`. On timeout the process is terminated (SIGKILL
+/// if it ignores SIGTERM) and the function returns false. Must be called on a
+/// background thread — blocks until exit or timeout.
+func runProcess(_ task: Process, timeout: TimeInterval) -> Bool {
+    do {
+        try task.run()
+    } catch {
+        log.error("process launch failed: \(error.localizedDescription, privacy: .public)")
+        return false
+    }
+    let deadline = Date().addingTimeInterval(timeout)
+    while task.isRunning, Date() < deadline {
+        Thread.sleep(forTimeInterval: 0.05)
+    }
+    if task.isRunning {
+        log.error("process timed out after \(timeout, privacy: .public)s — terminating")
+        task.terminate()
+        Thread.sleep(forTimeInterval: 0.5)
+        if task.isRunning { kill(task.processIdentifier, SIGKILL) }
+        return false
+    }
+    return true
+}
+
 // MARK: - Inkscape Probe
 
 /// Returns the path to the first Inkscape executable found on this machine,
@@ -87,13 +115,10 @@ func convertToSVGWithInkscape(inputURL: URL) -> String? {
     task.standardError = FileHandle.nullDevice
     task.standardOutput = FileHandle.nullDevice
 
-    do {
-        try task.run()
-        task.waitUntilExit()
-    } catch {
-        log.error("Inkscape launch failed: \(error.localizedDescription, privacy: .public)")
-        return nil
-    }
+    // 60 s watchdog: Inkscape occasionally hangs on malformed PDFs; without a
+    // timeout the conversion queue thread blocks forever and the UI shows
+    // "converting…" with no way out.
+    guard runProcess(task, timeout: 60) else { return nil }
 
     guard task.terminationStatus == 0 else {
         log.error("Inkscape exited with status \(task.terminationStatus, privacy: .public)")

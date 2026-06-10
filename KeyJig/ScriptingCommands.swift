@@ -92,6 +92,11 @@ class LoadSVGFileCommand: NSScriptCommand {
         }
         do {
             let content = try String(contentsOfFile: path, encoding: .utf8)
+            guard content.utf8.count <= maxSVGBytes else {
+                self.scriptErrorNumber = Int(errAEWrongDataType)
+                self.scriptErrorString = "SVG file exceeds the \(maxSVGBytes / (1024 * 1024)) MB size limit."
+                return NSNumber(value: false)
+            }
             if let state = frontState() {
                 state.svgString = content
                 state.svgURL = path

@@ -95,6 +95,9 @@ func sendSVGToKeynote(svgData: String, completion: @escaping (KeynoteInsertError
     let pb = NSPasteboard.general
     pb.clearContents()
     pb.writeObjects([tempURL as NSURL])
+    // Remember the count of *our* write so the delayed restore can detect a
+    // pasteboard change by the user (or another app) and stand down.
+    let pasteboardChangeCount = pb.changeCount
 
     // 7. Bring Keynote forward.
     let pid = keynoteApp.processIdentifier
@@ -110,10 +113,18 @@ func sendSVGToKeynote(svgData: String, completion: @escaping (KeynoteInsertError
         let ok = pressMenuItemWithCmdChar("v", appPID: pid)
         log.info("AX paste press result: \(ok, privacy: .public)")
 
-        // 9. Restore the pasteboard after Keynote has had time to read it.
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-            restoreGeneralPasteboard(snapshot)
-            completion(ok ? nil : .pasteFailed)
+        // 9. Report the result now; restore the pasteboard later. The restore
+        //    is deliberately generous (1.5 s): a busy Keynote can resolve the
+        //    paste well after the AX press returns, and restoring too early
+        //    makes it paste the user's old clipboard instead. The file URL on
+        //    the pasteboard stays valid throughout, so a late restore is safe.
+        completion(ok ? nil : .pasteFailed)
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
+            // Skip the restore if something else (the user, another app)
+            // changed the pasteboard in the meantime — don't clobber it.
+            if NSPasteboard.general.changeCount == pasteboardChangeCount {
+                restoreGeneralPasteboard(snapshot)
+            }
         }
     }
 }
@@ -125,11 +136,22 @@ private struct PasteboardEntry {
     let data: Data
 }
 
+/// Per-flavor ceiling for the snapshot. A copied Keynote slide can carry tens
+/// of MB in its native flavor; holding (and later re-writing) that much data
+/// for a best-effort clipboard restore isn't worth the memory and main-thread
+/// cost, so oversized flavors are dropped from the snapshot.
+private let maxSnapshotFlavorBytes = 16 * 1024 * 1024
+
 private func snapshotGeneralPasteboard() -> [[PasteboardEntry]] {
     let pb = NSPasteboard.general
     return (pb.pasteboardItems ?? []).map { item in
         item.types.compactMap { type in
-            item.data(forType: type).map { PasteboardEntry(type: type, data: $0) }
+            guard let data = item.data(forType: type) else { return nil }
+            guard data.count <= maxSnapshotFlavorBytes else {
+                log.info("pasteboard snapshot: dropping \(type.rawValue, privacy: .public) (\(data.count, privacy: .public) bytes)")
+                return nil
+            }
+            return PasteboardEntry(type: type, data: data)
         }
     }
 }

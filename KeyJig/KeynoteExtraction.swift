@@ -136,14 +136,22 @@ func pullFromKeynote(
                     tell front document
                         set docName to name
                         set targetSlide to current slide
-                        set nSlides to count of slides
+                        -- "slide number" is an O(1) property read; the repeat
+                        -- loop is an O(n) fallback for Keynote versions that
+                        -- reject it (hundreds of comparisons on large decks).
                         set slideIdx to 0
-                        repeat with i from 1 to nSlides
-                            if slide i is targetSlide then
-                                set slideIdx to i
-                                exit repeat
-                            end if
-                        end repeat
+                        try
+                            set slideIdx to slide number of targetSlide
+                        end try
+                        if slideIdx is 0 then
+                            set nSlides to count of slides
+                            repeat with i from 1 to nSlides
+                                if slide i is targetSlide then
+                                    set slideIdx to i
+                                    exit repeat
+                                end if
+                            end repeat
+                        end if
                         set sel to selection
                         set selCount to count of sel
                         set bboxLines to ""
@@ -246,11 +254,21 @@ func pullFromKeynote(
                     tell front document
                         set docName to name
                         set tgt to current slide
-                        set n to count of slides
+                        -- O(1) property read; loop fallback for Keynote
+                        -- versions that reject "slide number".
                         set idx to 0
-                        repeat with i from 1 to n
-                            if slide i is tgt then set idx to i
-                        end repeat
+                        try
+                            set idx to slide number of tgt
+                        end try
+                        if idx is 0 then
+                            set n to count of slides
+                            repeat with i from 1 to n
+                                if slide i is tgt then
+                                    set idx to i
+                                    exit repeat
+                                end if
+                            end repeat
+                        end if
                         return docName & "|" & (idx as string)
                     end tell
                     end timeout
@@ -581,6 +599,8 @@ private func extractSelectionViaPaste(
         log.info("paste tier: could not read scratch doc name — aborting")
         return nil
     }
+    // Quote-safe form for interpolation into the scripts below.
+    let scratchRef = asEscapedAppleScriptString(scratchName)
     log.info("paste tier: scratch doc is '\(scratchName, privacy: .public)'")
     Thread.sleep(forTimeInterval: 0.3)
 
@@ -595,12 +615,12 @@ private func extractSelectionViaPaste(
             tell application "Keynote"
                 set closed to false
                 try
-                    close document "\(scratchName)" saving no
+                    close document "\(scratchRef)" saving no
                     set closed to true
                 end try
                 if not closed then
                     try
-                        close document "\(scratchName).key" saving no
+                        close document "\(scratchRef).key" saving no
                         set closed to true
                     end try
                 end if
@@ -634,7 +654,7 @@ private func extractSelectionViaPaste(
             set geo to ""
             set exportErr to ""
             try
-                tell document "\(scratchName)"
+                tell document "\(scratchRef)"
                     set itms to iWork items of slide 1
                     set m to count of itms
                     -- Geometry reading is best-effort; charts can't be queried
@@ -724,6 +744,18 @@ private func extractSelectionViaPaste(
         log.info("paste tier: crop failed (\(err.localizedDescription, privacy: .public)) — falling back")
         return nil
     }
+}
+
+// MARK: - AppleScript string escaping
+
+/// Escapes a value for interpolation inside a double-quoted AppleScript string
+/// literal. Scratch-document names come back from Keynote ("Untitled 2" /
+/// localized variants) and are interpolated into the finish/close scripts —
+/// an unescaped quote there would break the script and leave the scratch doc
+/// open, hanging all later Apple Events behind a save dialog.
+private func asEscapedAppleScriptString(_ s: String) -> String {
+    s.replacingOccurrences(of: "\\", with: "\\\\")
+        .replacingOccurrences(of: "\"", with: "\\\"")
 }
 
 // MARK: - Selection geometry
@@ -944,12 +976,7 @@ private func cropWithGhostscript(gs: URL, input: URL, cropRect: CGRect, output: 
     ]
     task.standardOutput = FileHandle.nullDevice
     task.standardError = FileHandle.nullDevice
-    do {
-        try task.run(); task.waitUntilExit()
-    } catch {
-        log.error("gs launch failed: \(error.localizedDescription, privacy: .public)")
-        return false
-    }
+    guard runProcess(task, timeout: 60) else { return false }
     return task.terminationStatus == 0 && FileManager.default.fileExists(atPath: output.path)
 }
 
@@ -962,12 +989,7 @@ private func reprocessWithMutool(mutool: URL, input: URL, output: URL) -> Bool {
     task.arguments = ["draw", "-o", output.path, input.path]
     task.standardOutput = FileHandle.nullDevice
     task.standardError = FileHandle.nullDevice
-    do {
-        try task.run(); task.waitUntilExit()
-    } catch {
-        log.error("mutool launch failed: \(error.localizedDescription, privacy: .public)")
-        return false
-    }
+    guard runProcess(task, timeout: 60) else { return false }
     return task.terminationStatus == 0 && FileManager.default.fileExists(atPath: output.path)
 }
 
@@ -1169,6 +1191,8 @@ private func extractClipboardViaScratchDoc(keynotePID: pid_t) -> URL? {
     guard eSetup == nil, let scratchName = rSetup.stringValue, !scratchName.isEmpty else {
         return nil
     }
+    // Quote-safe form for interpolation into the scripts below.
+    let scratchRef = asEscapedAppleScriptString(scratchName)
     log.info("clipboard scratch doc: '\(scratchName, privacy: .public)'")
     Thread.sleep(forTimeInterval: 0.3)
 
@@ -1177,12 +1201,12 @@ private func extractClipboardViaScratchDoc(keynotePID: pid_t) -> URL? {
             tell application "Keynote"
                 set closed to false
                 try
-                    close document "\(scratchName)" saving no
+                    close document "\(scratchRef)" saving no
                     set closed to true
                 end try
                 if not closed then
                     try
-                        close document "\(scratchName).key" saving no
+                        close document "\(scratchRef).key" saving no
                     end try
                 end if
             end tell
@@ -1199,7 +1223,7 @@ private func extractClipboardViaScratchDoc(keynotePID: pid_t) -> URL? {
             set m to 0
             set okExport to false
             try
-                tell document "\(scratchName)"
+                tell document "\(scratchRef)"
                     set m to count of iWork items of slide 1
                     if m > 0 then
                         export to (POSIX file "\(exportURL.path)") as PDF

@@ -108,8 +108,8 @@ class SVGInteractionView: NSView {
                 switch type {
                 case "svg":
                     if let s = try? String(contentsOf: url, encoding: .utf8),
-                       s.contains("<svg") {
-                        results.append(addSVGMargin(s))
+                       let safe = ingestSVG(s) {
+                        results.append(safe)
                     }
                 case "pdf", "ai":
                     if let s = convertToSVGWithInkscape(inputURL: url) {
@@ -324,8 +324,8 @@ class SVGInteractionView: NSView {
         let svgType = NSPasteboard.PasteboardType("public.svg-image")
         if let data = pasteboard.data(forType: svgType),
             let s = String(data: data, encoding: .utf8),
-            s.contains("<svg")
-        { return addSVGMargin(s) }
+            let safe = ingestSVG(s)
+        { return safe }
 
         if let urls = pasteboard.readObjects(
             forClasses: [NSURL.self],
@@ -337,8 +337,9 @@ class SVGInteractionView: NSView {
                     : (sniffVectorFileType(at: url) ?? ext)
                 switch type {
                 case "svg":
-                    if let s = try? String(contentsOf: url, encoding: .utf8), s.contains("<svg") {
-                        return addSVGMargin(s)
+                    if let s = try? String(contentsOf: url, encoding: .utf8),
+                        let safe = ingestSVG(s) {
+                        return safe
                     }
                 case "pdf", "ai":
                     if let s = convertToSVGWithInkscape(inputURL: url) { return s }
@@ -369,7 +370,7 @@ class SVGInteractionView: NSView {
             }
         }
 
-        if let s = pasteboard.string(forType: .string), s.contains("<svg") { return addSVGMargin(s) }
+        if let s = pasteboard.string(forType: .string), let safe = ingestSVG(s) { return safe }
         return nil
     }
 

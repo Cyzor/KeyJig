@@ -3,6 +3,35 @@ import Foundation
 import SwiftUI
 import AppKit
 
+// MARK: - Clipboard Watcher
+
+/// Single app-wide pasteboard poller. Every AppState used to run its own
+/// 0.5 s timer; with several windows plus the popover that multiplied the
+/// polling for no benefit. One timer publishes the change count; each
+/// AppState subscribes and re-evaluates its own derived state.
+final class ClipboardWatcher {
+    static let shared = ClipboardWatcher()
+
+    /// Current pasteboard change count. Seeds subscribers immediately and
+    /// fires again whenever the count moves.
+    let changeCount: CurrentValueSubject<Int, Never>
+
+    private var timer: Timer?
+
+    private init() {
+        changeCount = CurrentValueSubject(NSPasteboard.general.changeCount)
+        let timer = Timer.scheduledTimer(withTimeInterval: 0.5, repeats: true) { [weak self] _ in
+            guard let self else { return }
+            let count = NSPasteboard.general.changeCount
+            if count != self.changeCount.value {
+                self.changeCount.send(count)
+            }
+        }
+        timer.tolerance = 0.1
+        self.timer = timer
+    }
+}
+
 // MARK: - App State
 
 /// Tracks SVG content and conversion state for a single window or popover.
@@ -98,10 +127,9 @@ class AppState: ObservableObject {
     /// denied state is surfaced in Settings — nil and true need no user action.
     @Published var keynoteAutomationGranted: Bool? = nil
 
-    private var clipboardTimer: Timer?
+    private var clipboardCancellable: AnyCancellable?
     private var workspaceObservers: [Any] = []
     private var appObservers: [Any] = []
-    private var lastSeenClipboardChangeCount: Int = -1
 
     init() {
         checkInkscapeStatus()
@@ -111,7 +139,6 @@ class AppState: ObservableObject {
     }
 
     deinit {
-        clipboardTimer?.invalidate()
         workspaceObservers.forEach { NSWorkspace.shared.notificationCenter.removeObserver($0) }
         appObservers.forEach { NotificationCenter.default.removeObserver($0) }
     }
@@ -143,13 +170,14 @@ class AppState: ObservableObject {
         })
 
         // ── Clipboard monitoring ──────────────────────────────────────────
-        // Poll changeCount every 0.5 s — only evaluates pasteboard types when
-        // the count has actually moved, so the steady-state cost is one int
-        // comparison per tick.
-        checkClipboardForKeynoteData()   // seed immediately
-        clipboardTimer = Timer.scheduledTimer(withTimeInterval: 0.5, repeats: true) { [weak self] _ in
-            self?.checkClipboardForKeynoteData()
-        }
+        // The shared watcher polls the change count once for the whole app;
+        // this subscription seeds immediately (CurrentValueSubject) and fires
+        // only when the count has actually moved.
+        clipboardCancellable = ClipboardWatcher.shared.changeCount
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] _ in
+                self?.checkClipboardForKeynoteData()
+            }
 
         // ── Accessibility + Automation grant state ────────────────────────
         // Re-check both when KeyJig comes to the foreground — the user may
@@ -193,9 +221,6 @@ class AppState: ObservableObject {
 
     private func checkClipboardForKeynoteData() {
         let pb = NSPasteboard.general
-        let count = pb.changeCount
-        guard count != lastSeenClipboardChangeCount else { return }
-        lastSeenClipboardChangeCount = count
         // Keynote writes types containing "keynote" or "iWork" when canvas
         // objects are copied. This excludes plain PDFs, images, and text that
         // other apps write — those don't round-trip as native vector objects.

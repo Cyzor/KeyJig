@@ -494,6 +494,12 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
         let wc: MainWindowController
         if let existing = primaryWindowController, existing.window != nil {
             wc = existing
+            // windowWillClose removed the controller from floatingWindows;
+            // re-register it (at index 0 — session save expects the primary
+            // first) so key-window resolution and session persistence see it.
+            if !floatingWindows.contains(where: { $0 === existing }) {
+                floatingWindows.insert(existing, at: 0)
+            }
         } else {
             let fresh = MainWindowController(isPrimary: true)
             primaryWindowController = fresh
@@ -549,8 +555,12 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
         case "svg":
             do {
                 let content = try String(contentsOf: url, encoding: .utf8)
+                guard let safe = ingestSVG(content) else {
+                    log.error("rejected SVG (size limit or dangerous content): \(url.lastPathComponent, privacy: .public)")
+                    return
+                }
                 state.svgURL = url.path
-                state.svgString = addSVGMargin(content)
+                state.svgString = safe
             } catch {
                 log.error("error reading SVG: \(error.localizedDescription, privacy: .public)")
             }
