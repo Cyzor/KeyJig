@@ -607,10 +607,21 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
         loadFile(at: url, into: state)
     }
 
-    /// Clears the content of whichever window is currently key.
+    /// Clears the content of whichever window is currently key, registering
+    /// undo with that window so ⌘Z reverses it.
     @objc func clearSVG() {
-        frontWindowState?.svgString = ""
-        frontWindowState?.svgURL = ""
+        guard let state = frontWindowState else { return }
+        state.clearContent(registeringWith: undoManager(for: state))
+    }
+
+    /// Resolves the undo manager that owns deletions for the given state:
+    /// the document window holding it, or the popover's window when the
+    /// state is shown there. NSWindow creates its undo manager lazily.
+    func undoManager(for state: AppState) -> UndoManager? {
+        if let wc = floatingWindows.first(where: { $0.appState === state }) {
+            return wc.window?.undoManager
+        }
+        return popover?.contentViewController?.view.window?.undoManager
     }
 
     // MARK: - Keynote action selectors (menu ↔ button parity)
@@ -652,9 +663,39 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
         }
     }
 
+    /// Edit ▸ Undo / Redo. These use the standard selectors with a nil
+    /// target, so a focused text field handles its own undo first; when
+    /// nothing earlier in the responder chain claims the action, it lands
+    /// here and drives the window's undo manager — reversing destructive
+    /// actions (canvas clears). ⌘[ / ⌘] history navigation is separate.
+    @objc func undo(_ sender: Any?) {
+        frontWindowState.flatMap(undoManager(for:))?.undo()
+    }
+
+    @objc func redo(_ sender: Any?) {
+        frontWindowState.flatMap(undoManager(for:))?.redo()
+    }
+
+    /// Edit ▸ Back / Forward (⌘[ / ⌘]) — per-window content history.
+    @objc func historyBack(_ sender: Any?) {
+        frontWindowState?.goBack()
+    }
+
+    @objc func historyForward(_ sender: Any?) {
+        frontWindowState?.goForward()
+    }
+
     /// validateMenuItem disables menu items that mirror button disabled states.
     @objc func validateMenuItem(_ menuItem: NSMenuItem) -> Bool {
         switch menuItem.action {
+        case #selector(undo(_:)):
+            return frontWindowState.flatMap(undoManager(for:))?.canUndo ?? false
+        case #selector(redo(_:)):
+            return frontWindowState.flatMap(undoManager(for:))?.canRedo ?? false
+        case #selector(historyBack(_:)):
+            return frontWindowState?.canGoBack ?? false
+        case #selector(historyForward(_:)):
+            return frontWindowState?.canGoForward ?? false
         case #selector(menuConvertKeynoteSlide):
             return frontWindowState?.keynoteRunning == true
                 && frontWindowState?.keynoteAutomationGranted != false

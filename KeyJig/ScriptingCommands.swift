@@ -67,13 +67,15 @@ class ConvertCommand: NSScriptCommand {
     }
 }
 
-/// Clear the currently loaded SVG from memory.
+/// Clear the currently loaded SVG from memory. A scripted clear is
+/// recoverable like any other — ⌘Z undoes it, and the content stays in
+/// the window's ⌘[ history.
 @objc(ClearCommand)
 class ClearCommand: NSScriptCommand {
     override func performDefaultImplementation() -> Any? {
         if let state = frontState() {
-            state.svgString = ""
-            state.svgURL = ""
+            state.clearContent(
+                registeringWith: AppDelegate.shared?.undoManager(for: state))
         }
         return NSNumber(value: true)
     }

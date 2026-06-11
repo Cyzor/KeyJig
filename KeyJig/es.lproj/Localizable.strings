@@ -104,6 +104,8 @@
 "menu.edit.paste" = "Pegar";
 "menu.edit.clear" = "Eliminar";
 "menu.edit.copy_for_keynote" = "Copiar para Keynote";
+"menu.edit.back" = "Atrás";
+"menu.edit.forward" = "Adelante";
 
 /* ── Window menu ────────────────────────────────────────────────────── */
 "menu.window" = "Ventana";

@@ -300,12 +300,15 @@ class AppMenu {
             withTitle: NSLocalizedString("menu.edit", comment: "Edit menu title"),
             action: nil, keyEquivalent: "")
         let editMenu = NSMenu(title: NSLocalizedString("menu.edit", comment: "Edit menu title"))
+        // nil target: a focused text field's own undo manager wins via the
+        // responder chain; otherwise the action falls through to AppDelegate,
+        // which drives the window's undo manager (canvas clear/restore).
         editMenu.addItem(
             withTitle: NSLocalizedString("menu.edit.undo", comment: "Edit menu: Undo"),
-            action: nil, keyEquivalent: "z")
+            action: #selector(AppDelegate.undo(_:)), keyEquivalent: "z")
         editMenu.addItem(
             withTitle: NSLocalizedString("menu.edit.redo", comment: "Edit menu: Redo"),
-            action: nil, keyEquivalent: "Z")
+            action: #selector(AppDelegate.redo(_:)), keyEquivalent: "Z")
         editMenu.addItem(NSMenuItem.separator())
         editMenu.addItem(
             withTitle: NSLocalizedString("menu.edit.cut", comment: "Edit menu: Cut"),
@@ -330,6 +333,19 @@ class AppMenu {
                 comment: "Edit menu: Clear item (clears the loaded SVG)"),
             action: #selector(AppDelegate.clearSVG),
             keyEquivalent: "")
+        editMenu.addItem(NSMenuItem.separator())
+        editMenu.addItem(
+            withTitle: NSLocalizedString(
+                "menu.edit.back",
+                comment: "Edit menu: go back in content history"),
+            action: #selector(AppDelegate.historyBack(_:)),
+            keyEquivalent: "[")
+        editMenu.addItem(
+            withTitle: NSLocalizedString(
+                "menu.edit.forward",
+                comment: "Edit menu: go forward in content history"),
+            action: #selector(AppDelegate.historyForward(_:)),
+            keyEquivalent: "]")
         editMenuItem.submenu = editMenu
 
         // ── Window menu ───────────────────────────────────────────────────

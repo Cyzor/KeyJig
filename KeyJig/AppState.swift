@@ -52,6 +52,7 @@ class AppState: ObservableObject {
                 svgDimensions = extractSVGDimensions(svgString: svgString)
                 svgFileSize = getFileSizeString(svgString: svgString)
                 svgCreator = extractSVGCreator(svgString: svgString)
+                scheduleHistoryCapture()
             }
         }
     }
@@ -82,6 +83,9 @@ class AppState: ObservableObject {
             if previewPDFURL != nil && !svgString.isEmpty {
                 svgString = ""
                 svgURL = ""
+            }
+            if previewPDFURL != nil {
+                scheduleHistoryCapture()
             }
         }
     }
@@ -217,6 +221,175 @@ class AppState: ObservableObject {
         if keynoteAutomationGranted != result {
             keynoteAutomationGranted = result
         }
+    }
+
+    // MARK: - Content history (⌘[ / ⌘] navigation)
+
+    /// One unit of canvas content — either an SVG (string in memory) or a
+    /// pulled-from-Keynote PDF (temp file URL). Mirrors the fields that
+    /// clearContent snapshots for undo.
+    struct ContentSnapshot: Equatable {
+        let svgString: String
+        let svgURL: String
+        let bridgeFileURL: URL?
+        let previewPDFURL: URL?
+        let conversionStatus: ConversionStatus
+
+        var isEmpty: Bool { svgString.isEmpty && previewPDFURL == nil }
+        /// SVG strings live in memory; PDF entries only hold a URL.
+        var costInBytes: Int { svgString.utf8.count }
+        /// A PDF entry goes stale if its temp file has been cleaned up.
+        var isStillValid: Bool {
+            guard let pdf = previewPDFURL else { return true }
+            return FileManager.default.fileExists(atPath: pdf.path)
+        }
+    }
+
+    /// Browser-style history: entries up to historyCursor are "back",
+    /// entries after it are "forward". Loading new content truncates the
+    /// forward tail. Deliberately small — the goal is "get back that thing
+    /// from a minute ago", not an archive.
+    private var historyEntries: [ContentSnapshot] = []
+    private var historyCursor: Int = -1
+    /// Set while goBack/goForward (or undo) rewrites content, so the didSet
+    /// hooks don't record the restoration as a fresh visit.
+    private var isRestoringContent = false
+    private var historyCaptureScheduled = false
+    private let maxHistoryEntries = 10
+    private let maxHistoryBytes = 20 * 1024 * 1024
+
+    /// Coalesces history capture to the end of the current run-loop turn.
+    /// Content loads set several properties in sequence (svgString, then
+    /// svgURL, …); deferring the snapshot captures them as one unit.
+    private func scheduleHistoryCapture() {
+        guard !isRestoringContent, !historyCaptureScheduled else { return }
+        historyCaptureScheduled = true
+        DispatchQueue.main.async { [weak self] in
+            guard let self else { return }
+            self.historyCaptureScheduled = false
+            self.captureHistorySnapshot()
+        }
+    }
+
+    private var currentSnapshot: ContentSnapshot {
+        ContentSnapshot(
+            svgString: svgString, svgURL: svgURL, bridgeFileURL: bridgeFileURL,
+            previewPDFURL: previewPDFURL, conversionStatus: conversionStatus)
+    }
+
+    /// True when the canvas still shows the entry at the cursor (i.e. the
+    /// user hasn't cleared it since). Content comparison is cheap relative
+    /// to how rarely this runs (menu validation, ⌘[ / ⌘] presses).
+    private var currentMatchesCursor: Bool {
+        historyEntries.indices.contains(historyCursor)
+            && historyEntries[historyCursor] == currentSnapshot
+    }
+
+    private func captureHistorySnapshot() {
+        let snap = currentSnapshot
+        guard !snap.isEmpty, !currentMatchesCursor else { return }
+        // New content truncates any forward entries (browser semantics).
+        historyEntries.removeSubrange((historyCursor + 1)...)
+        historyEntries.append(snap)
+        historyCursor = historyEntries.count - 1
+        // Trim oldest-first to the entry and byte caps, but never the entry
+        // just added.
+        while historyEntries.count > 1,
+            historyEntries.count > maxHistoryEntries
+                || historyEntries.reduce(0, { $0 + $1.costInBytes }) > maxHistoryBytes
+        {
+            historyEntries.removeFirst()
+            historyCursor -= 1
+        }
+    }
+
+    /// Back is available when there's an older entry — or when the canvas
+    /// was cleared, in which case ⌘[ re-opens the entry at the cursor.
+    var canGoBack: Bool {
+        historyCursor > 0 || (historyCursor == 0 && !currentMatchesCursor)
+    }
+
+    var canGoForward: Bool { historyCursor < historyEntries.count - 1 }
+
+    func goBack() {
+        guard canGoBack else { return }
+        if currentMatchesCursor { historyCursor -= 1 }
+        restoreHistoryEntry()
+    }
+
+    func goForward() {
+        guard canGoForward else { return }
+        historyCursor += 1
+        restoreHistoryEntry()
+    }
+
+    private func restoreHistoryEntry() {
+        // Drop entries whose temp PDF has vanished, sliding the cursor left.
+        while historyEntries.indices.contains(historyCursor),
+            !historyEntries[historyCursor].isStillValid
+        {
+            historyEntries.remove(at: historyCursor)
+            historyCursor -= 1
+        }
+        guard historyEntries.indices.contains(historyCursor) else { return }
+        isRestoringContent = true
+        defer { isRestoringContent = false }
+        applySnapshot(historyEntries[historyCursor])
+    }
+
+    /// Writes a snapshot back to the canvas, using the setters that keep
+    /// svgString and previewPDFURL mutually exclusive (each didSet clears
+    /// the other).
+    private func applySnapshot(_ snap: ContentSnapshot) {
+        if let pdf = snap.previewPDFURL {
+            previewPDFURL = pdf
+        } else {
+            svgString = snap.svgString
+            svgURL = snap.svgURL
+            bridgeFileURL = snap.bridgeFileURL
+            conversionStatus = snap.conversionStatus
+        }
+        statusMessage = ""
+    }
+
+    /// Clears whichever content mode is currently active (SVG or pulled PDF).
+    /// Every deletion path — trash button, Delete keys, Edit ▸ Clear, context
+    /// menu, AppleScript `clear` — funnels through here.
+    ///
+    /// Registers the clear with the given undo manager so ⌘Z reverses it
+    /// (and ⇧⌘Z re-clears). Undo/redo is for the destructive act; ⌘[ / ⌘]
+    /// history navigation is independent of it.
+    func clearContent(registeringWith undoManager: UndoManager?) {
+        let snap = currentSnapshot
+        if !snap.isEmpty {
+            undoManager?.registerUndo(withTarget: self) {
+                [weak undoManager] state in
+                state.undoClear(restoring: snap, undoManager: undoManager)
+            }
+            undoManager?.setActionName(NSLocalizedString(
+                "undo.clear",
+                comment: "Undo action name shown in Edit menu after clearing the canvas"))
+        }
+
+        if previewPDFURL != nil {
+            previewPDFURL = nil
+        } else {
+            svgString = ""
+            svgURL = ""
+            bridgeFileURL = nil
+            conversionStatus = .idle
+        }
+        statusMessage = ""
+    }
+
+    /// Undo of a clear: restore the snapshot and register the inverse so
+    /// redo re-clears. The restored content is already at the history
+    /// cursor, so the capture hooks dedupe it — no duplicate entry.
+    private func undoClear(restoring snap: ContentSnapshot, undoManager: UndoManager?) {
+        undoManager?.registerUndo(withTarget: self) { [weak undoManager] state in
+            state.clearContent(registeringWith: undoManager)
+        }
+        applySnapshot(snap)
     }
 
     private func checkClipboardForKeynoteData() {

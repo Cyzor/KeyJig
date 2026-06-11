@@ -274,7 +274,6 @@ struct ContentView: View {
     let isPopoverSurface: Bool
     @StateObject private var optionMonitor = OptionKeyMonitor()
     @AppStorage("alwaysShowOptionalKeynoteButtons") private var alwaysShowOptionalKeynoteButtons = false
-    @Environment(\.undoManager) private var undoManager
     @State private var svgPopReady = false
     @State private var pdfPopReady = false
     /// True only while the first SVG of this session is loaded.
@@ -394,43 +393,11 @@ struct ContentView: View {
             ? base + "\n\n" + Self.breakApartInstruction : base
     }
 
-    /// Clears whichever content mode is currently active and registers an undo
-    /// operation so ⌘Z can restore the content.
+    /// Clears whichever content mode is currently active. ⌘Z undoes the
+    /// clear; the content also stays reachable via ⌘[ history.
     private func clearCanvas() {
-        // Snapshot the current state before modifying anything.
-        let prevSVG       = appState.svgString
-        let prevURL       = appState.svgURL
-        let prevBridge    = appState.bridgeFileURL
-        let prevPDF       = appState.previewPDFURL
-        let prevStatus    = appState.conversionStatus
-
-        undoManager?.registerUndo(withTarget: appState) { state in
-            // Restore — use the setters that keep svgString and previewPDFURL
-            // mutually exclusive (each didSet clears the other).
-            if prevPDF != nil {
-                state.previewPDFURL = prevPDF
-            } else {
-                state.svgString     = prevSVG
-                state.svgURL        = prevURL
-                state.bridgeFileURL = prevBridge
-                state.conversionStatus = prevStatus
-            }
-            // Leave statusMessage empty after undo — the restored content sets
-            // its own default via computedStatusMessage.
-        }
-        undoManager?.setActionName(NSLocalizedString(
-            "undo.clear",
-            comment: "Undo action name shown in Edit menu after clearing the canvas"))
-
-        if isPDFMode {
-            appState.previewPDFURL = nil
-        } else {
-            appState.svgString = ""
-            appState.svgURL = ""
-            appState.bridgeFileURL = nil
-            appState.conversionStatus = .idle
-        }
-        appState.statusMessage = ""
+        appState.clearContent(
+            registeringWith: AppDelegate.shared?.undoManager(for: appState))
     }
 
     var body: some View {
