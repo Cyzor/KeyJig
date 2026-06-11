@@ -7,6 +7,7 @@ private let log = Logger(subsystem: "com.cyzor.KeyJig", category: "Keynote")
 
 enum KeynoteInsertError: LocalizedError {
     case keynoteNotRunning
+    case keynoteTooOld(String)
     case noDocumentOpen
     case accessibilityDenied
     case fileWriteError(Error)
@@ -18,6 +19,12 @@ enum KeynoteInsertError: LocalizedError {
             return NSLocalizedString(
                 "error.keynote.not_running",
                 comment: "Error: Keynote is not running or has no document open")
+        case .keynoteTooOld(let version):
+            return String(
+                format: NSLocalizedString(
+                    "error.keynote.too_old",
+                    comment: "Error: installed Keynote predates SVG import (needs 13.1+); %@ is the detected version"),
+                version)
         case .noDocumentOpen:
             return NSLocalizedString(
                 "error.keynote.no_document",
@@ -34,6 +41,34 @@ enum KeynoteInsertError: LocalizedError {
                 comment: "Error: AX paste action did not succeed")
         }
     }
+}
+
+// MARK: - Keynote version
+
+/// Version string of the user's Keynote (e.g. "14.5"), read from the app
+/// bundle's Info.plist — no Apple Events, no launch required. Prefers the
+/// running instance's bundle; falls back to the installed app. nil when
+/// Keynote isn't installed or the plist is unreadable.
+func keynoteVersionString() -> String? {
+    let url = NSRunningApplication
+        .runningApplications(withBundleIdentifier: "com.apple.iWork.Keynote")
+        .first?.bundleURL
+        ?? NSWorkspace.shared.urlForApplication(
+            withBundleIdentifier: "com.apple.iWork.Keynote")
+    guard let url, let bundle = Bundle(url: url) else { return nil }
+    return bundle.infoDictionary?["CFBundleShortVersionString"] as? String
+}
+
+/// Keynote gained SVG import in 13.1 (June 2023 iWork update); the push
+/// pipeline pastes an SVG file URL, so anything older silently produces
+/// nothing on the slide. Unknown versions pass — feature absence will
+/// surface as a paste error, which beats wrongly blocking a capable Keynote.
+private func keynoteSupportsSVGImport(_ version: String?) -> Bool {
+    guard let version else { return true }
+    let parts = version.split(separator: ".").compactMap { Int($0) }
+    guard let major = parts.first else { return true }
+    let minor = parts.count > 1 ? parts[1] : 0
+    return major > 13 || (major == 13 && minor >= 1)
 }
 
 // MARK: - Public entry point
@@ -68,11 +103,24 @@ func sendSVGToKeynote(svgData: String, completion: @escaping (KeynoteInsertError
         return
     }
 
-    // 3. Verify Keynote has a document open (NSAppleScript is synchronous; main thread only).
+    // 2b. Version gate: SVG paste needs Keynote ≥ 13.1. Logged either way so
+    //     reports from untested versions are triageable.
+    let keynoteVersion = keynoteVersionString()
+    log.info("push: Keynote version \(keynoteVersion ?? "unknown", privacy: .public)")
+    if !keynoteSupportsSVGImport(keynoteVersion) {
+        completion(.keynoteTooOld(keynoteVersion ?? "?"))
+        return
+    }
+
+    // 3. Verify Keynote has a document open (NSAppleScript is synchronous;
+    //    main thread only — the short timeout keeps a modally-blocked Keynote
+    //    from beachballing KeyJig for the ~2-minute default AE timeout).
     var scriptError: NSDictionary?
     NSAppleScript(source: """
         tell application "Keynote"
+            with timeout of 10 seconds
             if not (exists front document) then error number -1728
+            end timeout
         end tell
     """)!.executeAndReturnError(&scriptError)
     if scriptError != nil {

@@ -14,7 +14,7 @@ KeyJig is a Mac utility that sits between your vector tools and Apple Keynote. I
 
 ## Why it exists
 
-Keynote 10+ has a native SVG importer, but copying and pasting from Illustrator or Affinity Designer sends Keynote a flattened, uneditable PDF. KeyJig re-encodes the artwork so Keynote imports it as native, editable paths you can Break Apart and modify freely.
+Keynote 13.1+ has a native SVG importer, but copying and pasting from Illustrator or Affinity Designer sends Keynote a flattened, uneditable PDF. KeyJig re-encodes the artwork so Keynote imports it as native, editable paths you can Break Apart and modify freely.
 
 KeyJig also extracts graphics (charts, tables, and whole slides) from Keynote as high-quality PDFs for desktop publishing or external editing.
 
@@ -73,7 +73,7 @@ _App Settings:_
 ### Requirements
 
 - macOS 11.5 (Big Sur) or later
-- Keynote 10.0 or later — the version that added native SVG import, available free from the Mac App Store. Numbers and Pages support the same SVG format and work identically.
+- Keynote 13.1 or later — the June 2023 iWork update that added native SVG import (itself requiring macOS 12.3), available free from the Mac App Store. Numbers and Pages support the same SVG format and work identically. Pulling slides or selections *from* Keynote also works on somewhat older versions, but KeyJig is developed and tested against Keynote 14.5; sending SVG to an older Keynote is blocked with an explanatory message.
 - Two permissions in System Settings → Privacy & Security:
   - **Accessibility** — required to place SVGs directly onto slides (⌘D)
   - **Automation** — required to pull slides and selections from Keynote; macOS prompts on first use

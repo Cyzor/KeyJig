@@ -100,6 +100,10 @@ func pullFromKeynote(
             NSWorkspace.shared.frontmostApplication
         }
 
+        // Log the Keynote version once per pull so reports from untested
+        // versions are triageable (only 14.5 has been exercised in anger).
+        log.info("pull: Keynote version \(keynoteVersionString() ?? "unknown", privacy: .public)")
+
         // Unhide Keynote if it is hidden — a hidden app silently ignores
         // AppleScript export calls, causing the pull to stall indefinitely.
         // `unhide()` makes the app visible without stealing focus.
@@ -152,7 +156,14 @@ func pullFromKeynote(
                                 end if
                             end repeat
                         end if
-                        set sel to selection
+                        -- "selection" is undocumented API. If a Keynote
+                        -- version rejects it, degrade to zero items (the
+                        -- pull falls back to documented full-slide paths)
+                        -- instead of failing outright.
+                        set sel to {}
+                        try
+                            set sel to selection
+                        end try
                         set selCount to count of sel
                         set bboxLines to ""
                         if selCount > 0 then
@@ -496,6 +507,7 @@ private func restoreKeynoteSelection(slideIndex: Int, selectionBoxes: [Selection
     }.joined(separator: " or ")
     let restoreScript = """
         tell application "Keynote"
+            with timeout of 30 seconds
             activate
             tell front document
                 set current slide to slide \(slideIndex)
@@ -508,6 +520,7 @@ private func restoreKeynoteSelection(slideIndex: Int, selectionBoxes: [Selection
                 end repeat
                 if toSelect is not {} then set selection to toSelect
             end tell
+            end timeout
         end tell
         """
     var restoreError: NSDictionary?
@@ -560,8 +573,10 @@ private func extractSelectionViaPaste(
     // Source slide size, so pasted objects keep their proportions and don't clip.
     let sizeScript = """
         tell application "Keynote"
+            with timeout of 10 seconds
             if not (exists front document) then error number -1728
             tell front document to return (width as string) & "," & (height as string)
+            end timeout
         end tell
         """
     var eSize: NSDictionary?
@@ -577,6 +592,7 @@ private func extractSelectionViaPaste(
     // action causes another window to come forward.
     let setupScript = """
         tell application "Keynote"
+            with timeout of 30 seconds
             set d to make new document
             tell d
                 set its width to \(w)
@@ -587,6 +603,7 @@ private func extractSelectionViaPaste(
             end tell
             activate
             return name of d
+            end timeout
         end tell
         """
     var eSetup: NSDictionary?
@@ -613,6 +630,7 @@ private func extractSelectionViaPaste(
         log.info("paste tier: closing scratch doc '\(scratchName, privacy: .public)'")
         let closeScript = """
             tell application "Keynote"
+                with timeout of 30 seconds
                 set closed to false
                 try
                     close document "\(scratchRef)" saving no
@@ -625,6 +643,7 @@ private func extractSelectionViaPaste(
                     end try
                 end if
                 return closed as string
+                end timeout
             end tell
             """
         var eClose: NSDictionary?
@@ -649,6 +668,7 @@ private func extractSelectionViaPaste(
     // another window to come forward, we never read from or close the wrong doc.
     let finishScript = """
         tell application "Keynote"
+            with timeout of 90 seconds
             set m to 0
             set okExport to false
             set geo to ""
@@ -686,6 +706,7 @@ private func extractSelectionViaPaste(
                 set exportErr to errMsg
             end try
             return (m as string) & "|" & (okExport as string) & "|" & geo & "|" & exportErr
+            end timeout
         end tell
         """
     var eFinish: NSDictionary?
@@ -1161,8 +1182,10 @@ private func extractClipboardViaScratchDoc(keynotePID: pid_t) -> URL? {
     // Read source slide dimensions so pasted objects keep their proportions.
     let sizeScript = """
         tell application "Keynote"
+            with timeout of 10 seconds
             if not (exists front document) then error number -1728
             tell front document to return (width as string) & "," & (height as string)
+            end timeout
         end tell
         """
     var eSize: NSDictionary?
@@ -1174,6 +1197,7 @@ private func extractClipboardViaScratchDoc(keynotePID: pid_t) -> URL? {
 
     let setupScript = """
         tell application "Keynote"
+            with timeout of 30 seconds
             set d to make new document
             tell d
                 set its width to \(w)
@@ -1184,6 +1208,7 @@ private func extractClipboardViaScratchDoc(keynotePID: pid_t) -> URL? {
             end tell
             activate
             return name of d
+            end timeout
         end tell
         """
     var eSetup: NSDictionary?
@@ -1199,6 +1224,7 @@ private func extractClipboardViaScratchDoc(keynotePID: pid_t) -> URL? {
     defer {
         let closeScript = """
             tell application "Keynote"
+                with timeout of 30 seconds
                 set closed to false
                 try
                     close document "\(scratchRef)" saving no
@@ -1209,6 +1235,7 @@ private func extractClipboardViaScratchDoc(keynotePID: pid_t) -> URL? {
                         close document "\(scratchRef).key" saving no
                     end try
                 end if
+                end timeout
             end tell
             """
         NSAppleScript(source: closeScript)!.executeAndReturnError(nil)
@@ -1220,6 +1247,7 @@ private func extractClipboardViaScratchDoc(keynotePID: pid_t) -> URL? {
     let exportURL = makeTempKeynotePDFURL()
     let finishScript = """
         tell application "Keynote"
+            with timeout of 90 seconds
             set m to 0
             set okExport to false
             try
@@ -1232,6 +1260,7 @@ private func extractClipboardViaScratchDoc(keynotePID: pid_t) -> URL? {
                 end tell
             end try
             return (m as string) & "|" & (okExport as string)
+            end timeout
         end tell
         """
     var eFinish: NSDictionary?

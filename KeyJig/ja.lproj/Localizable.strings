@@ -49,6 +49,7 @@
 
 /* ── Keynote errors ─────────────────────────────────────────────────── */
 "error.keynote.not_running" = "Keynoteが起動していません。";
+"error.keynote.too_old" = "このバージョンのKeynote（%@）はSVGを読み込めません。Keynote 13.1以降が必要です。";
 "error.keynote.no_document" = "Keynoteにドキュメントが開かれていません。プレゼンテーションを開いて再度お試しください。";
 "error.keynote.accessibility" = "アクセシビリティアクセスが必要です。システム設定 ▸ プライバシーとセキュリティ ▸ アクセシビリティ でKeyJigを有効にして、再度お試しください。";
 "error.keynote.paste_failed" = "KeynoteにSVGを配置できませんでした。";

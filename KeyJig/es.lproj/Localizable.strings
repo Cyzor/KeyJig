@@ -49,6 +49,7 @@
 
 /* ── Keynote errors ─────────────────────────────────────────────────── */
 "error.keynote.not_running" = "Keynote no está abierto.";
+"error.keynote.too_old" = "Esta versión de Keynote (%@) no puede importar SVG; se requiere Keynote 13.1 o posterior.";
 "error.keynote.no_document" = "Keynote no tiene ningún documento abierto. Abre una presentación e inténtalo de nuevo.";
 "error.keynote.accessibility" = "Se requiere acceso de accesibilidad. Activa KeyJig en Configuración del Sistema ▸ Privacidad y seguridad ▸ Accesibilidad e inténtalo de nuevo.";
 "error.keynote.paste_failed" = "No se pudo insertar el SVG en Keynote.";
