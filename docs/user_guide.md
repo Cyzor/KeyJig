@@ -79,7 +79,9 @@ Select one or more objects in Keynote and copy them (**⌘C**), then press **⌘
 
 **Inbound drop** — drop an SVG file onto the preview to replace the current content.
 
-**Clear** — right-click the preview and choose **Clear**.
+**Clear** — right-click the preview and choose **Clear**, press **Delete** (or **⌘Delete**), or use **Edit → Clear**. A clear is never final: **⌘Z** undoes it, and **⇧⌘Z** re-clears.
+
+**History** — KeyJig remembers the last few graphics loaded in each window (up to 10). **⌘[** steps back through them and **⌘]** steps forward, browser-style — handy when iterating on artwork or comparing pulled slides. History is per window and discarded when the window closes.
 
 ---
 
@@ -98,7 +100,7 @@ Not all apps write SVG to the clipboard in a recognized format. Use **File → O
 Open the file in a browser to confirm it's valid. If it looks broken there, the file is malformed.
 
 **Place in Keynote does nothing**  
-Grant Accessibility permission in **System Settings → Privacy & Security → Accessibility**, then try again.
+Grant Accessibility permission in **System Settings → Privacy & Security → Accessibility**, then try again. Placing SVG also requires Keynote 13.1 or later (the version that added native SVG import); older versions are blocked with a message.
 
 **Pull buttons aren't visible**  
 Hold **Option** to reveal them. If they're grayed out, grant Automation permission in **System Settings → Privacy & Security → Automation**.
