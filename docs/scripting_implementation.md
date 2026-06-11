@@ -40,6 +40,7 @@ Backed by `@objc dynamic` computed vars on `AppDelegate`, forwarded from `NSAppl
 | `file size` | `SVGs` | `scriptingFileSize` | Human-readable size, e.g. `"42.3 KB"` |
 | `SVG creator` | `SVGr` | `scriptingSVGCreator` | Creator metadata, or `""` |
 | `document name` | `SVGd` | `scriptingDocumentName` | Loaded file's basename without extension, or `""` |
+| `result file path` | `RFPh` | `scriptingResultFilePath` | POSIX path of the most recent output file (pulled Keynote PDF, else staged SVG bridge file), or `""` |
 
 **Naming pitfalls:** Property names share the AppleScript namespace with built-ins.
 - `SVG width` / `SVG height` — AppleScript parses `SVG` as a complete property reference, leaving `width`/`height` unresolved. Fixed by renaming to `pixel width` / `pixel height`.

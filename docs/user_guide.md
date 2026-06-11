@@ -103,7 +103,7 @@ Open the file in a browser to confirm it's valid. If it looks broken there, the 
 Grant Accessibility permission in **System Settings → Privacy & Security → Accessibility**, then try again. Placing SVG also requires Keynote 13.1 or later (the version that added native SVG import); older versions are blocked with a message.
 
 **Pull buttons aren't visible**  
-Hold **Option** to reveal them. If they're grayed out, grant Automation permission in **System Settings → Privacy & Security → Automation**.
+Hold **Option** to reveal them, or turn on **Settings → Appearance → Show optional Keynote buttons** to keep them visible permanently (useful in the pinned menu-bar window, where the Option reveal isn't available). If they're grayed out, grant Automation permission in **System Settings → Privacy & Security → Automation**.
 
 **Popover doesn't open**  
 Use **File → Show Menubar Panel** as an alternative. If the problem persists, check Activity Monitor and restart KeyJig.

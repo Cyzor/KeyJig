@@ -27,6 +27,7 @@ All read-only. Access via `tell application "KeyJig" to get <property>`.
 | `file size` | Human-readable size, e.g. `"42.3 KB"` |
 | `SVG creator` | Creator metadata from the SVG, or `""` |
 | `document name` | Loaded file's name without extension, or `""` |
+| `result file path` | POSIX path of the most recent output file — the pulled Keynote PDF if one is loaded, otherwise the staged SVG bridge file, or `""` |
 
 ### All Commands
 
