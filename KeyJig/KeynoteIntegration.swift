@@ -80,11 +80,16 @@ private func keynoteSupportsSVGImport(_ version: String?) -> Bool {
 /// reads it, minimising disruption to clipboard contents.
 ///
 /// Must be called on the main thread. Calls completion on the main thread.
-func sendSVGToKeynote(svgData: String, completion: @escaping (KeynoteInsertError?) -> Void) {
+/// `originPath` is the source file the SVG was loaded from (AppState.svgURL),
+/// used to derive a meaningful temp-file name; pass "" or nil when unknown.
+func sendSVGToKeynote(
+    svgData: String, originPath: String? = nil,
+    completion: @escaping (KeynoteInsertError?) -> Void
+) {
     assert(Thread.isMainThread, "sendSVGToKeynote must be called on the main thread")
 
     // 1. Write SVG to a temp file — clipboard untouched so far.
-    let tempURL = makeTempSVGURL()
+    let tempURL = makeTempSVGURL(svg: svgData, originPath: originPath)
     do {
         try sanitizeSVGForKeynote(svgData).write(to: tempURL, atomically: true, encoding: .utf8)
         try FileManager.default.setAttributes(

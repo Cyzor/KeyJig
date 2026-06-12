@@ -125,10 +125,11 @@ class MainWindowController: NSWindowController, NSWindowDelegate {
 
         // Subscribe to AppState changes and update the proxy icon accordingly.
         // Priority order:
-        //   1. Temp bridge file — exists once svgToClipboard() or an outbound
+        //   1. Pulled-Keynote PDF — the temp file shown in the PDF preview.
+        //   2. Temp bridge file — exists once svgToClipboard() or an outbound
         //      drag has run, i.e. the file Keynote actually consumed.
-        //   2. Source file — set when the SVG was opened from disk or dropped.
-        //   3. nil — well is empty; clears the proxy icon.
+        //   3. Source file — set when the SVG was opened from disk or dropped.
+        //   4. nil — well is empty; clears the proxy icon.
         representedURLCancellable = appState.objectWillChange
             .receive(on: DispatchQueue.main)
             .sink { [weak self] _ in
@@ -141,6 +142,17 @@ class MainWindowController: NSWindowController, NSWindowDelegate {
     // MARK: Proxy icon
 
     func updateRepresentedURL() {
+        // Pulled-PDF mode: the preview PDF is a real temp file with a
+        // descriptive name — same proxy treatment as the SVG bridge file,
+        // so PDF wells get the draggable title-bar icon too.
+        if let pdfURL = appState.previewPDFURL,
+            FileManager.default.fileExists(atPath: pdfURL.path)
+        {
+            window?.representedURL = pdfURL
+            window?.title = pdfURL.deletingPathExtension().lastPathComponent
+            return
+        }
+
         guard !appState.svgString.isEmpty else {
             window?.representedURL = nil
             window?.title = untitledTitle

@@ -338,21 +338,27 @@ struct ContentView: View {
     /// send every result to a new floating window so the pinned panel isn't
     /// commandeered and the mirrored window isn't silently overwritten;
     /// single-file drops still load into the popover normally.
-    private func handleDroppedSVGs(_ svgs: [String]) {
-        guard let first = svgs.first else { return }
-        if isPopoverSurface && svgs.count > 1 {
+    private func handleDroppedSVGs(_ items: [DroppedVector]) {
+        guard let first = items.first else { return }
+        if isPopoverSurface && items.count > 1 {
             // Multi-file on the popover: every result gets its own floating window
             // so the pinned panel isn't commandeered and the mirrored window isn't
             // silently overwritten. Single files still load into the popover normally.
-            for svg in svgs {
-                AppDelegate.shared?.openNewFloatingWindow(withSVG: svg)
+            for item in items {
+                AppDelegate.shared?.openNewFloatingWindow(
+                    withSVG: item.svg, sourceURL: item.sourceURL)
             }
         } else {
             appState.conversionStatus = .idle
-            appState.svgString = first
+            // Track the dropped file's origin (nil for pasteboard-data drops —
+            // a stale origin would mislabel the proxy icon and derived temp
+            // names with the previous file's name).
+            appState.svgURL = first.sourceURL?.path ?? ""
+            appState.svgString = first.svg
             appState.statusMessage = ""
-            for svg in svgs.dropFirst() {
-                AppDelegate.shared?.openNewFloatingWindow(withSVG: svg)
+            for item in items.dropFirst() {
+                AppDelegate.shared?.openNewFloatingWindow(
+                    withSVG: item.svg, sourceURL: item.sourceURL)
             }
         }
     }
@@ -591,7 +597,9 @@ struct ContentView: View {
                     appState.statusMessage = NSLocalizedString(
                         "status.keynote.sending",
                         comment: "Status: SVG is being placed into Keynote")
-                    sendSVGToKeynote(svgData: appState.svgString) { error in
+                    sendSVGToKeynote(
+                        svgData: appState.svgString, originPath: appState.svgURL
+                    ) { error in
                         if let error = error {
                             appState.keynoteSendStatus = .failed
                             appState.statusMessage = error.localizedDescription
@@ -757,7 +765,7 @@ struct ContentView: View {
                         log.error("dropped SVG exceeds size limit of \(maxSVGBytes, privacy: .public) bytes")
                         return nil
                     }
-                    let url = makeTempSVGURL()
+                    let url = makeTempSVGURL(svg: svg, originPath: appState?.svgURL)
                     do {
                         try svg.write(to: url, atomically: true, encoding: .utf8)
                         // Hardened permissions: owner read/write only (0600)

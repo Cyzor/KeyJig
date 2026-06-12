@@ -166,6 +166,8 @@ class ConvertClipboardCommand: NSScriptCommand {
         convertClipboardPDFToSVG { svg in
             if let svg = svg, !svg.isEmpty {
                 resultSVG = svg
+                // Clipboard content has no source file — drop any stale origin.
+                frontState()?.svgURL = ""
                 frontState()?.svgString = svg
             }
             sema.signal()

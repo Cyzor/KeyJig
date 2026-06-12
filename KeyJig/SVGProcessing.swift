@@ -175,6 +175,94 @@ func extractSVGCreator(svgString: String) -> String? {
     return nil
 }
 
+// MARK: - Content-Derived Naming
+
+/// Only the head of the document is scanned for name hints. Titles, Inkscape
+/// docnames, and metadata cluster near the root, so the cap loses almost
+/// nothing while keeping naming O(1) even at the 50 MB payload limit.
+private let nameHintScanLimit = 64 * 1024
+
+/// Default docnames and placeholders that say nothing about the artwork.
+/// A hint made up entirely of these words is rejected so the random-name
+/// fallback (which at least guarantees variety) takes over.
+private let genericNameHintWords: Set<String> = [
+    "untitled", "unbenannt", "sintitulo", "drawing", "zeichnung", "dibujo",
+    "image", "bild", "imagen", "document", "dokument", "documento",
+    "vector", "graphic", "layer", "svg", "pdf", "export", "new", "neu",
+]
+
+/// Reduces a raw name hint to a safe file-name stem: decodes the standard
+/// XML entities, drops a recognizable vector-file extension, keeps Unicode
+/// letters and digits, joins up to four words with dashes, and caps the
+/// length. Returns nil when nothing meaningful remains (placeholder names,
+/// pure punctuation, all-generic words).
+func sanitizeNameHint(_ raw: String) -> String? {
+    var s = raw
+    for (entity, char) in [
+        ("&amp;", "&"), ("&lt;", "<"), ("&gt;", ">"), ("&quot;", "\""), ("&apos;", "'"),
+    ] {
+        s = s.replacingOccurrences(of: entity, with: char)
+    }
+    s = s.replacingOccurrences(
+        of: "\\.(svg|svgz|pdf|ai|eps)\\s*$", with: "",
+        options: [.regularExpression, .caseInsensitive])
+
+    let words = s.split(whereSeparator: { !($0.isLetter || $0.isNumber) })
+        .prefix(4).map(String.init)
+    guard words.contains(where: { !genericNameHintWords.contains($0.lowercased()) })
+    else { return nil }
+
+    var name = String(words.joined(separator: "-").prefix(40))
+    while name.hasSuffix("-") { name.removeLast() }
+    guard name.count >= 3, name.contains(where: \.isLetter) else { return nil }
+    return name
+}
+
+/// Derives a human-meaningful file-name stem from the SVG's own content.
+/// Tiers: author-intended metadata first (`<title>`, Inkscape's
+/// `sodipodi:docname`, Dublin Core `<dc:title>`, `<desc>`), then the first
+/// words of visible `<text>` content — the way document apps name a file
+/// after its opening line. Returns nil when nothing usable is found.
+/// The result is already sanitized for use as a file name.
+func extractSVGNameHint(svgString: String) -> String? {
+    let head = String(svgString.prefix(nameHintScanLimit))
+
+    let metadataPatterns = [
+        "<title[^>]*>([^<]+)</title>",
+        "sodipodi:docname\\s*=\\s*[\"']([^\"']+)[\"']",
+        "<dc:title[^>]*>([^<]+)</dc:title>",
+        "<desc[^>]*>([^<]+)</desc>",
+    ]
+    for pattern in metadataPatterns {
+        if let hint = firstRegexCapture(of: pattern, in: head),
+            let name = sanitizeNameHint(hint)
+        { return name }
+    }
+
+    // <text> content is often nested in <tspan>s — flatten tags to spaces
+    // before sanitizing. The 500-char cap bounds pathological text blocks.
+    if let block = firstRegexCapture(of: "<text[^>]*>(.{1,500}?)</text>", in: head) {
+        let plain = block.replacingOccurrences(
+            of: "<[^>]+>", with: " ", options: .regularExpression)
+        return sanitizeNameHint(plain)
+    }
+    return nil
+}
+
+/// First capture group of the first match, or nil. (String.range(of:) can't
+/// return capture groups, hence NSRegularExpression.)
+private func firstRegexCapture(of pattern: String, in text: String) -> String? {
+    guard
+        let re = try? NSRegularExpression(
+            pattern: pattern, options: [.caseInsensitive, .dotMatchesLineSeparators])
+    else { return nil }
+    let whole = NSRange(text.startIndex..., in: text)
+    guard let m = re.firstMatch(in: text, range: whole), m.numberOfRanges > 1,
+        let r = Range(m.range(at: 1), in: text)
+    else { return nil }
+    return String(text[r])
+}
+
 // MARK: - SVG Canvas Expansion
 
 /// Expands the viewBox (and matching width/height attributes) by `margin`

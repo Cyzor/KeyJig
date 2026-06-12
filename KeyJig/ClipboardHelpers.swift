@@ -82,17 +82,49 @@ private let _nouns: [String] = [
     "Zebra",
 ]
 
-/// Generates a unique temp-file URL with a human-readable name of the form
-/// "Adjective-Noun-Vector-YYYY-MM-DD.svg".
-func makeTempSVGURL() -> URL {
-    let adj = _adjectives.randomElement() ?? "Vector"
-    let noun = _nouns.randomElement() ?? "File"
+/// Generates a unique temp-file URL with a human-readable name.
+///
+/// When the content or its origin yields a meaningful stem the form is
+/// "Stem-Vector-YYYY-MM-DD-x7k9.svg". The random suffix is load-bearing:
+/// content-derived stems repeat across exports of the same artwork, and a
+/// reused file name triggers the Keynote stale-paste bug described above.
+/// Without a derivable stem the form stays "Adjective-Noun-Vector-YYYY-MM-DD.svg",
+/// whose random word pair already provides the uniqueness.
+///
+/// Derived stems can contain words from the user's document — never log
+/// these file names (per the logging policy, content is private).
+func makeTempSVGURL(svg: String? = nil, originPath: String? = nil) -> URL {
     let date = {
         let c = Calendar.current.dateComponents([.year, .month, .day], from: Date())
         return String(format: "%04d-%02d-%02d", c.year ?? 0, c.month ?? 0, c.day ?? 0)
     }()
-    let name = "\(adj)-\(noun)-Vector-\(date).svg"
+    let name: String
+    if let stem = derivedNameStem(svg: svg, originPath: originPath) {
+        // Unambiguous alphabet (no 0/O/1/l/i) — these names are user-visible.
+        let suffix = String((0..<4).compactMap { _ in
+            "abcdefghjkmnpqrstuvwxyz23456789".randomElement()
+        })
+        name = "\(stem)-Vector-\(date)-\(suffix).svg"
+    } else {
+        let adj = _adjectives.randomElement() ?? "Vector"
+        let noun = _nouns.randomElement() ?? "File"
+        name = "\(adj)-\(noun)-Vector-\(date).svg"
+    }
     return URL(fileURLWithPath: NSTemporaryDirectory()).appendingPathComponent(name)
+}
+
+/// Best meaningful name stem for the content, or nil for the random
+/// fallback. Provenance (the file the user opened, tracked in
+/// AppState.svgURL) outranks the SVG's self-description — the user chose
+/// that name. Both run through the same sanitizer, so a generic origin name
+/// ("drawing.svg") falls through to the content tiers.
+private func derivedNameStem(svg: String?, originPath: String?) -> String? {
+    if let path = originPath, !path.isEmpty,
+        let stem = sanitizeNameHint(
+            URL(fileURLWithPath: path).deletingPathExtension().lastPathComponent)
+    { return stem }
+    if let svg, let stem = extractSVGNameHint(svgString: svg) { return stem }
+    return nil
 }
 
 // MARK: - File Browser
@@ -222,7 +254,7 @@ func svgToClipboard(svgData: String, appState: AppState? = nil) -> URL? {
         log.error("SVG size (\(svgData.utf8.count, privacy: .public)) exceeds limit of \(maxSVGBytes, privacy: .public) bytes")
         return nil
     }
-    let tempFile = makeTempSVGURL()
+    let tempFile = makeTempSVGURL(svg: svgData, originPath: appState?.svgURL)
     do {
         try svgData.write(to: tempFile, atomically: true, encoding: .utf8)
         // Hardened permissions: owner read/write only (0600)

@@ -300,6 +300,10 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
         // Fast path — native SVG, completes instantly.
         let svg = convertClipboardToSVG()
         if !svg.isEmpty, svg != state.svgString {
+            // Clipboard content has no source file — clear any stale origin
+            // so the proxy icon and derived temp names don't show the
+            // previous file's name.
+            state.svgURL = ""
             state.svgString = svg
             state.lastLoadedClipboardChangeCount = currentChangeCount
             return
@@ -317,6 +321,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
         convertClipboardPDFToSVG { [weak state] result in
             guard let state = state else { return }
             if let svg = result, !svg.isEmpty {
+                state.svgURL = ""
                 state.svgString = svg
                 state.conversionStatus = .idle
             } else {
@@ -531,12 +536,15 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
     /// Opens a new floating viewer window preloaded with an SVG string.
     /// Called when a multi-file drop produces more results than the target
     /// window can absorb (extras) or when the popover receives any drop (all).
-    func openNewFloatingWindow(withSVG svg: String) {
+    /// `sourceURL` is the dropped file's origin, when known — it feeds the
+    /// proxy icon and content-derived temp names.
+    func openNewFloatingWindow(withSVG svg: String, sourceURL: URL? = nil) {
         let wc = MainWindowController(isPrimary: false)
         if let last = floatingWindows.last?.window?.frame {
             wc.window?.setFrameOrigin(
                 CGPoint(x: last.origin.x + 20, y: last.origin.y - 20))
         }
+        wc.appState.svgURL = sourceURL?.path ?? ""
         wc.appState.svgString = svg
         wc.window?.makeKeyAndOrderFront(nil)
         NSApp.activate(ignoringOtherApps: true)
@@ -650,7 +658,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
         state.statusMessage = NSLocalizedString(
             "status.keynote.sending",
             comment: "Status: SVG is being placed into Keynote")
-        sendSVGToKeynote(svgData: state.svgString) { error in
+        sendSVGToKeynote(svgData: state.svgString, originPath: state.svgURL) { error in
             if let error = error {
                 state.keynoteSendStatus = .failed
                 state.statusMessage = error.localizedDescription
@@ -933,18 +941,20 @@ private final class StatusBarDragProxy: NSView {
         if fileURLs.count > 1 {
             let state = appDelegate?.frontWindowState
             state?.conversionStatus = .converting
-            SVGInteractionView.processFilesSerially(fileURLs) { [weak self] svgs in
+            SVGInteractionView.processFilesSerially(fileURLs) { [weak self] items in
                 state?.conversionStatus = .idle
-                for svg in svgs {
-                    self?.appDelegate?.openNewFloatingWindow(withSVG: svg)
+                for item in items {
+                    self?.appDelegate?.openNewFloatingWindow(
+                        withSVG: item.svg, sourceURL: item.sourceURL)
                 }
             }
             return true
         }
-        guard let svg = SVGInteractionView.svgString(from: pb),
+        guard let dropped = SVGInteractionView.droppedVector(from: pb),
               let state = appDelegate?.frontWindowState
         else { return false }
-        state.svgString = svg
+        state.svgURL = dropped.sourceURL?.path ?? ""
+        state.svgString = dropped.svg
         return true
     }
 }
