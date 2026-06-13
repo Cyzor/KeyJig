@@ -570,33 +570,21 @@ private func extractSelectionViaPaste(
     // AppleScript doesn't stick without human key events on the canvas (see
     // CLAUDE.md). So we rely on the human's ⌘C and validate it matched below.
 
-    // Source slide size, so pasted objects keep their proportions and don't clip.
-    let sizeScript = """
-        tell application "Keynote"
-            with timeout of 10 seconds
-            if not (exists front document) then error number -1728
-            tell front document to return (width as string) & "," & (height as string)
-            end timeout
-        end tell
-        """
-    var eSize: NSDictionary?
-    let rSize = NSAppleScript(source: sizeScript)!.executeAndReturnError(&eSize)
-    guard eSize == nil, let szStr = rSize.stringValue else { return nil }
-    let szs = szStr.split(separator: ",").compactMap { Int(Double($0) ?? 0) }
-    let w = szs.count == 2 ? szs[0] : 1024
-    let h = szs.count == 2 ? szs[1] : 768
-
-    // Scratch doc → match size → blank placeholders → activate.
-    // Returns the new document's name so finishScript can address it by name
-    // rather than relying on `front document`, which may shift if the paste
-    // action causes another window to come forward.
+    // One round-trip: read the source slide size, create the scratch doc, match
+    // its size, and blank the theme placeholders. The size must be read before
+    // `make new document` — the new doc becomes `front document` immediately.
+    // The scratch doc's name is returned so finishScript/close can address it by
+    // name rather than `front document`, which may shift if paste fronts a window.
     let setupScript = """
         tell application "Keynote"
             with timeout of 30 seconds
+            if not (exists front document) then error number -1728
+            set srcW to width of front document
+            set srcH to height of front document
             set d to make new document
             tell d
-                set its width to \(w)
-                set its height to \(h)
+                set its width to srcW
+                set its height to srcH
                 try
                     delete every iWork item of slide 1
                 end try
@@ -657,7 +645,30 @@ private func extractSelectionViaPaste(
 
     // AX-paste the user's copied selection into the scratch doc.
     _ = pressMenuItemWithCmdChar("v", appPID: keynotePID)
-    Thread.sleep(forTimeInterval: 0.4)
+
+    // Poll for the pasted objects instead of a fixed sleep: returns as soon as
+    // the paste lands (often <100ms) and tolerates a slow Keynote up to the cap.
+    // The old fixed 0.4s sleep was slower in the common case and could let the
+    // export run before the paste landed on a slow machine ("nothing pasted").
+    let pasteDeadline = Date().addingTimeInterval(2.0)
+    let countScript = """
+        tell application "Keynote"
+            with timeout of 5 seconds
+            try
+                return (count of iWork items of slide 1 of document "\(scratchRef)") as string
+            on error
+                return "0"
+            end try
+            end timeout
+        end tell
+        """
+    let countAS = NSAppleScript(source: countScript)!
+    while Date() < pasteDeadline {
+        var ePoll: NSDictionary?
+        let r = countAS.executeAndReturnError(&ePoll)
+        if ePoll == nil, let c = r.stringValue.flatMap({ Int($0) }), c > 0 { break }
+        Thread.sleep(forTimeInterval: 0.05)
+    }
 
     // Read pasted count + geometry, export (failure-proof). Close happens in defer.
     // Batch-read position/size/rotation in one AE round-trip per property so
@@ -1179,29 +1190,19 @@ func triggerKeynoteClipboard(appState: AppState, setStatus: @escaping (String) -
 /// a cropped vector PDF. No selection-geometry reads; the button is only
 /// reachable when `keynoteClipboardReady` confirms native Keynote data is present.
 private func extractClipboardViaScratchDoc(keynotePID: pid_t) -> URL? {
-    // Read source slide dimensions so pasted objects keep their proportions.
-    let sizeScript = """
-        tell application "Keynote"
-            with timeout of 10 seconds
-            if not (exists front document) then error number -1728
-            tell front document to return (width as string) & "," & (height as string)
-            end timeout
-        end tell
-        """
-    var eSize: NSDictionary?
-    let rSize = NSAppleScript(source: sizeScript)!.executeAndReturnError(&eSize)
-    guard eSize == nil, let szStr = rSize.stringValue else { return nil }
-    let szs = szStr.split(separator: ",").compactMap { Int(Double($0) ?? 0) }
-    let w = szs.count == 2 ? szs[0] : 1024
-    let h = szs.count == 2 ? szs[1] : 768
-
+    // One round-trip: read the source slide size, create the scratch doc, match
+    // its size, and blank the theme placeholders. The size must be read before
+    // `make new document` — the new doc becomes `front document` immediately.
     let setupScript = """
         tell application "Keynote"
             with timeout of 30 seconds
+            if not (exists front document) then error number -1728
+            set srcW to width of front document
+            set srcH to height of front document
             set d to make new document
             tell d
-                set its width to \(w)
-                set its height to \(h)
+                set its width to srcW
+                set its height to srcH
                 try
                     delete every iWork item of slide 1
                 end try
@@ -1242,7 +1243,30 @@ private func extractClipboardViaScratchDoc(keynotePID: pid_t) -> URL? {
     }
 
     _ = pressMenuItemWithCmdChar("v", appPID: keynotePID)
-    Thread.sleep(forTimeInterval: 0.4)
+
+    // Poll for the pasted objects instead of a fixed sleep: returns as soon as
+    // the paste lands (often <100ms) and tolerates a slow Keynote up to the cap.
+    // The old fixed 0.4s sleep was slower in the common case and could let the
+    // export run before the paste landed on a slow machine ("nothing pasted").
+    let pasteDeadline = Date().addingTimeInterval(2.0)
+    let countScript = """
+        tell application "Keynote"
+            with timeout of 5 seconds
+            try
+                return (count of iWork items of slide 1 of document "\(scratchRef)") as string
+            on error
+                return "0"
+            end try
+            end timeout
+        end tell
+        """
+    let countAS = NSAppleScript(source: countScript)!
+    while Date() < pasteDeadline {
+        var ePoll: NSDictionary?
+        let r = countAS.executeAndReturnError(&ePoll)
+        if ePoll == nil, let c = r.stringValue.flatMap({ Int($0) }), c > 0 { break }
+        Thread.sleep(forTimeInterval: 0.05)
+    }
 
     let exportURL = makeTempKeynotePDFURL()
     let finishScript = """
