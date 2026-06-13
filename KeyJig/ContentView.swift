@@ -64,6 +64,14 @@ struct ResponsiveSVGWebView: NSViewRepresentable {
 
     let svg: String
     var onWebViewLoad: (() -> Void)? = nil
+    /// Called once in makeNSView; provides (svg, html) → marks them as
+    /// already-loaded so the next updateNSView call is a no-op. Use this before
+    /// calling loadHTMLString directly on the webView reference so SwiftUI's
+    /// reactive path doesn't re-fire the load.
+    var onRegisterDirectLoad: ((@escaping (_ svg: String, _ html: String) -> Void) -> Void)? = nil
+    /// Called once in makeNSView so the caller can hold a weak reference for
+    /// direct loadHTMLString calls and stopLoading() (large-file cancel).
+    var onWebViewCreated: ((WKWebView) -> Void)? = nil
 
     func makeCoordinator() -> Coordinator { Coordinator() }
 
@@ -78,34 +86,37 @@ struct ResponsiveSVGWebView: NSViewRepresentable {
         config.allowsAirPlayForMediaPlayback = false
 
         let webView = WKWebView(frame: .zero, configuration: config)
-        // Prevent WebKit's native layer from painting a white background behind
-        // the transparent HTML. Private KVC — guarded so a future removal
-        // degrades to a white preview rather than a crash.
         if webView.responds(to: Selector(("setDrawsBackground:"))) {
             webView.setValue(false, forKey: "drawsBackground")
         }
 
         webView.navigationDelegate = context.coordinator
         context.coordinator.onWebViewLoad = onWebViewLoad
+        onWebViewCreated?(webView)
+
+        // Expose a registration closure so callers can pre-mark svg+html as
+        // loaded (bypassing updateNSView's reload guard) before issuing a
+        // direct loadHTMLString call on the webView reference.
+        onRegisterDirectLoad? { [weak coordinator = context.coordinator] svg, html in
+            coordinator?.lastSVG = svg
+            coordinator?.lastHTML = html
+        }
 
         let html = wrapSVGForResponsiveDisplay(svgString: svg)
         context.coordinator.lastSVG = svg
+        context.coordinator.lastHTML = html
         if let list = PreviewNetworkBlocker.cached {
             webView.configuration.userContentController.add(list)
             webView.loadHTMLString(html, baseURL: nil)
         } else {
-            // First webview of the session: defer the initial load until the
-            // blocker is compiled so the very first render is covered too.
-            // The callback fires with nil on compile failure — load anyway,
-            // or the preview would sit blank with content in the well.
             PreviewNetworkBlocker.prepare { [weak webView, weak coordinator = context.coordinator] list in
                 guard let webView else { return }
                 if let list {
                     webView.configuration.userContentController.add(list)
                 }
                 let current = coordinator?.lastSVG ?? svg
-                webView.loadHTMLString(
-                    wrapSVGForResponsiveDisplay(svgString: current), baseURL: nil)
+                let h = coordinator?.lastHTML ?? wrapSVGForResponsiveDisplay(svgString: current)
+                webView.loadHTMLString(h, baseURL: nil)
             }
         }
         resetViewport(webView)
@@ -117,13 +128,11 @@ struct ResponsiveSVGWebView: NSViewRepresentable {
         guard svg != context.coordinator.lastSVG else { return }
         context.coordinator.lastSVG = svg
         let html = wrapSVGForResponsiveDisplay(svgString: svg)
+        context.coordinator.lastHTML = html
         webView.loadHTMLString(html, baseURL: nil)
         resetViewport(webView)
     }
 
-    /// Forces WebKit to recalculate vh/vw from the view's current bounds.
-    /// Without this, stale layout-viewport dimensions from the previous load
-    /// cause 100vh/100vw to resolve to the wrong size on subsequent reloads.
     private func resetViewport(_ webView: WKWebView) {
         DispatchQueue.main.async {
             let frame = webView.frame
@@ -134,6 +143,7 @@ struct ResponsiveSVGWebView: NSViewRepresentable {
 
     class Coordinator: NSObject, WKNavigationDelegate {
         var lastSVG: String = ""
+        var lastHTML: String = ""
         var onWebViewLoad: (() -> Void)?
 
         func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
@@ -276,6 +286,14 @@ struct ContentView: View {
     @AppStorage("alwaysShowOptionalKeynoteButtons") private var alwaysShowOptionalKeynoteButtons = false
     @State private var svgPopReady = false
     @State private var pdfPopReady = false
+    @State private var largeSVGWorkItem: DispatchWorkItem? = nil
+    /// The fully-processed SVG string from a large-file load, held here until
+    /// onWebViewLoad fires so we can set appState.svgString without triggering
+    /// a redundant WebView reload (the coordinator's lastSVG already matches).
+    @State private var largeSVGPending: String? = nil
+    /// Closure provided by ResponsiveSVGWebView to pre-mark svg+html as loaded.
+    @State private var registerDirectLoad: ((_ svg: String, _ html: String) -> Void)? = nil
+    @State private var svgWebView: WKWebView? = nil
     /// True only while the first SVG of this session is loaded.
     /// Cleared when the canvas is cleared; never re-raised after that.
     @State private var showBreakApartHint = false
@@ -323,8 +341,11 @@ struct ContentView: View {
     /// True when the empty well is showing its own built-in spinner.
     /// Used to suppress the redundant status-area entry for the same operation.
     private var isEmptyWellProcessing: Bool {
-        !hasContent && (appState.conversionStatus == .converting
-            || appState.keynotePullStatus == .pulling)
+        // Large-SVG loads show a status bar with a Cancel button instead of
+        // the centered overlay (which blocks hit-testing).
+        !hasContent && !appState.isLoadingLargeSVG
+            && (appState.conversionStatus == .converting
+                || appState.keynotePullStatus == .pulling)
     }
 
     /// True when the preview holds a PDF pulled from Keynote.
@@ -363,12 +384,27 @@ struct ContentView: View {
         }
     }
 
+    /// Surfaces a refused drop (oversized, unsafe, or unreadable) below the
+    /// preview and clears any progress state left over from a multi-file drop,
+    /// so the failure is explained rather than silently ignored.
+    private func handleDropRejected(_ reason: String) {
+        appState.conversionStatus = .idle
+        appState.statusMessage = reason
+    }
+
+    private func handleOversizedSVGDropped(string: String, url: String?) {
+        appState.conversionStatus = .idle
+        appState.statusMessage = ""
+        appState.pendingOversizedSVG = (string: string, url: url, bytes: string.utf8.count)
+    }
+
     var computedStatusMessage: String {
         switch appState.conversionStatus {
         case .converting:
-            return NSLocalizedString(
-                "status.converting",
-                comment: "Status: Inkscape conversion is in progress")
+            return appState.statusMessage.isEmpty
+                ? NSLocalizedString("status.converting",
+                                    comment: "Status: Inkscape conversion is in progress")
+                : appState.statusMessage
         case .failed:
             return NSLocalizedString(
                 "status.failed",
@@ -380,6 +416,21 @@ struct ContentView: View {
             return NSLocalizedString(
                 "status.keynote.pulling",
                 comment: "Status: Keynote export is in progress")
+        }
+        if let pending = appState.pendingOversizedSVG {
+            let mb = max(1, Int((Double(pending.bytes) / 1_048_576.0).rounded()))
+            if let path = pending.url {
+                let name = URL(fileURLWithPath: path).lastPathComponent
+                return String(format: NSLocalizedString(
+                    "warning.svg.too_large_named",
+                    comment: "Caution shown when a named file exceeds the size limit; args: filename, MB"),
+                    name, mb)
+            } else {
+                return String(format: NSLocalizedString(
+                    "warning.svg.too_large_unnamed",
+                    comment: "Caution shown when an unnamed SVG exceeds the size limit; arg: MB"),
+                    mb)
+            }
         }
         let base: String
         if !appState.statusMessage.isEmpty {
@@ -468,6 +519,65 @@ struct ContentView: View {
                         .onChange(of: computedStatusMessage) { newValue in
                             announceToVoiceOver(newValue)
                         }
+                    if let pending = appState.pendingOversizedSVG {
+                        Button(NSLocalizedString("button.convert_large_file",
+                                                comment: "Bypass the size limit for a previously rejected SVG")) {
+                            largeSVGWorkItem?.cancel()
+                            appState.pendingOversizedSVG = nil
+                            appState.isLoadingLargeSVG = true
+                            appState.conversionStatus = .converting
+                            appState.statusMessage = NSLocalizedString(
+                                "status.loading_svg",
+                                comment: "Status: large SVG is being rendered")
+                            let rawString = pending.string
+                            let sourceURL = pending.url
+                            var item: DispatchWorkItem!
+                            item = DispatchWorkItem {
+                                let safe = addSVGMargin(rawString)
+                                guard !item.isCancelled else { return }
+                                let html = wrapSVGForResponsiveDisplay(svgString: safe)
+                                guard !item.isCancelled else { return }
+                                DispatchQueue.main.async {
+                                    guard !item.isCancelled else { return }
+                                    // Pre-register with the coordinator so that
+                                    // setting appState.svgString later (in
+                                    // onWebViewLoad) won't trigger a re-load.
+                                    registerDirectLoad?(safe, html)
+                                    appState.svgURL = sourceURL ?? ""
+                                    largeSVGPending = safe
+                                    // Load directly — avoids passing 80 MB
+                                    // through SwiftUI's reactive path.
+                                    svgWebView?.loadHTMLString(html, baseURL: nil)
+                                }
+                            }
+                            largeSVGWorkItem = item
+                            DispatchQueue.global(qos: .userInitiated).async(execute: item)
+                        }
+                        .buttonStyle(.bordered)
+                        .font(.subheadline)
+                        .controlSize(.small)
+                    }
+                    if appState.isLoadingLargeSVG {
+                        let cancelLoad = {
+                            largeSVGWorkItem?.cancel()
+                            largeSVGWorkItem = nil
+                            svgWebView?.stopLoading()
+                            largeSVGPending = nil
+                            appState.isLoadingLargeSVG = false
+                            appState.conversionStatus = .idle
+                            appState.statusMessage = ""
+                        }
+                        Button(NSLocalizedString("button.cancel",
+                                                comment: "Cancel the large-SVG load in progress"),
+                               action: cancelLoad)
+                            .buttonStyle(.bordered)
+                            .font(.subheadline)
+                            .controlSize(.small)
+                            .keyboardShortcut(.escape, modifiers: [])
+                        Button("", action: cancelLoad)
+                            .keyboardShortcut(".", modifiers: .command)
+                            .hidden()
+                    }
                 }
                 .padding(.horizontal)
                 .padding(.top, 8)
@@ -728,6 +838,12 @@ struct ContentView: View {
                 onSVGDropped: { svgs in
                     handleDroppedSVGs(svgs)
                 },
+                onDropRejected: { reason in
+                    handleDropRejected(reason)
+                },
+                onOversizedSVGDropped: { string, url in
+                    handleOversizedSVGDropped(string: string, url: url)
+                },
                 onClear: { clearCanvas() },
                 dragLabel: NSLocalizedString(
                     "preview.drag_label_pdf",
@@ -742,10 +858,27 @@ struct ContentView: View {
     /// outbound drag to Keynote and inbound replacement drops.
     private var loadedPreview: some View {
         ZStack {
-            ResponsiveSVGWebView(svg: appState.svgString, onWebViewLoad: {
-                guard !svgPopReady else { return }
-                withAnimation(.easeOut(duration: 0.25)) { svgPopReady = true }
-            })
+            ResponsiveSVGWebView(
+                svg: appState.svgString,
+                onWebViewLoad: {
+                    // Commit the large-file SVG now that the WebView has
+                    // rendered it. The coordinator's lastSVG already matches,
+                    // so updateNSView will be a no-op when this triggers a
+                    // SwiftUI re-render.
+                    if let pending = largeSVGPending {
+                        largeSVGPending = nil
+                        appState.svgString = pending
+                    }
+                    appState.pendingOversizedSVG = nil
+                    appState.isLoadingLargeSVG = false
+                    appState.conversionStatus = .idle
+                    appState.statusMessage = ""
+                    guard !svgPopReady else { return }
+                    withAnimation(.easeOut(duration: 0.25)) { svgPopReady = true }
+                },
+                onRegisterDirectLoad: { closure in registerDirectLoad = closure },
+                onWebViewCreated: { wv in svgWebView = wv }
+            )
             .scaleEffect(svgPopReady ? 1 : 0.6)
             .accessibilityElement(children: .ignore)
             .accessibilityLabel(svgPreviewAccessibilityLabel)
@@ -780,6 +913,12 @@ struct ContentView: View {
                 },
                 onSVGDropped: { svgs in
                     handleDroppedSVGs(svgs)
+                },
+                onDropRejected: { reason in
+                    handleDropRejected(reason)
+                },
+                onOversizedSVGDropped: { string, url in
+                    handleOversizedSVGDropped(string: string, url: url)
                 },
                 onCopyForKeynote: {
                     if svgToClipboard(svgData: appState.svgString, appState: appState) != nil {
@@ -833,6 +972,12 @@ struct ContentView: View {
                 },
                 onSVGDropped: { svgs in
                     handleDroppedSVGs(svgs)
+                },
+                onDropRejected: { reason in
+                    handleDropRejected(reason)
+                },
+                onOversizedSVGDropped: { string, url in
+                    handleOversizedSVGDropped(string: string, url: url)
                 }
             )
 

@@ -31,6 +31,7 @@
 
 /* ── Status messages ────────────────────────────────────────────────── */
 "status.converting" = "Inkscapeで変換中…";
+"status.loading_svg" = "SVGを読み込み中…";
 "status.failed" = "変換に失敗しました — SVGまたは変換可能なデータが見つかりません。";
 "status.ready" = "準備完了 — プレビューをKeynoteにドラッグするか、Keynote用にコピーしてください。";
 "status.no_svg_on_clipboard" = "クリップボードにSVGが見つかりません。";
@@ -42,6 +43,8 @@
 "instruction.break_apart" = "Keynoteに配置後、オブジェクトを選択し、フォーマット ‣ 図形と線 ‣ 分割を選択してください。";
 
 /* ── Buttons ────────────────────────────────────────────────────────── */
+"button.cancel" = "キャンセル";
+"button.convert_large_file" = "大きなファイルを変換";
 "button.place_in_keynote" = "Keynoteに配置";
 "button.place_svg_in_keynote" = "SVGをKeynoteに配置";
 "button.pull_from_keynote" = "KeynoteスライドをPDFに変換";
@@ -56,6 +59,13 @@
 "error.keynote.export_failed" = "Keynoteのエクスポートに失敗しました: %@";
 "error.keynote.page_missing" = "エクスポートされたPDFに現在のスライドが含まれていません。";
 "error.keynote.cancelled" = "操作はキャンセルされました。";
+
+/* ── SVG読み込みエラー／注意 ────────────────────────────────────────── */
+"warning.svg.too_large_named" = "注意 — 「%@」は%d MBあり、処理に時間がかかる場合があります。";
+"warning.svg.too_large_unnamed" = "注意 — このSVGは%d MBあり、処理に時間がかかる場合があります。";
+"error.svg.not_svg" = "このファイルは利用可能なSVGではありません。";
+"error.svg.unsafe" = "このSVGはスクリプトまたは外部参照を含むためブロックされました。";
+"error.convert.failed" = "このファイルを変換できませんでした — 利用可能なベクターデータが見つかりません。";
 
 /* ── Keynote pull hints ─────────────────────────────────────────────── */
 "undo.clear" = "削除";

@@ -111,6 +111,14 @@ class AppState: ObservableObject {
     /// button actions and menu commands alike. Empty means "show default state".
     @Published var statusMessage: String = ""
 
+    /// Non-nil when the last load was rejected for being too large. Holds the
+    /// raw SVG string so the user can force-load it via "Convert Large File".
+    @Published var pendingOversizedSVG: (string: String, url: String?, bytes: Int)? = nil
+
+    /// True while a large-SVG background load is in progress. Drives the
+    /// Cancel button and keeps the spinner visible until WebKit finishes.
+    @Published var isLoadingLargeSVG: Bool = false
+
     /// True when the clipboard contains Keynote-native object data (the type
     /// written by Keynote when you ⌘C canvas objects). Drives the enabled
     /// state of the "Convert Keynote Clipboard to PDF" button.

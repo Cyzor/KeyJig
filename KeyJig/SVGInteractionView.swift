@@ -44,6 +44,19 @@ struct DroppedVector {
     let sourceURL: URL?
 }
 
+/// Result of inspecting a single dropped item.
+///   • `loaded`      — a usable vector; proceed.
+///   • `rejected`    — recognised as SVG but refused (too large / unsafe / malformed);
+///                     show the reason rather than ignoring the drop.
+///   • `notHandled`  — nothing we can use on the pasteboard; let the drop fall through.
+enum SVGDropOutcome {
+    case loaded(DroppedVector)
+    /// recognised as SVG but refused; `oversized` carries the raw content + byte
+    /// count when the only reason is size (so the UI can offer a bypass).
+    case rejected(String, oversized: (string: String, url: String?, bytes: Int)? = nil)
+    case notHandled
+}
+
 // MARK: - Unified interaction view (drag source + drop target + context menu)
 
 /// A single NSView that handles all three interaction modes without Z-order conflicts:
@@ -71,6 +84,15 @@ class SVGInteractionView: NSView {
     /// Called synchronously on the main thread when a multi-file async drop
     /// begins. Use this to show a progress indicator while files are processed.
     var onMultiFileDropStarted: (() -> Void)?
+
+    /// Called on the main thread when a drop is refused (oversized, unsafe, or
+    /// unreadable) and nothing was loaded. The argument is a user-facing reason.
+    /// Lets the UI explain the refusal instead of silently ignoring the file.
+    var onDropRejected: ((String) -> Void)?
+
+    /// Called when a drop is rejected solely because the file exceeds the size limit.
+    /// Passes the raw SVG string and optional source path so the UI can offer a bypass.
+    var onOversizedSVGDropped: ((_ string: String, _ url: String?) -> Void)?
 
     /// Called when the user chooses "Convert and Copy for Keynote" from the context menu.
     var onCopyForKeynote: (() -> Void)?
@@ -107,29 +129,45 @@ class SVGInteractionView: NSView {
     }
 
     /// Converts a list of vector file URLs to SVG strings serially on a
-    /// background queue. Calls `completion` on the main thread with all
-    /// successfully converted results (failed files are silently skipped).
-    static func processFilesSerially(_ urls: [URL], completion: @escaping ([DroppedVector]) -> Void) {
+    /// background queue. Calls `completion` on the main thread with the
+    /// successfully converted results and a user-facing reason for each file
+    /// that was refused, so callers can explain an all-failed drop.
+    static func processFilesSerially(
+        _ urls: [URL],
+        completion: @escaping (_ results: [DroppedVector], _ rejections: [String]) -> Void
+    ) {
         DispatchQueue.global(qos: .userInitiated).async {
             var results: [DroppedVector] = []
+            var rejections: [String] = []
             for url in urls {
                 let ext = url.pathExtension.lowercased()
                 let type = ["svg", "pdf", "ai"].contains(ext) ? ext
                     : (sniffVectorFileType(at: url) ?? ext)
                 switch type {
                 case "svg":
-                    if let s = try? String(contentsOf: url, encoding: .utf8),
-                       let safe = ingestSVG(s) {
+                    guard let s = try? String(contentsOf: url, encoding: .utf8) else {
+                        rejections.append(SVGIngestError.notSVG.userMessage)
+                        continue
+                    }
+                    switch checkedIngestSVG(s) {
+                    case .success(let safe):
                         results.append(DroppedVector(svg: safe, sourceURL: url))
+                    case .failure(let err):
+                        rejections.append(err.userMessage)
                     }
                 case "pdf", "ai":
                     if let s = convertToSVGWithInkscape(inputURL: url) {
                         results.append(DroppedVector(svg: s, sourceURL: url))
+                    } else {
+                        rejections.append(NSLocalizedString(
+                            "error.convert.failed",
+                            comment: "Error when Inkscape conversion of a dropped PDF/AI fails"))
                     }
-                default: break
+                default:
+                    rejections.append(SVGIngestError.notSVG.userMessage)
                 }
             }
-            DispatchQueue.main.async { completion(results) }
+            DispatchQueue.main.async { completion(results, rejections) }
         }
     }
 
@@ -281,18 +319,32 @@ class SVGInteractionView: NSView {
         let fileURLs = Self.validFileURLs(from: sender.draggingPasteboard)
         if fileURLs.count > 1 {
             onMultiFileDropStarted?()
-            Self.processFilesSerially(fileURLs) { [weak self] svgs in
-                guard !svgs.isEmpty else { return }
-                self?.onSVGDropped?(svgs)
+            Self.processFilesSerially(fileURLs) { [weak self] svgs, rejections in
+                if svgs.isEmpty {
+                    // Nothing loaded — explain why and clear any progress state.
+                    self?.onDropRejected?(rejections.first ?? SVGIngestError.notSVG.userMessage)
+                } else {
+                    self?.onSVGDropped?(svgs)
+                }
             }
             return true
         }
 
         // Single file or non-file-URL source (svg-image type, PDF pasteboard data,
         // SVG text): use the existing synchronous path.
-        guard let dropped = Self.droppedVector(from: sender.draggingPasteboard) else { return false }
-        onSVGDropped?([dropped])
-        return true
+        switch Self.dropOutcome(from: sender.draggingPasteboard) {
+        case .loaded(let dropped):
+            onSVGDropped?([dropped])
+            return true
+        case .rejected(let reason, let oversized):
+            if let o = oversized {
+                onOversizedSVGDropped?(o.string, o.url)
+            }
+            onDropRejected?(reason)
+            return true
+        case .notHandled:
+            return false
+        }
     }
 
     override func concludeDragOperation(_ sender: NSDraggingInfo?) {
@@ -331,12 +383,27 @@ class SVGInteractionView: NSView {
     // MARK: SVG pasteboard helpers
     // Both are static so StatusBarDragProxy can call them without an instance.
 
-    static func droppedVector(from pasteboard: NSPasteboard) -> DroppedVector? {
+    /// Inspects a single inbound drop and reports a usable vector, a refusal with
+    /// a reason, or "nothing we handle." When a source is recognised as SVG but
+    /// fails the size/safety screen, the reason is returned so the drop is
+    /// explained rather than silently ignored.
+    static func dropOutcome(from pasteboard: NSPasteboard) -> SVGDropOutcome {
+        let convertFailed = NSLocalizedString(
+            "error.convert.failed",
+            comment: "Error when Inkscape conversion of a dropped PDF/AI fails")
+
         let svgType = NSPasteboard.PasteboardType("public.svg-image")
         if let data = pasteboard.data(forType: svgType),
-            let s = String(data: data, encoding: .utf8),
-            let safe = ingestSVG(s)
-        { return DroppedVector(svg: safe, sourceURL: nil) }
+            let s = String(data: data, encoding: .utf8) {
+            switch checkedIngestSVG(s) {
+            case .success(let safe): return .loaded(DroppedVector(svg: safe, sourceURL: nil))
+            case .failure(let err):
+                if case .tooLarge(let bytes) = err {
+                    return .rejected(err.userMessage, oversized: (string: s, url: nil, bytes: bytes))
+                }
+                return .rejected(err.userMessage)
+            }
+        }
 
         if let urls = pasteboard.readObjects(
             forClasses: [NSURL.self],
@@ -348,14 +415,22 @@ class SVGInteractionView: NSView {
                     : (sniffVectorFileType(at: url) ?? ext)
                 switch type {
                 case "svg":
-                    if let s = try? String(contentsOf: url, encoding: .utf8),
-                        let safe = ingestSVG(s) {
-                        return DroppedVector(svg: safe, sourceURL: url)
+                    guard let s = try? String(contentsOf: url, encoding: .utf8) else {
+                        return .rejected(SVGIngestError.notSVG.userMessage)
+                    }
+                    switch checkedIngestSVG(s) {
+                    case .success(let safe): return .loaded(DroppedVector(svg: safe, sourceURL: url))
+                    case .failure(let err):
+                        if case .tooLarge(let bytes) = err {
+                            return .rejected(err.userMessage, oversized: (string: s, url: url.path, bytes: bytes))
+                        }
+                        return .rejected(err.userMessage)
                     }
                 case "pdf", "ai":
                     if let s = convertToSVGWithInkscape(inputURL: url) {
-                        return DroppedVector(svg: s, sourceURL: url)
+                        return .loaded(DroppedVector(svg: s, sourceURL: url))
                     }
+                    return .rejected(convertFailed)
                 default:
                     break
                 }
@@ -376,17 +451,26 @@ class SVGInteractionView: NSView {
                         let s = convertToSVGWithInkscape(inputURL: tempURL)
                     {
                         try? FileManager.default.removeItem(at: tempURL)
-                        return DroppedVector(svg: s, sourceURL: nil)
+                        return .loaded(DroppedVector(svg: s, sourceURL: nil))
                     }
                     try? FileManager.default.removeItem(at: tempURL)
+                    return .rejected(convertFailed)
                 }
             }
         }
 
-        if let s = pasteboard.string(forType: .string), let safe = ingestSVG(s) {
-            return DroppedVector(svg: safe, sourceURL: nil)
+        if let s = pasteboard.string(forType: .string) {
+            switch checkedIngestSVG(s) {
+            case .success(let safe): return .loaded(DroppedVector(svg: safe, sourceURL: nil))
+            case .failure(.notSVG): break  // arbitrary text on the pasteboard, not a refusal
+            case .failure(let err):
+                if case .tooLarge(let bytes) = err {
+                    return .rejected(err.userMessage, oversized: (string: s, url: nil, bytes: bytes))
+                }
+                return .rejected(err.userMessage)
+            }
         }
-        return nil
+        return .notHandled
     }
 
     static func canHandleDropData(_ pasteboard: NSPasteboard) -> Bool {
@@ -445,6 +529,8 @@ struct SVGInteractionViewWrapper: NSViewRepresentable {
     var onDragStart: (() -> URL?)?
     var onMultiFileDropStarted: (() -> Void)?
     var onSVGDropped: (([DroppedVector]) -> Void)?
+    var onDropRejected: ((String) -> Void)?
+    var onOversizedSVGDropped: ((_ string: String, _ url: String?) -> Void)?
     var onCopyForKeynote: (() -> Void)?
     var onClear: (() -> Void)?
     var dragLabel: String = NSLocalizedString(
@@ -459,6 +545,8 @@ struct SVGInteractionViewWrapper: NSViewRepresentable {
         nsView.onDragStart = onDragStart
         nsView.onSVGDropped = onSVGDropped
         nsView.onMultiFileDropStarted = onMultiFileDropStarted
+        nsView.onDropRejected = onDropRejected
+        nsView.onOversizedSVGDropped = onOversizedSVGDropped
         nsView.onCopyForKeynote = onCopyForKeynote
         nsView.onClear = onClear
     }

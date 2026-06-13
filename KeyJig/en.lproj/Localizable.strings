@@ -32,6 +32,7 @@
 
 /* ── Status messages ────────────────────────────────────────────────── */
 "status.converting" = "Converting via Inkscape…";
+"status.loading_svg" = "Loading SVG…";
 "status.failed" = "Conversion failed — no SVG or convertible data found.";
 "status.ready" = "Ready — drag the preview into Keynote, or Copy for Keynote.";
 "status.no_svg_on_clipboard" = "No SVG found on clipboard.";
@@ -52,7 +53,16 @@
 "error.keynote.page_missing" = "The exported PDF did not contain the current slide.";
 "error.keynote.cancelled" = "Operation cancelled.";
 
+/* ── SVG load errors / cautions ─────────────────────────────────────── */
+"warning.svg.too_large_named" = "Caution — \"%@\" is %d MB and may be slow to process.";
+"warning.svg.too_large_unnamed" = "Caution — this SVG is %d MB and may be slow to process.";
+"error.svg.not_svg" = "That file isn’t a usable SVG.";
+"error.svg.unsafe" = "This SVG was blocked because it contains scripts or external references.";
+"error.convert.failed" = "Couldn’t convert that file — no usable vector data was found.";
+
 /* ── Buttons ────────────────────────────────────────────────────────── */
+"button.cancel" = "Cancel";
+"button.convert_large_file" = "Convert Large File";
 "button.place_in_keynote" = "Place in Keynote";
 "button.place_svg_in_keynote" = "Place SVG in Keynote";
 "button.pull_from_keynote" = "Convert Keynote Slide to PDF";

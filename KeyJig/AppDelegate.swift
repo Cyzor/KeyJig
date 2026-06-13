@@ -563,16 +563,31 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
         case "svg":
             do {
                 let content = try String(contentsOf: url, encoding: .utf8)
-                guard let safe = ingestSVG(content) else {
-                    log.error("rejected SVG (size limit or dangerous content): \(url.lastPathComponent, privacy: .public)")
-                    return
+                switch checkedIngestSVG(content) {
+                case .success(let safe):
+                    state.svgURL = url.path
+                    state.svgString = safe
+                    state.statusMessage = ""
+                    state.pendingOversizedSVG = nil
+                case .failure(let err):
+                    log.error("rejected SVG: \(url.lastPathComponent, privacy: .public)")
+                    state.conversionStatus = .idle
+                    if case .tooLarge(let bytes) = err {
+                        state.statusMessage = ""
+                        state.pendingOversizedSVG = (string: content, url: url.path, bytes: bytes)
+                    } else {
+                        state.statusMessage = err.userMessage
+                        state.pendingOversizedSVG = nil
+                    }
                 }
-                state.svgURL = url.path
-                state.svgString = safe
             } catch {
                 log.error("error reading SVG: \(error.localizedDescription, privacy: .public)")
+                state.conversionStatus = .idle
+                state.statusMessage = SVGIngestError.notSVG.userMessage
             }
         case "pdf", "ai":
+            state.statusMessage = ""
+            state.pendingOversizedSVG = nil
             state.conversionStatus = .converting
             DispatchQueue.global(qos: .userInitiated).async {
                 let svg = convertToSVGWithInkscape(inputURL: url)
@@ -588,6 +603,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
             }
         default:
             log.error("unsupported file type: \(url.lastPathComponent, privacy: .public)")
+            state.conversionStatus = .idle
+            state.statusMessage = SVGIngestError.notSVG.userMessage
         }
     }
 
@@ -941,8 +958,12 @@ private final class StatusBarDragProxy: NSView {
         if fileURLs.count > 1 {
             let state = appDelegate?.frontWindowState
             state?.conversionStatus = .converting
-            SVGInteractionView.processFilesSerially(fileURLs) { [weak self] items in
+            SVGInteractionView.processFilesSerially(fileURLs) { [weak self] items, rejections in
                 state?.conversionStatus = .idle
+                if items.isEmpty {
+                    state?.statusMessage = rejections.first ?? SVGIngestError.notSVG.userMessage
+                    return
+                }
                 for item in items {
                     self?.appDelegate?.openNewFloatingWindow(
                         withSVG: item.svg, sourceURL: item.sourceURL)
@@ -950,11 +971,26 @@ private final class StatusBarDragProxy: NSView {
             }
             return true
         }
-        guard let dropped = SVGInteractionView.droppedVector(from: pb),
-              let state = appDelegate?.frontWindowState
-        else { return false }
-        state.svgURL = dropped.sourceURL?.path ?? ""
-        state.svgString = dropped.svg
-        return true
+        guard let state = appDelegate?.frontWindowState else { return false }
+        switch SVGInteractionView.dropOutcome(from: pb) {
+        case .loaded(let dropped):
+            state.svgURL = dropped.sourceURL?.path ?? ""
+            state.svgString = dropped.svg
+            state.statusMessage = ""
+            state.pendingOversizedSVG = nil
+            return true
+        case .rejected(let reason, let oversized):
+            state.conversionStatus = .idle
+            if let (string, url, bytes) = oversized {
+                state.statusMessage = ""
+                state.pendingOversizedSVG = (string: string, url: url, bytes: bytes)
+            } else {
+                state.statusMessage = reason
+                state.pendingOversizedSVG = nil
+            }
+            return true
+        case .notHandled:
+            return false
+        }
     }
 }

@@ -31,6 +31,7 @@
 
 /* ── Status messages ────────────────────────────────────────────────── */
 "status.converting" = "Convirtiendo con Inkscape…";
+"status.loading_svg" = "Cargando SVG…";
 "status.failed" = "Error de conversión — no se encontraron datos SVG ni convertibles.";
 "status.ready" = "Listo — arrastra la vista previa a Keynote o usa Copiar para Keynote.";
 "status.no_svg_on_clipboard" = "No se encontró ningún SVG en el portapapeles.";
@@ -42,6 +43,8 @@
 "instruction.break_apart" = "Una vez en Keynote, selecciona el objeto y elige Formato ‣ Formas y líneas ‣ Separar.";
 
 /* ── Buttons ────────────────────────────────────────────────────────── */
+"button.cancel" = "Cancelar";
+"button.convert_large_file" = "Convertir archivo grande";
 "button.place_in_keynote" = "Insertar en Keynote";
 "button.place_svg_in_keynote" = "Insertar SVG en Keynote";
 "button.pull_from_keynote" = "Convertir diapositiva de Keynote a PDF";
@@ -56,6 +59,13 @@
 "error.keynote.export_failed" = "Error de exportación de Keynote: %@";
 "error.keynote.page_missing" = "El PDF exportado no contenía la diapositiva actual.";
 "error.keynote.cancelled" = "Operación cancelada.";
+
+/* ── Errores / advertencias de carga de SVG ─────────────────────────── */
+"warning.svg.too_large_named" = "Precaución — \"%@\" ocupa %d MB y puede ser lento de procesar.";
+"warning.svg.too_large_unnamed" = "Precaución — este SVG ocupa %d MB y puede ser lento de procesar.";
+"error.svg.not_svg" = "Ese archivo no es un SVG utilizable.";
+"error.svg.unsafe" = "Este SVG se bloqueó porque contiene scripts o referencias externas.";
+"error.convert.failed" = "No se pudo convertir ese archivo: no se encontraron datos vectoriales utilizables.";
 
 /* ── Keynote pull hints ─────────────────────────────────────────────── */
 "undo.clear" = "Eliminar";

@@ -92,9 +92,55 @@ func validateSVG(_ string: String) -> SVGValidationError? {
 /// drag-and-drop, file open). Enforces the size cap and the dangerous-content
 /// screen, then applies the standard edge margin. Returns nil when rejected.
 func ingestSVG(_ string: String) -> String? {
-    guard string.utf8.count <= maxSVGBytes else { return nil }
-    guard validateSVG(string) == nil else { return nil }
-    return addSVGMargin(string)
+    try? checkedIngestSVG(string).get()
+}
+
+/// Why an outside-world SVG was refused, carrying a user-facing explanation.
+/// Detection/predicate sites stay on the silent `ingestSVG`; only deliberate
+/// user actions (drop, file open) need the reason so they can explain instead
+/// of silently dropping the file.
+enum SVGIngestError: Error {
+    case tooLarge(bytes: Int)
+    case notSVG
+    case unsafe
+
+    var userMessage: String {
+        switch self {
+        case .tooLarge(let bytes):
+            // Report the file's own size as well as the limit — users diagnose
+            // this by size ("it's 80 MB"), so the actual number is what helps.
+            let mb = max(1, Int((Double(bytes) / 1_048_576.0).rounded()))
+            return String(
+                format: NSLocalizedString(
+                    "error.svg.too_large",
+                    comment: "Error when a dropped/opened SVG is over the size limit; first %d is the file size in MB, second %d is the limit in MB"),
+                mb, maxSVGBytes / (1024 * 1024))
+        case .notSVG:
+            return NSLocalizedString(
+                "error.svg.not_svg",
+                comment: "Error when a dropped/opened file is not a usable SVG")
+        case .unsafe:
+            return NSLocalizedString(
+                "error.svg.unsafe",
+                comment: "Error when an SVG is blocked for scripts or external references")
+        }
+    }
+}
+
+/// Like `ingestSVG`, but reports why the SVG was refused so deliberate user
+/// actions can surface the reason. Same size cap and content screen.
+func checkedIngestSVG(_ string: String) -> Result<String, SVGIngestError> {
+    guard string.utf8.count <= maxSVGBytes else {
+        return .failure(.tooLarge(bytes: string.utf8.count))
+    }
+    switch validateSVG(string) {
+    case nil:
+        return .success(addSVGMargin(string))
+    case .containsDangerousContent:
+        return .failure(.unsafe)
+    case .empty, .notSVGElement:
+        return .failure(.notSVG)
+    }
 }
 
 // MARK: - SVG Processing Utilities
