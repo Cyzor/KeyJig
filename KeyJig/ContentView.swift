@@ -734,9 +734,6 @@ struct ContentView: View {
                     comment: "Text on the drag image thumbnail when dragging a pulled PDF")
             )
 
-            Color(NSColor.windowBackgroundColor)
-                .opacity(pdfPopReady ? 0 : 1)
-                .allowsHitTesting(false)
         }
         .help(Tooltips.previewPDFLoaded)
     }
@@ -745,8 +742,6 @@ struct ContentView: View {
     /// outbound drag to Keynote and inbound replacement drops.
     private var loadedPreview: some View {
         ZStack {
-            Color(NSColor.windowBackgroundColor)
-
             ResponsiveSVGWebView(svg: appState.svgString, onWebViewLoad: {
                 guard !svgPopReady else { return }
                 withAnimation(.easeOut(duration: 0.25)) { svgPopReady = true }
@@ -811,9 +806,9 @@ struct ContentView: View {
             }
             .allowsHitTesting(false)
 
-            // Pop-in reveal: solid veil that fades away once the WebView has rendered.
-            // Opacity animation on NSViewRepresentable composites against white and breaks
-            // transparency; fading an opaque overlay instead avoids that entirely.
+            // Pop-in reveal: opaque veil that fades away once the WebView has rendered.
+            // Opacity animation on the WKWebView NSViewRepresentable itself composites
+            // oddly; fading a separate opaque overlay avoids that entirely.
             Color(NSColor.windowBackgroundColor)
                 .opacity(svgPopReady ? 0 : 1)
                 .allowsHitTesting(false)
@@ -831,8 +826,6 @@ struct ContentView: View {
     /// Shown when no SVG is loaded: drop target only, no drag source or menu.
     private var emptyWell: some View {
         ZStack {
-            Color(NSColor.windowBackgroundColor)
-
             // Interaction layer (drop only — onDragStart and menu callbacks are nil).
             SVGInteractionViewWrapper(
                 onMultiFileDropStarted: {
