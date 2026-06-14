@@ -34,7 +34,7 @@
 "status.converting" = "Konvertierung mit Inkscape…";
 "status.loading_svg" = "SVG wird geladen…";
 "status.failed" = "Konvertierung fehlgeschlagen – keine SVG- oder konvertierbaren Daten gefunden.";
-"status.ready" = "Bereit – Vorschau in Keynote ziehen oder Für Keynote kopieren.";
+"status.ready" = "Bereit – Vorschau in Keynote ziehen oder kopieren.";
 "status.no_svg_on_clipboard" = "Kein SVG in der Zwischenablage gefunden.";
 "status.copied" = "In Zwischenablage kopiert!";
 "status.keynote.sending" = "Wird in Keynote eingefügt…";
@@ -67,6 +67,7 @@
 "error.svg.not_svg" = "Diese Datei ist keine verwendbare SVG-Datei.";
 "error.svg.unsafe" = "Diese SVG-Datei wurde blockiert, da sie Skripte oder externe Verweise enthält.";
 "error.convert.failed" = "Diese Datei konnte nicht konvertiert werden – keine verwendbaren Vektordaten gefunden.";
+"error.ai.no_pdf_layer" = "Diese Illustrator-Datei wurde ohne PDF-Kompatibilität gespeichert. Speichere sie in Illustrator erneut mit aktivierter Option „PDF-kompatible Datei erstellen“.";
 
 /* ── Keynote pull hints ─────────────────────────────────────────────── */
 "undo.clear" = "Löschen";

@@ -66,6 +66,7 @@
 "error.svg.not_svg" = "Ese archivo no es un SVG utilizable.";
 "error.svg.unsafe" = "Este SVG se bloqueó porque contiene scripts o referencias externas.";
 "error.convert.failed" = "No se pudo convertir ese archivo: no se encontraron datos vectoriales utilizables.";
+"error.ai.no_pdf_layer" = "Este archivo de Illustrator se guardó sin compatibilidad con PDF. Vuelve a guardarlo desde Illustrator con la opción \"Crear archivo compatible con PDF\" activada.";
 
 /* ── Keynote pull hints ─────────────────────────────────────────────── */
 "undo.clear" = "Eliminar";

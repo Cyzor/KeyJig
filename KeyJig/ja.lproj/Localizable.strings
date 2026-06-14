@@ -66,6 +66,7 @@
 "error.svg.not_svg" = "このファイルは利用可能なSVGではありません。";
 "error.svg.unsafe" = "このSVGはスクリプトまたは外部参照を含むためブロックされました。";
 "error.convert.failed" = "このファイルを変換できませんでした — 利用可能なベクターデータが見つかりません。";
+"error.ai.no_pdf_layer" = "このIllustratorファイルはPDF互換性なしで保存されています。Illustratorで「PDF互換ファイルを作成」オプションを有効にして保存し直してください。";
 
 /* ── Keynote pull hints ─────────────────────────────────────────────── */
 "undo.clear" = "削除";

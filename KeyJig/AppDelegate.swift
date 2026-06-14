@@ -586,6 +586,11 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
                 state.statusMessage = SVGIngestError.notSVG.userMessage
             }
         case "pdf", "ai":
+            if ext == "ai", sniffVectorFileType(at: url) != "pdf" {
+                state.conversionStatus = .idle
+                state.statusMessage = NSLocalizedString("error.ai.no_pdf_layer", comment: "")
+                return
+            }
             state.statusMessage = ""
             state.pendingOversizedSVG = nil
             state.conversionStatus = .converting
