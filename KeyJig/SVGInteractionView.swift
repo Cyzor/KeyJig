@@ -160,6 +160,10 @@ class SVGInteractionView: NSView {
                         rejections.append(NSLocalizedString("error.ai.no_pdf_layer", comment: ""))
                         continue
                     }
+                    if ext == "ai", aiPDFLayerIsPlaceholder(at: url) {
+                        rejections.append(NSLocalizedString("error.ai.no_pdf_layer", comment: ""))
+                        continue
+                    }
                     if let s = convertToSVGWithInkscape(inputURL: url) {
                         results.append(DroppedVector(svg: s, sourceURL: url))
                     } else {
@@ -432,6 +436,9 @@ class SVGInteractionView: NSView {
                     }
                 case "pdf", "ai":
                     if ext == "ai", sniffVectorFileType(at: url) != "pdf" {
+                        return .rejected(NSLocalizedString("error.ai.no_pdf_layer", comment: ""))
+                    }
+                    if ext == "ai", aiPDFLayerIsPlaceholder(at: url) {
                         return .rejected(NSLocalizedString("error.ai.no_pdf_layer", comment: ""))
                     }
                     if let s = convertToSVGWithInkscape(inputURL: url) {

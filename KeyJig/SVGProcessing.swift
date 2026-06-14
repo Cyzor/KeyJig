@@ -1,4 +1,5 @@
 import Foundation
+import PDFKit
 
 // MARK: - File-type detection by content
 
@@ -31,6 +32,15 @@ func sniffVectorFileType(at url: URL) -> String? {
     if let text = String(data: header, encoding: .utf16), text.contains("<svg") { return "svg" }
 
     return nil
+}
+
+/// True when the PDF is an AI placeholder page (saved without "Create PDF Compatible File").
+/// "Adobe® Illustrator" (brand name with ®) appears in the placeholder in every locale.
+func aiPDFLayerIsPlaceholder(at url: URL) -> Bool {
+    guard let doc = PDFDocument(url: url),
+          let page = doc.page(at: 0),
+          let text = page.string else { return false }
+    return text.contains("Adobe\u{00AE} Illustrator")
 }
 
 // MARK: - SVG Validation

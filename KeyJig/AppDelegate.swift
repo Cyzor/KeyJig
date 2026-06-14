@@ -591,6 +591,11 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
                 state.statusMessage = NSLocalizedString("error.ai.no_pdf_layer", comment: "")
                 return
             }
+            if ext == "ai", aiPDFLayerIsPlaceholder(at: url) {
+                state.conversionStatus = .idle
+                state.statusMessage = NSLocalizedString("error.ai.no_pdf_layer", comment: "")
+                return
+            }
             state.statusMessage = ""
             state.pendingOversizedSVG = nil
             state.conversionStatus = .converting
