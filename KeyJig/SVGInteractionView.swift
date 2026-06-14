@@ -454,9 +454,15 @@ class SVGInteractionView: NSView {
                     let tempURL = URL(fileURLWithPath: NSTemporaryDirectory())
                         .appendingPathComponent(UUID().uuidString)
                         .appendingPathExtension("pdf")
-                    if (try? data.write(to: tempURL)) != nil,
-                        let s = convertToSVGWithInkscape(inputURL: tempURL)
-                    {
+                    guard (try? data.write(to: tempURL)) != nil else { continue }
+                    // Reject PostScript/legacy AI data that Finder places under
+                    // a PDF pasteboard type for .ai files saved without "Create
+                    // PDF Compatible File". Only real PDF bytes should proceed.
+                    if sniffVectorFileType(at: tempURL) != "pdf" {
+                        try? FileManager.default.removeItem(at: tempURL)
+                        return .rejected(NSLocalizedString("error.ai.no_pdf_layer", comment: ""))
+                    }
+                    if let s = convertToSVGWithInkscape(inputURL: tempURL) {
                         try? FileManager.default.removeItem(at: tempURL)
                         return .loaded(DroppedVector(svg: s, sourceURL: nil))
                     }
