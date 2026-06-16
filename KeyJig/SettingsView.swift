@@ -30,7 +30,6 @@ struct SettingsView: View {
     @State private var showingInkscapeDetails = false
     @AppStorage("alwaysShowOptionalKeynoteButtons") private var alwaysShowOptionalKeynoteButtons = false
     @AppStorage("completionHookScript") private var completionHookScript = ""
-    @State private var hookTestMessage = ""
 
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
@@ -315,69 +314,11 @@ struct SettingsView: View {
                 }
             }
 
-            Divider()
-
-            // Completion Script Section
-            VStack(alignment: .leading, spacing: 8) {
-                Text(NSLocalizedString(
-                    "settings.section.hook",
-                    comment: "Settings section heading for the completion script hook"))
-                    .font(.headline)
-
-                Text(NSLocalizedString(
-                    "settings.hook.description",
-                    comment: "Explanation of the completion hook script and available tokens"))
-                    .font(.caption)
-                    .foregroundColor(.secondary)
-                    .fixedSize(horizontal: false, vertical: true)
-
-                Text("{svgPath}  ·  {svgName}  ·  {source}")
-                    .font(.system(.caption, design: .monospaced))
-                    .foregroundColor(.secondary)
-
-                ASScriptEditor(text: $completionHookScript)
-                    .frame(minHeight: 88)
-
-                HStack(spacing: 8) {
-                    Button(NSLocalizedString(
-                        "settings.hook.test",
-                        comment: "Button to run the completion script with the current result")) {
-                        testCompletionHook()
-                    }
-                    .font(.caption)
-                    .disabled(completionHookScript.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
-
-                    if !hookTestMessage.isEmpty {
-                        Text(hookTestMessage)
-                            .font(.caption)
-                            .foregroundColor(.secondary)
-                    }
-                }
-            }
         }
         .padding(24)
         .frame(minWidth: 400)
         .sheet(isPresented: $showingInkscapeDetails) {
             InkscapeDetailsView(appState: appState, isPresented: $showingInkscapeDetails)
-        }
-    }
-
-    private func testCompletionHook() {
-        let outputPath = appState.previewPDFURL?.path ?? appState.bridgeFileURL?.path ?? ""
-        guard !outputPath.isEmpty else {
-            hookTestMessage = NSLocalizedString(
-                "settings.hook.test.no_result",
-                comment: "Message shown when the test button is pressed but no conversion result is available")
-            return
-        }
-        hookTestMessage = NSLocalizedString(
-            "settings.hook.test.running",
-            comment: "Message shown briefly while the test script is running")
-        fireCompletionHook(outputPath: outputPath,
-            svgName: svgDisplayName(for: appState),
-            source: .test)
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.8) {
-            hookTestMessage = ""
         }
     }
 }
