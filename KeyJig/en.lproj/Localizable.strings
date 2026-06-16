@@ -18,6 +18,9 @@
 "tooltip.settings.reveal" = "Show the Inkscape application in Finder";
 "tooltip.settings.done" = "Close the Inkscape installation details sheet";
 "tooltip.settings.download_tool" = "Download from the official website.";
+"tooltip.settings.inkscape_website" = "Converts PDF and AI files to SVG";
+"tooltip.settings.ghostscript_website" = "Improves PDF crop accuracy";
+"tooltip.settings.mutool_website" = "Fallback option for PDF crop operations";
 
 /* ── Preview area ───────────────────────────────────────────────────── */
 "preview.drag_label" = "Drag into Keynote";

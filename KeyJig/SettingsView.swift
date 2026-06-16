@@ -48,80 +48,88 @@ struct SettingsView: View {
                     comment: "Settings sub-heading for external tool dependencies"))
                     .font(.headline)
 
-                HStack(spacing: 12) {
-                    switch appState.inkscapeStatus {
-                    case .checking:
-                        ProgressView()
-                            .scaleEffect(0.8)
-                        Text(NSLocalizedString(
-                            "settings.inkscape.checking",
-                            comment: "Status shown while checking for Inkscape"))
-                            .font(.body)
-
-                    case .installed(let paths):
-                        Image(systemName: "checkmark.circle.fill")
-                            .foregroundColor(.green)
-                            .font(.title3)
-                            .accessibilityLabel(NSLocalizedString(
-                                "accessibility.inkscape_installed",
-                                comment: "VoiceOver label for the green check shown when Inkscape is installed"))
-
-                        VStack(alignment: .leading, spacing: 2) {
+                VStack(alignment: .leading, spacing: 8) {
+                    HStack(spacing: 12) {
+                        switch appState.inkscapeStatus {
+                        case .checking:
+                            ProgressView()
+                                .scaleEffect(0.8)
                             Text(NSLocalizedString(
-                                "settings.inkscape.name",
-                                comment: "Inkscape application name label"))
+                                "settings.inkscape.checking",
+                                comment: "Status shown while checking for Inkscape"))
                                 .font(.body)
-                                .fontWeight(.semibold)
-                            Text(String.localizedStringWithFormat(
-                                NSLocalizedString(
-                                    "settings.inkscape.locations",
-                                    comment: "Installed Inkscape location count, e.g. 'Installed — 2 locations'"),
-                                paths.count))
-                            .font(.caption)
-                            .foregroundColor(.secondary)
-                        }
 
-                        Spacer()
+                        case .installed(let paths):
+                            Image(systemName: "checkmark.circle.fill")
+                                .foregroundColor(.green)
+                                .font(.title3)
+                                .accessibilityLabel(NSLocalizedString(
+                                    "accessibility.inkscape_installed",
+                                    comment: "VoiceOver label for the green check shown when Inkscape is installed"))
 
-                        Button(NSLocalizedString(
-                            "settings.inkscape.details",
-                            comment: "Button that opens the Inkscape installation details sheet")) {
-                            showingInkscapeDetails = true
-                        }
-                        .font(.caption)
-                        .help(SettingsTooltips.inkscapeDetails)
-
-                    case .notInstalled:
-                        Image(systemName: "exclamationmark.triangle.fill")
-                            .foregroundColor(.orange)
-                            .font(.title3)
-                            .accessibilityLabel(NSLocalizedString(
-                                "accessibility.inkscape_missing",
-                                comment: "VoiceOver label for the warning icon shown when Inkscape is not installed"))
-
-                        VStack(alignment: .leading, spacing: 2) {
-                            Text(NSLocalizedString(
-                                "settings.inkscape.name",
-                                comment: "Inkscape application name label"))
-                                .font(.body)
-                                .fontWeight(.semibold)
-                            Text(NSLocalizedString(
-                                "settings.inkscape.not_found",
-                                comment: "Status shown when Inkscape is not installed"))
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text(NSLocalizedString(
+                                    "settings.inkscape.name",
+                                    comment: "Inkscape application name label"))
+                                    .font(.body)
+                                    .fontWeight(.semibold)
+                                Text(String.localizedStringWithFormat(
+                                    NSLocalizedString(
+                                        "settings.inkscape.locations",
+                                        comment: "Installed Inkscape location count, e.g. 'Installed — 2 locations'"),
+                                    paths.count))
                                 .font(.caption)
                                 .foregroundColor(.secondary)
-                        }
+                            }
 
-                        Spacer()
+                            Spacer()
 
-                        Button(NSLocalizedString(
-                            "settings.inkscape.download",
-                            comment: "Button label to download Inkscape")) {
-                            NSWorkspace.shared.open(inkscapeDownloadURL)
+                            Button(NSLocalizedString(
+                                "settings.inkscape.details",
+                                comment: "Button that opens the Inkscape installation details sheet")) {
+                                showingInkscapeDetails = true
+                            }
+                            .font(.caption)
+                            .help(SettingsTooltips.inkscapeDetails)
+
+                        case .notInstalled:
+                            Image(systemName: "exclamationmark.triangle.fill")
+                                .foregroundColor(.orange)
+                                .font(.title3)
+                                .accessibilityLabel(NSLocalizedString(
+                                    "accessibility.inkscape_missing",
+                                    comment: "VoiceOver label for the warning icon shown when Inkscape is not installed"))
+
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text(NSLocalizedString(
+                                    "settings.inkscape.name",
+                                    comment: "Inkscape application name label"))
+                                    .font(.body)
+                                    .fontWeight(.semibold)
+                                Text(NSLocalizedString(
+                                    "settings.inkscape.not_found",
+                                    comment: "Status shown when Inkscape is not installed"))
+                                    .font(.caption)
+                                    .foregroundColor(.secondary)
+                            }
+
+                            Spacer()
+
+                            Button(NSLocalizedString(
+                                "settings.inkscape.download",
+                                comment: "Button label to download Inkscape")) {
+                                NSWorkspace.shared.open(inkscapeDownloadURL)
+                            }
+                            .font(.caption)
+                            .help(SettingsTooltips.downloadInkscape)
                         }
-                        .font(.caption)
-                        .help(SettingsTooltips.downloadInkscape)
                     }
+
+                    Link("https://inkscape.org/", destination: inkscapeDownloadURL)
+                        .font(.caption)
+                        .help(NSLocalizedString(
+                            "tooltip.settings.inkscape_website",
+                            comment: "Tooltip on the Inkscape website link in the settings card"))
                 }
                 .padding(12)
                 .background(Color(.controlBackgroundColor))
@@ -138,7 +146,11 @@ struct SettingsView: View {
                     accessibilityMissingLabel: NSLocalizedString(
                         "accessibility.ghostscript_missing",
                         comment: "VoiceOver label when Ghostscript is not installed"),
-                    downloadURL: ghostscriptWebURL)
+                    downloadURL: ghostscriptWebURL,
+                    websiteURL: ghostscriptWebURL,
+                    websiteTooltip: NSLocalizedString(
+                        "tooltip.settings.ghostscript_website",
+                        comment: "Tooltip on the Ghostscript website link in the settings card"))
 
                 // ── MuPDF (mutool) ───────────────────────────────────────
                 CommandLineToolRow(
@@ -151,60 +163,11 @@ struct SettingsView: View {
                     accessibilityMissingLabel: NSLocalizedString(
                         "accessibility.mutool_missing",
                         comment: "VoiceOver label when MuPDF is not installed"),
-                    downloadURL: mupdfWebURL)
-            }
-
-            // Per-tool descriptions
-            VStack(alignment: .leading, spacing: 8) {
-                Text(NSLocalizedString(
-                    "settings.inkscape.description",
-                    comment: "Explanatory text about Inkscape's role in the app"))
-                .font(.caption)
-                .foregroundColor(.secondary)
-                .fixedSize(horizontal: false, vertical: true)
-
-                Text(NSLocalizedString(
-                    "settings.inkscape.details_label",
-                    comment: "Label preceding the Inkscape website link"))
-                    .font(.caption)
-                    .foregroundColor(.secondary)
-                    .fontWeight(.semibold)
-
-                Link("https://inkscape.org/",
-                     destination: URL(string: "https://inkscape.org/")!)
-                .font(.caption)
-                .foregroundColor(.blue)
-
-                Text(NSLocalizedString(
-                    "settings.ghostscript.description",
-                    comment: "Ghostscript description and Homebrew install hint"))
-                .font(.caption)
-                .foregroundColor(.secondary)
-                .fixedSize(horizontal: false, vertical: true)
-
-                Link("https://www.ghostscript.com/",
-                     destination: ghostscriptWebURL)
-                .font(.caption)
-                .foregroundColor(.blue)
-
-                Text(NSLocalizedString(
-                    "settings.mutool.description",
-                    comment: "MuPDF description and Homebrew install hint"))
-                .font(.caption)
-                .foregroundColor(.secondary)
-                .fixedSize(horizontal: false, vertical: true)
-
-                Link("https://mupdf.com/",
-                     destination: mupdfWebURL)
-                .font(.caption)
-                .foregroundColor(.blue)
-
-                Text(NSLocalizedString(
-                    "settings.optional_tools.description",
-                    comment: "Note that all external tools are optional"))
-                .font(.caption)
-                .foregroundColor(.secondary)
-                .fixedSize(horizontal: false, vertical: true)
+                    downloadURL: mupdfWebURL,
+                    websiteURL: mupdfWebURL,
+                    websiteTooltip: NSLocalizedString(
+                        "tooltip.settings.mutool_website",
+                        comment: "Tooltip on the MuPDF website link in the settings card"))
             }
             Divider()
 
@@ -426,73 +389,83 @@ private struct CommandLineToolRow: View {
     let accessibilityInstalledLabel: String
     let accessibilityMissingLabel: String
     var downloadURL: URL? = nil
+    var websiteURL: URL? = nil
+    var websiteTooltip: String = ""
 
     var body: some View {
-        HStack(spacing: 12) {
-            // Status icon
-            switch status {
-            case .checking:
-                ProgressView().scaleEffect(0.8)
-                Text(NSLocalizedString(
-                    "settings.inkscape.checking",
-                    comment: "Status shown while checking for a tool"))
-
-            case .installed:
-                Image(systemName: "checkmark.circle.fill")
-                    .foregroundColor(.green)
-                    .font(.title3)
-                    .accessibilityLabel(accessibilityInstalledLabel)
-
-            case .notInstalled:
-                Image(systemName: "minus.circle")
-                    .foregroundColor(.secondary)
-                    .font(.title3)
-                    .accessibilityLabel(accessibilityMissingLabel)
-            }
-
-            // Name + subtitle
-            switch status {
-            case .checking:
-                EmptyView()
-
-            case .installed(let path):
-                VStack(alignment: .leading, spacing: 2) {
-                    Text(name).font(.body).fontWeight(.semibold)
-                    Text(path)
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-                        .lineLimit(1)
-                        .truncationMode(.middle)
-                }
-                Spacer()
-                Button(NSLocalizedString(
-                    "settings.cmdtool.reveal",
-                    comment: "Button to reveal a command-line tool in Finder")) {
-                    NSWorkspace.shared.selectFile(path, inFileViewerRootedAtPath: "")
-                }
-                .font(.caption)
-
-            case .notInstalled:
-                VStack(alignment: .leading, spacing: 2) {
-                    Text(name).font(.body).fontWeight(.semibold)
+        VStack(alignment: .leading, spacing: 8) {
+            HStack(spacing: 12) {
+                // Status icon
+                switch status {
+                case .checking:
+                    ProgressView().scaleEffect(0.8)
                     Text(NSLocalizedString(
-                        "settings.cmdtool.not_found",
-                        comment: "Status shown when a command-line tool is not installed"))
-                        .font(.caption)
+                        "settings.inkscape.checking",
+                        comment: "Status shown while checking for a tool"))
+
+                case .installed:
+                    Image(systemName: "checkmark.circle.fill")
+                        .foregroundColor(.green)
+                        .font(.title3)
+                        .accessibilityLabel(accessibilityInstalledLabel)
+
+                case .notInstalled:
+                    Image(systemName: "minus.circle")
                         .foregroundColor(.secondary)
+                        .font(.title3)
+                        .accessibilityLabel(accessibilityMissingLabel)
                 }
-                Spacer()
-                if let url = downloadURL {
+
+                // Name + subtitle
+                switch status {
+                case .checking:
+                    EmptyView()
+
+                case .installed(let path):
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(name).font(.body).fontWeight(.semibold)
+                        Text(path)
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                            .lineLimit(1)
+                            .truncationMode(.middle)
+                    }
+                    Spacer()
                     Button(NSLocalizedString(
-                        "settings.inkscape.download",
-                        comment: "Button label to download a tool")) {
-                        NSWorkspace.shared.open(url)
+                        "settings.cmdtool.reveal",
+                        comment: "Button to reveal a command-line tool in Finder")) {
+                        NSWorkspace.shared.selectFile(path, inFileViewerRootedAtPath: "")
                     }
                     .font(.caption)
-                    .help(NSLocalizedString(
-                        "tooltip.settings.download_tool",
-                        comment: "Tooltip for the Download button on a command-line tool row"))
+
+                case .notInstalled:
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(name).font(.body).fontWeight(.semibold)
+                        Text(NSLocalizedString(
+                            "settings.cmdtool.not_found",
+                            comment: "Status shown when a command-line tool is not installed"))
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                    }
+                    Spacer()
+                    if let url = downloadURL {
+                        Button(NSLocalizedString(
+                            "settings.inkscape.download",
+                            comment: "Button label to download a tool")) {
+                            NSWorkspace.shared.open(url)
+                        }
+                        .font(.caption)
+                        .help(NSLocalizedString(
+                            "tooltip.settings.download_tool",
+                            comment: "Tooltip for the Download button on a command-line tool row"))
+                    }
                 }
+            }
+
+            if let url = websiteURL {
+                Link(url.absoluteString, destination: url)
+                    .font(.caption)
+                    .help(websiteTooltip)
             }
         }
         .padding(12)

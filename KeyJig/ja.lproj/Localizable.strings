@@ -17,6 +17,9 @@
 "tooltip.settings.reveal" = "FinderでInkscapeアプリを表示";
 "tooltip.settings.done" = "Inkscapeインストール詳細シートを閉じる";
 "tooltip.settings.download_tool" = "公式サイトからダウンロードします。";
+"tooltip.settings.inkscape_website" = "PDFおよびAIファイルをSVGに変換します";
+"tooltip.settings.ghostscript_website" = "PDFの切り抜き精度を向上させます";
+"tooltip.settings.mutool_website" = "PDFの切り抜き処理のフォールバックオプション";
 
 /* ── Preview area ───────────────────────────────────────────────────── */
 "preview.drag_label" = "Keynoteへドラッグ";
