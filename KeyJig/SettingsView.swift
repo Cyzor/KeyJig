@@ -219,15 +219,13 @@ struct SettingsView: View {
 
                     Spacer()
 
-                    if !appState.accessibilityGranted {
-                        Button(NSLocalizedString(
-                            "settings.accessibility.open_settings",
-                            comment: "Button that opens System Settings to grant Accessibility permission")) {
-                            NSWorkspace.shared.open(accessibilitySettingsURL)
-                        }
-                        .font(.caption)
-                        .help(SettingsTooltips.accessibilityOpen)
+                    Button(NSLocalizedString(
+                        "settings.accessibility.open_settings",
+                        comment: "Button that opens System Settings to grant or revoke Accessibility permission")) {
+                        NSWorkspace.shared.open(accessibilitySettingsURL)
                     }
+                    .font(.caption)
+                    .help(SettingsTooltips.accessibilityOpen)
                 }
                 .padding(12)
                 .background(Color(.controlBackgroundColor))
