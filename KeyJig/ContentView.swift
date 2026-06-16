@@ -845,6 +845,7 @@ struct ContentView: View {
                     handleOversizedSVGDropped(string: string, url: url)
                 },
                 onClear: { clearCanvas() },
+                onReloadFromClipboard: { AppDelegate.shared?.reloadFromClipboard(nil) },
                 dragLabel: NSLocalizedString(
                     "preview.drag_label_pdf",
                     comment: "Text on the drag image thumbnail when dragging a pulled PDF")
@@ -928,7 +929,8 @@ struct ContentView: View {
                                 "Confirmation shown after copying to clipboard via context menu")
                     }
                 },
-                onClear: { clearCanvas() }
+                onClear: { clearCanvas() },
+                onReloadFromClipboard: { AppDelegate.shared?.reloadFromClipboard(nil) }
             )
 
             // Metadata badge lower-left — no hit testing so events reach the layer below.
@@ -978,7 +980,8 @@ struct ContentView: View {
                 },
                 onOversizedSVGDropped: { string, url in
                     handleOversizedSVGDropped(string: string, url: url)
-                }
+                },
+                onReloadFromClipboard: { AppDelegate.shared?.reloadFromClipboard(nil) }
             )
 
             // Visual prompt — no hit testing so drops reach the layer below.

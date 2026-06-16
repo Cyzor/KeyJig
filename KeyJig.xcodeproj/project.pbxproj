@@ -10,6 +10,7 @@
 		051673C02FA9205400E4FD20 /* AppIcon.icns in Resources */ = {isa = PBXBuildFile; fileRef = 051673BF2FA9205400E4FD20 /* AppIcon.icns */; };
 		05F195182F65DE4C008DEF94 /* KeyJig.sdef in Resources */ = {isa = PBXBuildFile; fileRef = 05F195172F65DE4C008DEF94 /* KeyJig.sdef */; };
 		05F195192F65DE4C008DEF94 /* ScriptingCommands.swift in Sources */ = {isa = PBXBuildFile; fileRef = 05F1951A2F65DE4C008DEF94 /* ScriptingCommands.swift */; };
+		AA9900010000000000000001 /* CompletionHook.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA9900010000000000000002 /* CompletionHook.swift */; };
 		05FB65842FA5BC1F00C7674D /* ClipboardHelpers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 05FB657E2FA5BC1F00C7674D /* ClipboardHelpers.swift */; };
 		05FB65852FA5BC1F00C7674D /* InkscapeIntegration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 05FB657F2FA5BC1F00C7674D /* InkscapeIntegration.swift */; };
 		05CC11012FA5BC1F00C7674D /* KeynoteIntegration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 05CC11002FA5BC1F00C7674D /* KeynoteIntegration.swift */; };
@@ -38,6 +39,7 @@
 		05F195172F65DE4C008DEF94 /* KeyJig.sdef */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = KeyJig.sdef; sourceTree = "<group>"; };
 		05F1951A2F65DE4C008DEF94 /* ScriptingCommands.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScriptingCommands.swift; sourceTree = "<group>"; };
 		05FB657D2FA5BC1F00C7674D /* AppState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppState.swift; sourceTree = "<group>"; };
+		AA9900010000000000000002 /* CompletionHook.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CompletionHook.swift; sourceTree = "<group>"; };
 		05FB657E2FA5BC1F00C7674D /* ClipboardHelpers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClipboardHelpers.swift; sourceTree = "<group>"; };
 		05FB657F2FA5BC1F00C7674D /* InkscapeIntegration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InkscapeIntegration.swift; sourceTree = "<group>"; };
 		05CC11002FA5BC1F00C7674D /* KeynoteIntegration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeynoteIntegration.swift; sourceTree = "<group>"; };
@@ -116,6 +118,7 @@
 				05FB65802FA5BC1F00C7674D /* SettingsWindowController.swift */,
 				05FB657D2FA5BC1F00C7674D /* AppState.swift */,
 				05FB657E2FA5BC1F00C7674D /* ClipboardHelpers.swift */,
+				AA9900010000000000000002 /* CompletionHook.swift */,
 				05FB657F2FA5BC1F00C7674D /* InkscapeIntegration.swift */,
 				05CC11002FA5BC1F00C7674D /* KeynoteIntegration.swift */,
 				05CC11102FA5BC1F00C7674E /* KeynoteExtraction.swift */,
@@ -230,6 +233,7 @@
 				05FB65882FA5BC1F00C7674D /* SettingsWindowController.swift in Sources */,
 				05FB65872FA5BC1F00C7674D /* AppState.swift in Sources */,
 				05FB65842FA5BC1F00C7674D /* ClipboardHelpers.swift in Sources */,
+				AA9900010000000000000001 /* CompletionHook.swift in Sources */,
 				05FB65852FA5BC1F00C7674D /* InkscapeIntegration.swift in Sources */,
 				05CC11012FA5BC1F00C7674D /* KeynoteIntegration.swift in Sources */,
 				05CC11112FA5BC1F00C7674E /* KeynoteExtraction.swift in Sources */,

@@ -23,6 +23,7 @@
 "preview.drag_label" = "Drag into Keynote";
 "preview.drag_label_pdf" = "Drag to Destination";
 "context_menu.copy_for_keynote" = "Convert and Copy for Keynote";
+"context_menu.reload_from_clipboard" = "Reload from Clipboard";
 "context_menu.clear" = "Clear";
 
 /* ── Metadata overlay ───────────────────────────────────────────────── */
@@ -188,10 +189,10 @@
 "settings.cmdtool.reveal" = "Reveal in Finder";
 "settings.cmdtool.not_found" = "Not found";
 "settings.ghostscript.name" = "Ghostscript";
-"settings.ghostscript.description" = "Improves PDF crop quality by rewriting drawing commands — only content inside the crop boundary survives. Available via Homebrew: brew install ghostscript";
+"settings.ghostscript.description" = "Improves PDF crop accuracy.";
 "settings.mutool.name" = "MuPDF (mutool)";
-"settings.mutool.description" = "Strips hidden content from cropped PDFs when Ghostscript is unavailable. Available via Homebrew: brew install mupdf-tools";
-"settings.optional_tools.description" = "All three tools are optional. KeyJig uses its built-in PDF renderer as a fallback when they are absent.";
+"settings.mutool.description" = "Improves PDF crop fidelity when Ghostscript is unavailable.";
+"settings.optional_tools.description" = "Fallback option for PDF operations.";
 "accessibility.ghostscript_installed" = "Ghostscript installed";
 "accessibility.ghostscript_missing" = "Ghostscript not installed";
 "accessibility.mutool_installed" = "MuPDF installed";
@@ -204,4 +205,9 @@
 "accessibility.automation_denied" = "Automation permission for Keynote is denied";
 "settings.section.appearance" = "Appearance";
 "settings.appearance.always_show_keynote_buttons" = "Show optional Keynote buttons";
-"settings.appearance.always_show_keynote_buttons.description" = "Always show Pull Slide and Extract Selection. These are hidden by default and revealed by holding ⌥ Option.";
+"settings.appearance.always_show_keynote_buttons.description" = "Always show Pull Slide and Extract Selection. Otherwise available by holding down ⌥ Option.";
+"settings.section.hook" = "Completion Script";
+"settings.hook.description" = "AppleScript to run after each successful conversion. Tokens are pre-escaped for use inside double-quoted string literals: set f to POSIX file \"{svgPath}\". {source} expands to clipboard, keynote-pull, file-drop, or test.";
+"settings.hook.test" = "Test";
+"settings.hook.test.no_result" = "No conversion result available — perform a conversion first.";
+"settings.hook.test.running" = "Running…";

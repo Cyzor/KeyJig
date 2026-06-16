@@ -324,13 +324,13 @@ class AppMenu {
         editMenu.addItem(NSMenuItem.separator())
         editMenu.addItem(
             withTitle: NSLocalizedString("menu.edit.cut", comment: "Edit menu: Cut"),
-            action: nil, keyEquivalent: "x")
+            action: #selector(NSText.cut(_:)), keyEquivalent: "x")
         editMenu.addItem(
             withTitle: NSLocalizedString("menu.edit.copy", comment: "Edit menu: Copy"),
-            action: nil, keyEquivalent: "c")
+            action: #selector(NSText.copy(_:)), keyEquivalent: "c")
         editMenu.addItem(
             withTitle: NSLocalizedString("menu.edit.paste", comment: "Edit menu: Paste"),
-            action: nil, keyEquivalent: "v")
+            action: #selector(NSText.paste(_:)), keyEquivalent: "v")
         editMenu.addItem(NSMenuItem.separator())
         editMenu.addItem(
             withTitle: NSLocalizedString(

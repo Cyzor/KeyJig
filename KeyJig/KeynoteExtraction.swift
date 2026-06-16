@@ -1119,6 +1119,9 @@ func triggerKeynoteSlide(appState: AppState, setStatus: @escaping (String) -> Vo
             appState.previewPDFURL = url
             appState.keynotePullStatus = .succeeded
             setStatus("")
+            fireCompletionHook(outputPath: url.path,
+                svgName: url.deletingPathExtension().lastPathComponent,
+                source: .keynotePull)
         case .failure(let error):
             if case .cancelled = error {
                 appState.keynotePullStatus = .idle
@@ -1178,6 +1181,9 @@ func triggerKeynoteClipboard(appState: AppState, setStatus: @escaping (String) -
                 appState.previewPDFURL = url
                 appState.keynotePullStatus = .succeeded
                 setStatus("")
+                fireCompletionHook(outputPath: url.path,
+                    svgName: url.deletingPathExtension().lastPathComponent,
+                    source: .keynotePull)
             } else {
                 appState.keynotePullStatus = .failed
                 setStatus(KeynotePullError.exportFailed("no objects were pasted").localizedDescription)

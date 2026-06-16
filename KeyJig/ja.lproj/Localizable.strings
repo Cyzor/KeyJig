@@ -22,6 +22,7 @@
 "preview.drag_label" = "Keynoteへドラッグ";
 "preview.drag_label_pdf" = "ドラッグして移動";
 "context_menu.copy_for_keynote" = "変換してKeynoteにコピー";
+"context_menu.reload_from_clipboard" = "クリップボードから再読み込み";
 "context_menu.clear" = "クリア";
 
 /* ── Metadata overlay ───────────────────────────────────────────────── */
@@ -204,3 +205,8 @@
 "settings.section.appearance" = "表示";
 "settings.appearance.always_show_keynote_buttons" = "Keynoteのオプションボタンを常に表示";
 "settings.appearance.always_show_keynote_buttons.description" = "「スライドを取り出す」と「選択範囲を取り出す」を常に表示します。通常は非表示で、⌥ Optionキーを押すと表示されます。";
+"settings.section.hook" = "完了スクリプト";
+"settings.hook.description" = "変換が成功するたびに実行されるAppleScript。トークンはダブルクォートの文字列リテラル内で安全に使用できるようエスケープ済みです: set f to POSIX file \"{svgPath}\"。{source}はclipboard、keynote-pull、file-drop、またはtestに展開されます。";
+"settings.hook.test" = "テスト";
+"settings.hook.test.no_result" = "変換結果がありません — 先に変換を実行してください。";
+"settings.hook.test.running" = "実行中…";

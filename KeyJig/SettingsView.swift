@@ -1,3 +1,4 @@
+import AppKit
 import SwiftUI
 
 private let inkscapeDownloadURL = URL(string: "https://inkscape.org/release/")!
@@ -28,6 +29,8 @@ struct SettingsView: View {
     @ObservedObject var appState: AppState
     @State private var showingInkscapeDetails = false
     @AppStorage("alwaysShowOptionalKeynoteButtons") private var alwaysShowOptionalKeynoteButtons = false
+    @AppStorage("completionHookScript") private var completionHookScript = ""
+    @State private var hookTestMessage = ""
 
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
@@ -345,11 +348,70 @@ struct SettingsView: View {
                     }
                 }
             }
+
+            Divider()
+
+            // Completion Script Section
+            VStack(alignment: .leading, spacing: 8) {
+                Text(NSLocalizedString(
+                    "settings.section.hook",
+                    comment: "Settings section heading for the completion script hook"))
+                    .font(.headline)
+
+                Text(NSLocalizedString(
+                    "settings.hook.description",
+                    comment: "Explanation of the completion hook script and available tokens"))
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
+
+                Text("{svgPath}  ·  {svgName}  ·  {source}")
+                    .font(.system(.caption, design: .monospaced))
+                    .foregroundColor(.secondary)
+
+                ASScriptEditor(text: $completionHookScript)
+                    .frame(minHeight: 88)
+
+                HStack(spacing: 8) {
+                    Button(NSLocalizedString(
+                        "settings.hook.test",
+                        comment: "Button to run the completion script with the current result")) {
+                        testCompletionHook()
+                    }
+                    .font(.caption)
+                    .disabled(completionHookScript.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+
+                    if !hookTestMessage.isEmpty {
+                        Text(hookTestMessage)
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                    }
+                }
+            }
         }
         .padding(24)
         .frame(minWidth: 400)
         .sheet(isPresented: $showingInkscapeDetails) {
             InkscapeDetailsView(appState: appState, isPresented: $showingInkscapeDetails)
+        }
+    }
+
+    private func testCompletionHook() {
+        let outputPath = appState.previewPDFURL?.path ?? appState.bridgeFileURL?.path ?? ""
+        guard !outputPath.isEmpty else {
+            hookTestMessage = NSLocalizedString(
+                "settings.hook.test.no_result",
+                comment: "Message shown when the test button is pressed but no conversion result is available")
+            return
+        }
+        hookTestMessage = NSLocalizedString(
+            "settings.hook.test.running",
+            comment: "Message shown briefly while the test script is running")
+        fireCompletionHook(outputPath: outputPath,
+            svgName: svgDisplayName(for: appState),
+            source: .test)
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.8) {
+            hookTestMessage = ""
         }
     }
 }
@@ -526,6 +588,150 @@ struct InkscapeDetailsView: View {
         }
         .padding(20)
         .frame(minWidth: 500, minHeight: 250)
+    }
+}
+
+// MARK: - AppleScript syntax-highlighted editor
+
+private struct ASScriptEditor: NSViewRepresentable {
+    @Binding var text: String
+
+    func makeCoordinator() -> Coordinator { Coordinator(self) }
+
+    func makeNSView(context: Context) -> NSScrollView {
+        let storage = ASHighlightingStorage()
+        let layout = NSLayoutManager()
+        storage.addLayoutManager(layout)
+        let container = NSTextContainer(size: CGSize(width: CGFloat.greatestFiniteMagnitude,
+                                                     height: CGFloat.greatestFiniteMagnitude))
+        container.widthTracksTextView = true
+        layout.addTextContainer(container)
+
+        let tv = NSTextView(frame: .zero, textContainer: container)
+        tv.isEditable = true
+        tv.isSelectable = true
+        tv.allowsUndo = true
+        tv.isRichText = false
+        tv.backgroundColor = .textBackgroundColor
+        tv.textColor = .labelColor
+        tv.font = .monospacedSystemFont(ofSize: NSFont.smallSystemFontSize, weight: .regular)
+        tv.isAutomaticQuoteSubstitutionEnabled = false
+        tv.isAutomaticDashSubstitutionEnabled = false
+        tv.isAutomaticTextReplacementEnabled = false
+        tv.isAutomaticSpellingCorrectionEnabled = false
+        // Required for the text view to expand vertically inside the scroll view
+        // and to receive mouse events. Without these it stays zero-sized.
+        tv.isVerticallyResizable = true
+        tv.isHorizontallyResizable = false
+        tv.autoresizingMask = [.width]
+        tv.minSize = NSSize(width: 0, height: 0)
+        tv.maxSize = NSSize(width: CGFloat.greatestFiniteMagnitude, height: CGFloat.greatestFiniteMagnitude)
+        tv.textContainerInset = NSSize(width: 4, height: 4)
+        tv.delegate = context.coordinator
+
+        let scroll = NSScrollView()
+        scroll.hasVerticalScroller = true
+        scroll.autohidesScrollers = true
+        scroll.borderType = .bezelBorder
+        scroll.documentView = tv
+
+        return scroll
+    }
+
+    func updateNSView(_ scroll: NSScrollView, context: Context) {
+        guard let tv = scroll.documentView as? NSTextView else { return }
+        if tv.string != text {
+            let sel = tv.selectedRange()
+            tv.string = text
+            // Clamp the saved selection to the new string length so restoring
+            // it never throws a range exception after an external text change.
+            let len = (text as NSString).length
+            let clamped = NSRange(location: min(sel.location, len),
+                                  length: min(sel.length, max(0, len - sel.location)))
+            tv.setSelectedRange(clamped)
+        }
+    }
+
+    final class Coordinator: NSObject, NSTextViewDelegate {
+        var parent: ASScriptEditor
+        init(_ p: ASScriptEditor) { parent = p }
+        func textDidChange(_ note: Notification) {
+            guard let tv = note.object as? NSTextView else { return }
+            parent.text = tv.string
+        }
+    }
+}
+
+// MARK: - Syntax highlighting storage
+
+private final class ASHighlightingStorage: NSTextStorage {
+    private let backing = NSMutableAttributedString()
+
+    override var string: String { backing.string }
+
+    override func attributes(at location: Int,
+                             effectiveRange range: NSRangePointer?) -> [NSAttributedString.Key: Any] {
+        backing.attributes(at: location, effectiveRange: range)
+    }
+
+    override func replaceCharacters(in range: NSRange, with str: String) {
+        beginEditing()
+        backing.replaceCharacters(in: range, with: str)
+        edited(.editedCharacters, range: range, changeInLength: (str as NSString).length - range.length)
+        endEditing()
+    }
+
+    override func setAttributes(_ attrs: [NSAttributedString.Key: Any]?, range: NSRange) {
+        beginEditing()
+        backing.setAttributes(attrs, range: range)
+        edited(.editedAttributes, range: range, changeInLength: 0)
+        endEditing()
+    }
+
+    override func processEditing() {
+        highlight()
+        super.processEditing()
+    }
+
+    private static let font = NSFont.monospacedSystemFont(ofSize: NSFont.smallSystemFontSize,
+                                                          weight: .regular)
+
+    private static let keywordPattern: String = {
+        let words = ["tell","end","set","to","if","then","else","return","try","on","error",
+                     "application","open","POSIX","file","repeat","exit","with","without",
+                     "of","in","by","as","and","or","not","is","are","property","my","its",
+                     "get","considering","ignoring","timeout","seconds","every","activate",
+                     "close","make","new","document","delete","export","name","true","false",
+                     "result","front","whose","that","copy","count","slide","slides",
+                     "selection","width","height","position"]
+        return #"\b("# + words.joined(separator: "|") + #")\b"#
+    }()
+
+    private static let keywordRegex  = try? NSRegularExpression(pattern: keywordPattern)
+    private static let stringRegex   = try? NSRegularExpression(pattern: #""[^"\n]*""#)
+    private static let commentRegex  = try? NSRegularExpression(pattern: #"--[^\n]*"#)
+
+    private func highlight() {
+        let str = backing.string
+        guard !str.isEmpty else { return }
+        let full = NSRange(str.startIndex..., in: str)
+
+        // 1. Reset: base attributes on the whole string.
+        backing.setAttributes([.foregroundColor: NSColor.labelColor,
+                                .font: ASHighlightingStorage.font], range: full)
+
+        // 2. Keywords — applied first so strings and comments can override them.
+        ASHighlightingStorage.keywordRegex?.enumerateMatches(in: str, range: full) { m, _, _ in
+            if let r = m?.range { backing.addAttribute(.foregroundColor, value: NSColor.systemBlue, range: r) }
+        }
+        // 3. String literals.
+        ASHighlightingStorage.stringRegex?.enumerateMatches(in: str, range: full) { m, _, _ in
+            if let r = m?.range { backing.addAttribute(.foregroundColor, value: NSColor.systemOrange, range: r) }
+        }
+        // 4. Comments — highest priority, applied last.
+        ASHighlightingStorage.commentRegex?.enumerateMatches(in: str, range: full) { m, _, _ in
+            if let r = m?.range { backing.addAttribute(.foregroundColor, value: NSColor.systemGreen, range: r) }
+        }
     }
 }
 

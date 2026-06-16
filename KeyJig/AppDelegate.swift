@@ -115,6 +115,11 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
         AppDelegate.shared = self
         NSApplication.shared.delegate = self
 
+        UserDefaults.standard.register(defaults: [
+            "completionHookScript":
+                "tell application \"LaunchBar\" to open (POSIX file \"{svgPath}\")",
+        ])
+
         AppMenu.setupMenuBar()
 
         // ── Menubar popover ───────────────────────────────────────────────
@@ -269,7 +274,16 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
     ///      This path fires regardless of current well state.
     ///   2. Native SVG — fast, synchronous.
     ///   3. PDF/AI via Inkscape — slow, async; only when well is empty.
-    private func checkAndLoadClipboardSVG(into state: AppState) {
+    /// Forces a clipboard reload for the front window regardless of whether the
+    /// clipboard change count has moved. Resets the change-count sentinel first
+    /// so the usual dedup guard doesn't suppress the reload.
+    @objc func reloadFromClipboard(_ sender: Any?) {
+        guard let state = frontWindowState else { return }
+        state.lastLoadedClipboardChangeCount = -1
+        checkAndLoadClipboardSVG(into: state)
+    }
+
+    func checkAndLoadClipboardSVG(into state: AppState) {
         let pasteboard = NSPasteboard.general
         let currentChangeCount = pasteboard.changeCount
         guard currentChangeCount != state.lastLoadedClipboardChangeCount else { return }
@@ -340,7 +354,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
     ///   3. NSApp.keyWindow if it belongs to one of our controllers (covers
     ///      the brief window between activation and key-window assignment).
     ///   4. The primary window as the final fallback.
-    fileprivate var frontWindowState: AppState? {
+    var frontWindowState: AppState? {
         if popover?.isShown == true {
             return activePopoverState ?? popoverAppState
         }
@@ -569,6 +583,9 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
                     state.svgString = safe
                     state.statusMessage = ""
                     state.pendingOversizedSVG = nil
+                    fireCompletionHook(outputPath: url.path,
+                        svgName: url.deletingPathExtension().lastPathComponent,
+                        source: .fileDrop)
                 case .failure(let err):
                     log.error("rejected SVG: \(url.lastPathComponent, privacy: .public)")
                     state.conversionStatus = .idle
@@ -606,6 +623,9 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
                         state.svgURL = url.path
                         state.svgString = svg
                         state.conversionStatus = .idle
+                        fireCompletionHook(outputPath: url.path,
+                            svgName: url.deletingPathExtension().lastPathComponent,
+                            source: .fileDrop)
                     } else {
                         state.conversionStatus = .failed
                     }
@@ -673,7 +693,11 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
 
     @objc func menuCopyForKeynote(_ sender: Any?) {
         guard let state = frontWindowState, !state.svgString.isEmpty else { return }
-        _ = svgToClipboard(svgData: state.svgString, appState: state)
+        if let url = svgToClipboard(svgData: state.svgString, appState: state) {
+            fireCompletionHook(outputPath: url.path,
+                svgName: svgDisplayName(for: state),
+                source: .clipboard)
+        }
         state.statusMessage = NSLocalizedString(
             "status.copied",
             comment: "Confirmation shown after copying to clipboard")

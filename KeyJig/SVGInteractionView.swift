@@ -102,6 +102,9 @@ class SVGInteractionView: NSView {
         didSet { trashButton?.isHidden = onClear == nil }
     }
 
+    /// Called when the user chooses "Reload from Clipboard" from the context menu.
+    var onReloadFromClipboard: (() -> Void)?
+
     // MARK: Private state
 
     private var isDropHighlighted = false {
@@ -362,7 +365,8 @@ class SVGInteractionView: NSView {
     // MARK: Context menu
 
     override func menu(for event: NSEvent) -> NSMenu? {
-        guard onCopyForKeynote != nil || onClear != nil else { return nil }
+        guard onCopyForKeynote != nil || onClear != nil || onReloadFromClipboard != nil
+        else { return nil }
         let menu = NSMenu()
         if onCopyForKeynote != nil {
             let copyItem = menu.addItem(
@@ -374,6 +378,16 @@ class SVGInteractionView: NSView {
             copyItem.target = self
             menu.addItem(NSMenuItem.separator())
         }
+        if let reloadItem = menu.addItem(
+            withTitle: NSLocalizedString(
+                "context_menu.reload_from_clipboard",
+                comment: "Context menu: reload content from the clipboard"),
+            action: #selector(handleReloadFromClipboard),
+            keyEquivalent: "") as NSMenuItem? {
+            reloadItem.target = self
+            reloadItem.isEnabled = onReloadFromClipboard != nil
+        }
+        menu.addItem(NSMenuItem.separator())
         let clearItem = menu.addItem(
             withTitle: NSLocalizedString(
                 "context_menu.clear",
@@ -386,6 +400,7 @@ class SVGInteractionView: NSView {
     }
 
     @objc private func handleCopyForKeynote() { onCopyForKeynote?() }
+    @objc private func handleReloadFromClipboard() { onReloadFromClipboard?() }
     @objc private func handleClear() { onClear?() }
 
     // MARK: SVG pasteboard helpers
@@ -553,6 +568,7 @@ struct SVGInteractionViewWrapper: NSViewRepresentable {
     var onOversizedSVGDropped: ((_ string: String, _ url: String?) -> Void)?
     var onCopyForKeynote: (() -> Void)?
     var onClear: (() -> Void)?
+    var onReloadFromClipboard: (() -> Void)?
     var dragLabel: String = NSLocalizedString(
         "preview.drag_label",
         comment: "Text on the drag image thumbnail shown when dragging the SVG preview")
@@ -569,5 +585,6 @@ struct SVGInteractionViewWrapper: NSViewRepresentable {
         nsView.onOversizedSVGDropped = onOversizedSVGDropped
         nsView.onCopyForKeynote = onCopyForKeynote
         nsView.onClear = onClear
+        nsView.onReloadFromClipboard = onReloadFromClipboard
     }
 }

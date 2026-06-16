@@ -22,6 +22,7 @@
 "preview.drag_label" = "Arrastrar a Keynote";
 "preview.drag_label_pdf" = "Arrastrar al destino";
 "context_menu.copy_for_keynote" = "Convertir y copiar para Keynote";
+"context_menu.reload_from_clipboard" = "Recargar desde portapapeles";
 "context_menu.clear" = "Eliminar";
 
 /* ── Metadata overlay ───────────────────────────────────────────────── */
@@ -204,3 +205,8 @@
 "settings.section.appearance" = "Apariencia";
 "settings.appearance.always_show_keynote_buttons" = "Mostrar botones opcionales de Keynote";
 "settings.appearance.always_show_keynote_buttons.description" = "Muestra siempre Extraer diapositiva y Extraer selección. Ocultos por defecto; se revelan manteniendo pulsada la tecla ⌥ Opción.";
+"settings.section.hook" = "Script de finalización";
+"settings.hook.description" = "AppleScript que se ejecuta tras cada conversión correcta. Los tokens están preescapados para usarse dentro de literales de cadena entre comillas dobles: set f to POSIX file \"{svgPath}\". {source} se expande a clipboard, keynote-pull, file-drop o test.";
+"settings.hook.test" = "Probar";
+"settings.hook.test.no_result" = "No hay resultado de conversión disponible — realice primero una conversión.";
+"settings.hook.test.running" = "Ejecutando…";
