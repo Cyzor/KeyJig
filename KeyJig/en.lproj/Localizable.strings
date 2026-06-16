@@ -208,7 +208,7 @@
 "accessibility.automation_denied" = "Automation permission for Keynote is denied";
 "settings.section.appearance" = "Appearance";
 "settings.appearance.always_show_keynote_buttons" = "Show optional Keynote buttons";
-"settings.appearance.always_show_keynote_buttons.description" = "Always show Pull Slide and Extract Selection. Otherwise available by holding down ⌥ Option.";
+"settings.appearance.always_show_keynote_buttons.description" = "Always show Pull Slide and Extract Selection buttons";
 "settings.section.hook" = "Completion Script";
 "settings.hook.description" = "AppleScript to run after each successful conversion. Tokens are pre-escaped for use inside double-quoted string literals: set f to POSIX file \"{svgPath}\". {source} expands to clipboard, keynote-pull, file-drop, or test.";
 "settings.hook.test" = "Test";

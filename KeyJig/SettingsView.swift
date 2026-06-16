@@ -125,11 +125,16 @@ struct SettingsView: View {
                         }
                     }
 
-                    Link("https://inkscape.org/", destination: inkscapeDownloadURL)
-                        .font(.caption)
-                        .help(NSLocalizedString(
-                            "tooltip.settings.inkscape_website",
-                            comment: "Tooltip on the Inkscape website link in the settings card"))
+                    HStack(spacing: 12) {
+                        Image(systemName: "checkmark.circle.fill")
+                            .font(.title3)
+                            .hidden()
+                        Link("https://inkscape.org/", destination: inkscapeDownloadURL)
+                            .font(.caption)
+                            .help(NSLocalizedString(
+                                "tooltip.settings.inkscape_website",
+                                comment: "Tooltip on the Inkscape website link in the settings card"))
+                    }
                 }
                 .padding(12)
                 .background(Color(.controlBackgroundColor))
@@ -463,9 +468,14 @@ private struct CommandLineToolRow: View {
             }
 
             if let url = websiteURL {
-                Link(url.absoluteString, destination: url)
-                    .font(.caption)
-                    .help(websiteTooltip)
+                HStack(spacing: 12) {
+                    Image(systemName: "checkmark.circle.fill")
+                        .font(.title3)
+                        .hidden()
+                    Link(url.absoluteString, destination: url)
+                        .font(.caption)
+                        .help(websiteTooltip)
+                }
             }
         }
         .padding(12)
