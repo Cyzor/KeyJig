@@ -50,6 +50,12 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
     /// retains AppState independently; weak would mislead without saving memory.
     private var activePopoverState: AppState?
 
+    /// The app that was frontmost immediately before the popover opened.
+    /// Captured in showPopover() before KeyJig claims focus; cleared when
+    /// the popover closes. Pull pipelines read this to restore the user's
+    /// context after Keynote processing completes.
+    var appBeforePopover: NSRunningApplication?
+
     // MARK: Scriptable properties for Explorer visibility
 
     /// Returns the SVG content from the frontmost window.
@@ -431,6 +437,9 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
               let button = statusBarItem?.button
         else { return }
 
+        // Capture before the popover opens, while the user's real app is still front.
+        appBeforePopover = NSWorkspace.shared.frontmostApplication
+
         let target: AppState
         let mirrorWindow = NSApp.mainWindow ?? NSApp.keyWindow
         if let win = mirrorWindow,
@@ -505,6 +514,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
     func popoverDidClose(_ notification: Notification) {
         removePopoverDismissMonitor()
         activePopoverState = nil
+        appBeforePopover = nil
     }
 
     /// Brings the primary window to the front, recreating it if it was closed,

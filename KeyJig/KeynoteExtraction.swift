@@ -95,9 +95,10 @@ func pullFromKeynote(
             return
         }
 
-        // Capture the frontmost app so we can restore it after Keynote activates.
+        // Use the app that was frontmost before the popover opened; fall back to
+        // current frontmost when triggered from a document window (no popover).
         let prevFrontApp: NSRunningApplication? = DispatchQueue.main.sync {
-            NSWorkspace.shared.frontmostApplication
+            AppDelegate.shared?.appBeforePopover ?? NSWorkspace.shared.frontmostApplication
         }
 
         // Log the Keynote version once per pull so reports from untested
@@ -322,7 +323,10 @@ func pullFromKeynote(
                docName: pdfDocName, slideIndex: pdfSlideIndex) {
             // The scratch-doc round-trip drops the user's canvas selection; restore it.
             restoreKeynoteSelection(slideIndex: probeSlideIndex, selectionBoxes: selectionBoxes)
-            DispatchQueue.main.async {
+            // Delay re-activation: after the scratch doc closes and the selection
+            // restore runs activate, Keynote's window server asynchronously promotes
+            // its window — an immediate activate call races and loses.
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) {
                 prevFrontApp?.activateFrontmost()
                 completion(.success(url))
             }
@@ -355,7 +359,7 @@ func pullFromKeynote(
                     docName: pdfDocName,
                     slideIndex: pdfSlideIndex)
                 try? FileManager.default.removeItem(at: srcURL)
-                DispatchQueue.main.async {
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) {
                     prevFrontApp?.activateFrontmost()
                     completion(result)
                 }
@@ -455,7 +459,7 @@ func pullFromKeynote(
                         let result = extractSlidePDF(from: srcURL, pageNumber: 1, selectionBoxes: [],
                             padding: 40.0, docName: pdfDocName, slideIndex: pdfSlideIndex)
                         try? FileManager.default.removeItem(at: srcURL)
-                        DispatchQueue.main.async {
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) {
                             prevFrontApp?.activateFrontmost()
                             completion(result)
                         }
@@ -485,7 +489,10 @@ func pullFromKeynote(
             restoreKeynoteSelection(slideIndex: probeSlideIndex, selectionBoxes: selectionBoxes)
         }
 
-        DispatchQueue.main.async {
+        // Delay re-activation: the selection restore's activate (and any Keynote
+        // window promotion after export) is asynchronous — a 0.15 s gap lets
+        // Keynote finish before we reassert the previous app.
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) {
             prevFrontApp?.activateFrontmost()
             completion(result)
         }
@@ -1083,19 +1090,20 @@ private func sanitizedDocName(_ name: String, maxLength: Int) -> String {
 private extension NSRunningApplication {
     /// Activates the app, restoring it as the frontmost application.
     ///
-    /// When re-activating our own process (the common case — user triggered a
-    /// pull from KeyJig's menu or a button), use `NSApp.activate(ignoringOtherApps:
-    /// true)`, which is exempt from macOS 14's focus-stealing prevention and works
-    /// reliably from a background-queue completion callback. Activating a *different*
-    /// app (uncommon) uses the weaker API so we don't steal focus from an app the
-    /// user deliberately moved to while the pull was running.
+    /// When re-activating our own process, use `NSApp.activate(ignoringOtherApps:
+    /// true)`, which is exempt from macOS 14's focus-stealing prevention. For any
+    /// other app, `NSRunningApplication.activate()` and the deprecated
+    /// `activate(options:)` are both blocked when called from an agent process
+    /// without a recent user event; `NSWorkspace.shared.open(bundleURL)` is not.
     func activateFrontmost() {
         if bundleIdentifier == Bundle.main.bundleIdentifier {
             NSApp.activate(ignoringOtherApps: true)
-        } else if #available(macOS 14.0, *) {
-            activate()
-        } else {
-            activate(options: .activateIgnoringOtherApps)
+        } else if let url = bundleURL {
+            // NSRunningApplication.activate(options:) is blocked on macOS 14+
+            // for agent processes that lack a recent user event. Opening the
+            // bundle URL via NSWorkspace is treated as a user-authorized launch
+            // and activates the running instance without that restriction.
+            NSWorkspace.shared.open(url)
         }
     }
 }
@@ -1146,8 +1154,11 @@ func triggerKeynoteClipboard(appState: AppState, setStatus: @escaping (String) -
     setStatus(NSLocalizedString("status.keynote.pulling",
         comment: "Status: PDF export from Keynote in progress"))
     appState.previewPDFURL = nil
-    // Capture now, on the main thread, while KeyJig is still frontmost.
-    let prevFrontApp = NSWorkspace.shared.frontmostApplication
+    // Use the app that was frontmost before the popover opened, captured at
+    // show-time before KeyJig claimed focus. Falls back to the current
+    // frontmost (e.g. when triggered from a document window, not the popover).
+    let prevFrontApp = AppDelegate.shared?.appBeforePopover
+        ?? NSWorkspace.shared.frontmostApplication
 
     let queue = DispatchQueue(label: "com.cyzor.KeyJig.keynotePull", qos: .userInitiated)
     queue.async {
@@ -1170,12 +1181,8 @@ func triggerKeynoteClipboard(appState: AppState, setStatus: @escaping (String) -
             Thread.sleep(forTimeInterval: 0.3)
         }
         let kpid = keynoteApp.processIdentifier
-        let result = extractClipboardViaScratchDoc(keynotePID: kpid)
-        // Delay the re-activation slightly: when the scratch doc closes, Keynote's
-        // window server asynchronously promotes its remaining document window, which
-        // would otherwise override an immediate activate call.
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) {
-            prevFrontApp?.activateFrontmost()
+        let result = extractClipboardViaScratchDoc(keynotePID: kpid, prevFrontApp: prevFrontApp)
+        DispatchQueue.main.async {
             appState.activePullToken = nil
             if let url = result {
                 appState.previewPDFURL = url
@@ -1195,7 +1202,8 @@ func triggerKeynoteClipboard(appState: AppState, setStatus: @escaping (String) -
 /// Pastes the clipboard into a throwaway Keynote document and exports it as
 /// a cropped vector PDF. No selection-geometry reads; the button is only
 /// reachable when `keynoteClipboardReady` confirms native Keynote data is present.
-private func extractClipboardViaScratchDoc(keynotePID: pid_t) -> URL? {
+private func extractClipboardViaScratchDoc(keynotePID: pid_t,
+                                              prevFrontApp: NSRunningApplication? = nil) -> URL? {
     // One round-trip: read the source slide size, create the scratch doc, match
     // its size, and blank the theme placeholders. The size must be read before
     // `make new document` — the new doc becomes `front document` immediately.
@@ -1229,6 +1237,14 @@ private func extractClipboardViaScratchDoc(keynotePID: pid_t) -> URL? {
     Thread.sleep(forTimeInterval: 0.3)
 
     defer {
+        // Activate the caller's app BEFORE closing the scratch doc. When the
+        // close happens with InDesign (or wherever) already frontmost, Keynote's
+        // window-server promotion occurs in the background and doesn't steal focus.
+        // Reversing the order (close-then-activate) is a race we reliably lose.
+        if let app = prevFrontApp {
+            DispatchQueue.main.sync { app.activateFrontmost() }
+            Thread.sleep(forTimeInterval: 0.1)
+        }
         let closeScript = """
             tell application "Keynote"
                 with timeout of 30 seconds
