@@ -85,7 +85,7 @@ func pullFromKeynote(
 ) {
     // Serial queue keeps NSAppleScript calls non-concurrent.
     let queue = DispatchQueue(label: "com.cyzor.KeyJig.keynotePull", qos: .userInitiated)
-    queue.async {
+    queue.async { autoreleasepool {
 
         // 1. Verify Keynote is running.
         guard NSRunningApplication
@@ -496,7 +496,7 @@ func pullFromKeynote(
             prevFrontApp?.activateFrontmost()
             completion(result)
         }
-    }
+    } }
 }
 
 /// Re-asserts the user's canvas selection by position-matching.
@@ -1161,7 +1161,7 @@ func triggerKeynoteClipboard(appState: AppState, setStatus: @escaping (String) -
         ?? NSWorkspace.shared.frontmostApplication
 
     let queue = DispatchQueue(label: "com.cyzor.KeyJig.keynotePull", qos: .userInitiated)
-    queue.async {
+    queue.async { autoreleasepool {
         if token.isCancelled {
             DispatchQueue.main.async { appState.activePullToken = nil; appState.keynotePullStatus = .idle; setStatus("") }
             return
@@ -1196,7 +1196,7 @@ func triggerKeynoteClipboard(appState: AppState, setStatus: @escaping (String) -
                 setStatus(KeynotePullError.exportFailed("no objects were pasted").localizedDescription)
             }
         }
-    }
+    } }
 }
 
 /// Pastes the clipboard into a throwaway Keynote document and exports it as

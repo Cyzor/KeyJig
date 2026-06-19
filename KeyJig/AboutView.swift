@@ -37,6 +37,10 @@ final class AboutWindowController: NSWindowController, NSWindowDelegate {
         window?.makeKeyAndOrderFront(nil)
         NSApp.activate(ignoringOtherApps: true)
     }
+
+    func windowWillClose(_ notification: Notification) {
+        AppDelegate.shared?.aboutWindowController = nil
+    }
 }
 
 // MARK: - About View

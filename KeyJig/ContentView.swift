@@ -762,7 +762,7 @@ struct ContentView: View {
             )
             .onPreferenceChange(ButtonAreaMinWidthKey.self) { width in
                 guard width > 0 else { return }
-                appState.minimumButtonAreaWidth = width
+                DispatchQueue.main.async { appState.minimumButtonAreaWidth = width }
             }
             .padding(.horizontal, 16)
             .padding(.bottom, 16)
@@ -775,7 +775,7 @@ struct ContentView: View {
             })
             .onPreferenceChange(BelowPreviewHeightKey.self) { height in
                 guard height > 0 else { return }
-                appState.minimumBelowPreviewHeight = height
+                DispatchQueue.main.async { appState.minimumBelowPreviewHeight = height }
             }
 
         }

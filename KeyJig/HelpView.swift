@@ -3,7 +3,7 @@ import SwiftUI
 
 // MARK: - Help Window Controller
 
-class HelpWindowController: NSWindowController {
+class HelpWindowController: NSWindowController, NSWindowDelegate {
 
     init() {
         let window = NSWindow(
@@ -29,6 +29,7 @@ class HelpWindowController: NSWindowController {
         window.contentViewController = host
 
         super.init(window: window)
+        window.delegate = self
     }
 
     required init?(coder: NSCoder) {
@@ -38,6 +39,10 @@ class HelpWindowController: NSWindowController {
     func showWindow() {
         window?.makeKeyAndOrderFront(nil)
         NSApp.activate(ignoringOtherApps: true)
+    }
+
+    func windowWillClose(_ notification: Notification) {
+        AppDelegate.shared?.helpWindowController = nil
     }
 }
 
