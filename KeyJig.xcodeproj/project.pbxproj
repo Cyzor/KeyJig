@@ -3,71 +3,38 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 54;
+	objectVersion = 77;
 	objects = {
 
 /* Begin PBXBuildFile section */
 		051673C02FA9205400E4FD20 /* AppIcon.icns in Resources */ = {isa = PBXBuildFile; fileRef = 051673BF2FA9205400E4FD20 /* AppIcon.icns */; };
-		05F195182F65DE4C008DEF94 /* KeyJig.sdef in Resources */ = {isa = PBXBuildFile; fileRef = 05F195172F65DE4C008DEF94 /* KeyJig.sdef */; };
-		05F195192F65DE4C008DEF94 /* ScriptingCommands.swift in Sources */ = {isa = PBXBuildFile; fileRef = 05F1951A2F65DE4C008DEF94 /* ScriptingCommands.swift */; };
-		AA9900010000000000000001 /* CompletionHook.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA9900010000000000000002 /* CompletionHook.swift */; };
-		05FB65842FA5BC1F00C7674D /* ClipboardHelpers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 05FB657E2FA5BC1F00C7674D /* ClipboardHelpers.swift */; };
-		05FB65852FA5BC1F00C7674D /* InkscapeIntegration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 05FB657F2FA5BC1F00C7674D /* InkscapeIntegration.swift */; };
-		05CC11012FA5BC1F00C7674D /* KeynoteIntegration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 05CC11002FA5BC1F00C7674D /* KeynoteIntegration.swift */; };
-		05CC11112FA5BC1F00C7674E /* KeynoteExtraction.swift in Sources */ = {isa = PBXBuildFile; fileRef = 05CC11102FA5BC1F00C7674E /* KeynoteExtraction.swift */; };
-		05FB65862FA5BC1F00C7674D /* SVGProcessing.swift in Sources */ = {isa = PBXBuildFile; fileRef = 05FB65812FA5BC1F00C7674D /* SVGProcessing.swift */; };
-		05FB65872FA5BC1F00C7674D /* AppState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 05FB657D2FA5BC1F00C7674D /* AppState.swift */; };
-		05FB65882FA5BC1F00C7674D /* SettingsWindowController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 05FB65802FA5BC1F00C7674D /* SettingsWindowController.swift */; };
-		459A279123AA910B003D50EC /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 459A279023AA910B003D50EC /* AppDelegate.swift */; };
-		459A279323AA910B003D50EC /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 459A279223AA910B003D50EC /* ContentView.swift */; };
-		459A279523AA910B003D50EC /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 459A279423AA910B003D50EC /* Assets.xcassets */; };
-		459A279823AA910B003D50EC /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 459A279723AA910B003D50EC /* Preview Assets.xcassets */; };
-		459A279B23AA910B003D50EC /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 459A279923AA910B003D50EC /* Main.storyboard */; };
-		AA10010000000000000000B0 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = AA10010000000000000000A0 /* Localizable.strings */; };
-		AA10010000000000000000C0 /* Localizable.stringsdict in Resources */ = {isa = PBXBuildFile; fileRef = AA10010000000000000000B1 /* Localizable.stringsdict */; };
-		BB942CF682F473477D8EF06C /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0CCA99F0817B45088BB121 /* SettingsView.swift */; };
-		AA1001010000000000000002 /* HelpView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA1001010000000000000001 /* HelpView.swift */; };
-		AA1001010000000000000004 /* AboutView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA1001010000000000000003 /* AboutView.swift */; };
-		3E001557759841AF8183C66F /* SVGInteractionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B76A2C0C4B5C46D391C97923 /* SVGInteractionView.swift */; };
-		5AA0924674B445BEAB4C8A69 /* MainWindowController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B26A95CB1A364A729CBE25B3 /* MainWindowController.swift */; };
-		6267DEA8FEBC404593FCA136 /* SessionState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 60EE75B5D4534B2BB6331805 /* SessionState.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		051673BF2FA9205400E4FD20 /* AppIcon.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; path = AppIcon.icns; sourceTree = "<group>"; };
-		057851852F48F0D900ED1254 /* SwiftUIMenuBar.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = SwiftUIMenuBar.entitlements; sourceTree = "<group>"; };
-		05F195172F65DE4C008DEF94 /* KeyJig.sdef */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = KeyJig.sdef; sourceTree = "<group>"; };
-		05F1951A2F65DE4C008DEF94 /* ScriptingCommands.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScriptingCommands.swift; sourceTree = "<group>"; };
-		05FB657D2FA5BC1F00C7674D /* AppState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppState.swift; sourceTree = "<group>"; };
-		AA9900010000000000000002 /* CompletionHook.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CompletionHook.swift; sourceTree = "<group>"; };
-		05FB657E2FA5BC1F00C7674D /* ClipboardHelpers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClipboardHelpers.swift; sourceTree = "<group>"; };
-		05FB657F2FA5BC1F00C7674D /* InkscapeIntegration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InkscapeIntegration.swift; sourceTree = "<group>"; };
-		05CC11002FA5BC1F00C7674D /* KeynoteIntegration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeynoteIntegration.swift; sourceTree = "<group>"; };
-		05CC11102FA5BC1F00C7674E /* KeynoteExtraction.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeynoteExtraction.swift; sourceTree = "<group>"; };
-		05FB65802FA5BC1F00C7674D /* SettingsWindowController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsWindowController.swift; sourceTree = "<group>"; };
-		05FB65812FA5BC1F00C7674D /* SVGProcessing.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SVGProcessing.swift; sourceTree = "<group>"; };
 		459A278D23AA910B003D50EC /* KeyJig.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = KeyJig.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		459A279023AA910B003D50EC /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
-		459A279223AA910B003D50EC /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
-		459A279423AA910B003D50EC /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
-		459A279723AA910B003D50EC /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
-		459A279A23AA910B003D50EC /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
-		459A279C23AA910B003D50EC /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		AA0CCA99F0817B45088BB121 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
-		AA1001010000000000000001 /* HelpView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HelpView.swift; sourceTree = "<group>"; };
-		AA1001010000000000000003 /* AboutView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AboutView.swift; sourceTree = "<group>"; };
-		B76A2C0C4B5C46D391C97923 /* SVGInteractionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SVGInteractionView.swift; sourceTree = "<group>"; };
-		B26A95CB1A364A729CBE25B3 /* MainWindowController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainWindowController.swift; sourceTree = "<group>"; };
-		60EE75B5D4534B2BB6331805 /* SessionState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionState.swift; sourceTree = "<group>"; };
-		AA100100000000000000001 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/Localizable.strings; sourceTree = "<group>"; };
-		AA100100000000000000002 /* de */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = de; path = de.lproj/Localizable.strings; sourceTree = "<group>"; };
-		AA100100000000000000003 /* es */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = es; path = es.lproj/Localizable.strings; sourceTree = "<group>"; };
-		AA100100000000000000004 /* ja */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ja; path = ja.lproj/Localizable.strings; sourceTree = "<group>"; };
-		AA100100000000000000005 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.stringsdict; name = en; path = en.lproj/Localizable.stringsdict; sourceTree = "<group>"; };
-		AA100100000000000000006 /* de */ = {isa = PBXFileReference; lastKnownFileType = text.plist.stringsdict; name = de; path = de.lproj/Localizable.stringsdict; sourceTree = "<group>"; };
-		AA100100000000000000007 /* es */ = {isa = PBXFileReference; lastKnownFileType = text.plist.stringsdict; name = es; path = es.lproj/Localizable.stringsdict; sourceTree = "<group>"; };
-		AA100100000000000000008 /* ja */ = {isa = PBXFileReference; lastKnownFileType = text.plist.stringsdict; name = ja; path = ja.lproj/Localizable.stringsdict; sourceTree = "<group>"; };
 /* End PBXFileReference section */
+
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		AA3001010000000000000001 /* PBXFileSystemSynchronizedBuildFileExceptionSet */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = 459A278C23AA910B003D50EC /* KeyJig */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
+/* Begin PBXFileSystemSynchronizedRootGroup section */
+		459A278F23AA910B003D50EC /* KeyJig */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				AA3001010000000000000001 /* PBXFileSystemSynchronizedBuildFileExceptionSet */,
+			);
+			path = KeyJig;
+			sourceTree = "<group>";
+		};
+/* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
 		459A278A23AA910B003D50EC /* Frameworks */ = {
@@ -84,9 +51,8 @@
 			isa = PBXGroup;
 			children = (
 				459A278F23AA910B003D50EC /* KeyJig */,
+				AA2001010000000000000001 /* Resources */,
 				459A278E23AA910B003D50EC /* Products */,
-				AB8978BB26A42A26003D201E /* Frameworks */,
-				051673BF2FA9205400E4FD20 /* AppIcon.icns */,
 			);
 			sourceTree = "<group>";
 		};
@@ -98,51 +64,12 @@
 			name = Products;
 			sourceTree = "<group>";
 		};
-		459A278F23AA910B003D50EC /* KeyJig */ = {
+		AA2001010000000000000001 /* Resources */ = {
 			isa = PBXGroup;
 			children = (
-				AA10010000000000000000A0 /* Localizable.strings */,
-				AA10010000000000000000B1 /* Localizable.stringsdict */,
-				05F195172F65DE4C008DEF94 /* KeyJig.sdef */,
-				459A279023AA910B003D50EC /* AppDelegate.swift */,
-				459A279223AA910B003D50EC /* ContentView.swift */,
-				05F1951A2F65DE4C008DEF94 /* ScriptingCommands.swift */,
-				AA0CCA99F0817B45088BB121 /* SettingsView.swift */,
-				AA1001010000000000000001 /* HelpView.swift */,
-				AA1001010000000000000003 /* AboutView.swift */,
-				459A279423AA910B003D50EC /* Assets.xcassets */,
-				459A279923AA910B003D50EC /* Main.storyboard */,
-				459A279C23AA910B003D50EC /* Info.plist */,
-				459A279623AA910B003D50EC /* Preview Content */,
-				057851852F48F0D900ED1254 /* SwiftUIMenuBar.entitlements */,
-				05FB65802FA5BC1F00C7674D /* SettingsWindowController.swift */,
-				05FB657D2FA5BC1F00C7674D /* AppState.swift */,
-				05FB657E2FA5BC1F00C7674D /* ClipboardHelpers.swift */,
-				AA9900010000000000000002 /* CompletionHook.swift */,
-				05FB657F2FA5BC1F00C7674D /* InkscapeIntegration.swift */,
-				05CC11002FA5BC1F00C7674D /* KeynoteIntegration.swift */,
-				05CC11102FA5BC1F00C7674E /* KeynoteExtraction.swift */,
-				05FB65812FA5BC1F00C7674D /* SVGProcessing.swift */,
-				B76A2C0C4B5C46D391C97923 /* SVGInteractionView.swift */,
-				B26A95CB1A364A729CBE25B3 /* MainWindowController.swift */,
-				60EE75B5D4534B2BB6331805 /* SessionState.swift */,
+				051673BF2FA9205400E4FD20 /* AppIcon.icns */,
 			);
-			path = KeyJig;
-			sourceTree = "<group>";
-		};
-		459A279623AA910B003D50EC /* Preview Content */ = {
-			isa = PBXGroup;
-			children = (
-				459A279723AA910B003D50EC /* Preview Assets.xcassets */,
-			);
-			path = "Preview Content";
-			sourceTree = "<group>";
-		};
-		AB8978BB26A42A26003D201E /* Frameworks */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			name = Frameworks;
+			path = Resources;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -160,6 +87,9 @@
 			);
 			dependencies = (
 			);
+			fileSystemSynchronizedGroups = (
+				459A278F23AA910B003D50EC /* KeyJig */,
+			);
 			name = KeyJig;
 			productName = SwiftUIMenuBar;
 			productReference = 459A278D23AA910B003D50EC /* KeyJig.app */;
@@ -172,7 +102,7 @@
 			isa = PBXProject;
 			attributes = {
 				LastSwiftUpdateCheck = 1130;
-				LastUpgradeCheck = 1250;
+				LastUpgradeCheck = 1600;
 				ORGANIZATIONNAME = Cyzor;
 				TargetAttributes = {
 					459A278C23AA910B003D50EC = {
@@ -182,7 +112,7 @@
 				};
 			};
 			buildConfigurationList = 459A278823AA910A003D50EC /* Build configuration list for PBXProject "KeyJig" */;
-			compatibilityVersion = "Xcode 12.0";
+			compatibilityVersion = "Xcode 16.0";
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
 			knownRegions = (
@@ -193,6 +123,7 @@
 				ja,
 			);
 			mainGroup = 459A278423AA910A003D50EC;
+			preferredProjectObjectVersion = 77;
 			productRefGroup = 459A278E23AA910B003D50EC /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
@@ -207,13 +138,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				AA10010000000000000000B0 /* Localizable.strings in Resources */,
-				AA10010000000000000000C0 /* Localizable.stringsdict in Resources */,
-				05F195182F65DE4C008DEF94 /* KeyJig.sdef in Resources */,
 				051673C02FA9205400E4FD20 /* AppIcon.icns in Resources */,
-				459A279B23AA910B003D50EC /* Main.storyboard in Resources */,
-				459A279823AA910B003D50EC /* Preview Assets.xcassets in Resources */,
-				459A279523AA910B003D50EC /* Assets.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -224,60 +149,10 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				459A279323AA910B003D50EC /* ContentView.swift in Sources */,
-				459A279123AA910B003D50EC /* AppDelegate.swift in Sources */,
-				05F195192F65DE4C008DEF94 /* ScriptingCommands.swift in Sources */,
-				BB942CF682F473477D8EF06C /* SettingsView.swift in Sources */,
-				AA1001010000000000000002 /* HelpView.swift in Sources */,
-				AA1001010000000000000004 /* AboutView.swift in Sources */,
-				05FB65882FA5BC1F00C7674D /* SettingsWindowController.swift in Sources */,
-				05FB65872FA5BC1F00C7674D /* AppState.swift in Sources */,
-				05FB65842FA5BC1F00C7674D /* ClipboardHelpers.swift in Sources */,
-				AA9900010000000000000001 /* CompletionHook.swift in Sources */,
-				05FB65852FA5BC1F00C7674D /* InkscapeIntegration.swift in Sources */,
-				05CC11012FA5BC1F00C7674D /* KeynoteIntegration.swift in Sources */,
-				05CC11112FA5BC1F00C7674E /* KeynoteExtraction.swift in Sources */,
-				05FB65862FA5BC1F00C7674D /* SVGProcessing.swift in Sources */,
-				3E001557759841AF8183C66F /* SVGInteractionView.swift in Sources */,
-				5AA0924674B445BEAB4C8A69 /* MainWindowController.swift in Sources */,
-				6267DEA8FEBC404593FCA136 /* SessionState.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
-
-/* Begin PBXVariantGroup section */
-		459A279923AA910B003D50EC /* Main.storyboard */ = {
-			isa = PBXVariantGroup;
-			children = (
-				459A279A23AA910B003D50EC /* Base */,
-			);
-			name = Main.storyboard;
-			sourceTree = "<group>";
-		};
-		AA10010000000000000000A0 /* Localizable.strings */ = {
-			isa = PBXVariantGroup;
-			children = (
-				AA100100000000000000001 /* en */,
-				AA100100000000000000002 /* de */,
-				AA100100000000000000003 /* es */,
-				AA100100000000000000004 /* ja */,
-			);
-			name = Localizable.strings;
-			sourceTree = "<group>";
-		};
-		AA10010000000000000000B1 /* Localizable.stringsdict */ = {
-			isa = PBXVariantGroup;
-			children = (
-				AA100100000000000000005 /* en */,
-				AA100100000000000000006 /* de */,
-				AA100100000000000000007 /* es */,
-				AA100100000000000000008 /* ja */,
-			);
-			name = Localizable.stringsdict;
-			sourceTree = "<group>";
-		};
-/* End PBXVariantGroup section */
 
 /* Begin XCBuildConfiguration section */
 		459A279E23AA910B003D50EC /* Debug */ = {
