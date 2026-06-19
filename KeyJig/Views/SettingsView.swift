@@ -28,8 +28,10 @@ struct SettingsTooltips {
 struct SettingsView: View {
     @ObservedObject var appState: AppState
     @State private var showingInkscapeDetails = false
+    @State private var hookTestMessage: String = ""
     @AppStorage("alwaysShowOptionalKeynoteButtons") private var alwaysShowOptionalKeynoteButtons = false
     @AppStorage("completionHookScript") private var completionHookScript = ""
+    @AppStorage("showCompletionScript") private var showCompletionScript = false
 
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
@@ -314,11 +316,73 @@ struct SettingsView: View {
                 }
             }
 
+            if showCompletionScript {
+                Divider()
+
+                // Completion Hook Section
+                // Shown via: defaults write com.cyzor.KeyJig showCompletionScript -bool true
+                VStack(alignment: .leading, spacing: 8) {
+                    Text(NSLocalizedString(
+                        "settings.section.hook",
+                        comment: "Settings section heading for the completion hook script"))
+                        .font(.headline)
+
+                    Text(NSLocalizedString(
+                        "settings.hook.description",
+                        comment: "Description for the completion hook script tokens"))
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                        .fixedSize(horizontal: false, vertical: true)
+
+                    Text("{svgPath}  ·  {svgName}  ·  {source}")
+                        .font(.system(.caption, design: .monospaced))
+                        .foregroundColor(.secondary)
+
+                    ASScriptEditor(text: $completionHookScript)
+                        .frame(minHeight: 88)
+
+                    HStack(spacing: 8) {
+                        if !hookTestMessage.isEmpty {
+                            Text(hookTestMessage)
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                        }
+                        Spacer()
+                        Button(NSLocalizedString(
+                            "settings.hook.test",
+                            comment: "Button to run the completion hook with the current result")) {
+                            testCompletionHook()
+                        }
+                        .font(.caption)
+                        .disabled(completionHookScript.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+                    }
+                }
+            }
+
         }
         .padding(24)
         .frame(minWidth: 400)
         .sheet(isPresented: $showingInkscapeDetails) {
             InkscapeDetailsView(appState: appState, isPresented: $showingInkscapeDetails)
+        }
+    }
+
+    private func testCompletionHook() {
+        let outputPath = appState.previewPDFURL?.path ?? appState.bridgeFileURL?.path ?? ""
+        guard !outputPath.isEmpty else {
+            hookTestMessage = NSLocalizedString(
+                "settings.hook.test.no_result",
+                comment: "Message shown when the test button is pressed but no conversion result is available")
+            return
+        }
+        hookTestMessage = NSLocalizedString(
+            "settings.hook.test.running",
+            comment: "Message shown briefly while the test script is running")
+        fireCompletionHook(outputPath: outputPath,
+            svgName: svgDisplayName(for: appState),
+            source: .test)
+        DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
+            hookTestMessage = ""
         }
     }
 }

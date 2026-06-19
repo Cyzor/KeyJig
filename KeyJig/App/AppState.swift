@@ -85,6 +85,7 @@ class AppState: ObservableObject {
                 svgURL = ""
             }
             if previewPDFURL != nil {
+                bridgeFileURL = nil
                 scheduleHistoryCapture()
             }
         }
@@ -381,6 +382,7 @@ class AppState: ObservableObject {
 
         if previewPDFURL != nil {
             previewPDFURL = nil
+            bridgeFileURL = nil
         } else {
             svgString = ""
             svgURL = ""

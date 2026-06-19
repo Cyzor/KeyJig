@@ -64,10 +64,13 @@ private func reportHookError(_ message: String) {
     }
 }
 
-/// Escapes backslashes and double-quotes so the value is safe inside an
-/// AppleScript double-quoted string literal. {svgPath} and {svgName} are
-/// pre-escaped — place them directly between double quotes in your script.
+/// Escapes a value for safe interpolation inside an AppleScript double-quoted
+/// string literal. Strips control characters (U+0000–U+001F) that would split
+/// the literal across lines and break osascript -e. {svgPath} and {svgName}
+/// are pre-escaped — place them directly between double quotes in your script.
 private func hookEscape(_ s: String) -> String {
-    s.replacingOccurrences(of: "\\", with: "\\\\")
-     .replacingOccurrences(of: "\"", with: "\\\"")
+    let stripped = s.unicodeScalars.filter { $0.value >= 0x20 }.map(String.init).joined()
+    return stripped
+        .replacingOccurrences(of: "\\", with: "\\\\")
+        .replacingOccurrences(of: "\"", with: "\\\"")
 }

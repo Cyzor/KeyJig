@@ -1019,13 +1019,13 @@ private func cropWithGhostscript(gs: URL, input: URL, cropRect: CGRect, output: 
     return task.terminationStatus == 0 && FileManager.default.fileExists(atPath: output.path)
 }
 
-/// mutool draw re-renders the CGPDFContext intermediate through MuPDF's pdfwrite
-/// device. The Form XObject introduced by CGPDFContext is resolved during
-/// rendering, so drawing commands outside the clip are not emitted.
+/// mutool convert re-renders the CGPDFContext intermediate through MuPDF's pdf
+/// output device (-F pdf). The Form XObject introduced by CGPDFContext is
+/// resolved during rendering, so drawing commands outside the clip are not emitted.
 private func reprocessWithMutool(mutool: URL, input: URL, output: URL) -> Bool {
     let task = Process()
     task.executableURL = mutool
-    task.arguments = ["draw", "-o", output.path, input.path]
+    task.arguments = ["convert", "-F", "pdf", "-o", output.path, input.path]
     task.standardOutput = FileHandle.nullDevice
     task.standardError = FileHandle.nullDevice
     guard runProcess(task, timeout: 60) else { return false }

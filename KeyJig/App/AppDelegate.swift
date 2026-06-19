@@ -122,8 +122,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
         NSApplication.shared.delegate = self
 
         UserDefaults.standard.register(defaults: [
-            "completionHookScript":
-                "tell application \"LaunchBar\" to open (POSIX file \"{svgPath}\")",
+            "completionHookScript": "",
         ])
 
         AppMenu.setupMenuBar()
