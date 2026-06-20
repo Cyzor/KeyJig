@@ -152,6 +152,8 @@
 "dialog.help.title" = "Help";
 "help.section.import.title" = "Import an SVG";
 "help.section.import.body" = "• Drop an SVG file onto the preview area.\n• Copy artwork in Illustrator, Affinity, or Inkscape (⌘C) — KeyJig picks it up automatically.\n• Use File > Open SVG File… (⌘O).\n• With Inkscape installed, KeyJig also opens PDF and .ai files.";
+"help.section.history.title" = "History & Undo";
+"help.section.history.body" = "• ⌘Z undoes a canvas clear; ⇧⌘Z redoes it. Only clear operations can be undone — loaded content itself is not affected.\n• ⌘[ / ⌘] navigate back and forward through recently loaded graphics (up to 10 entries, newest first).";
 "help.section.keynote.title" = "Send to Keynote";
 "help.section.keynote.body" = "• Copy for Keynote (⌘K) — paste into Keynote (⌘V) and use Format > Shapes & Lines > Break Apart to edit paths.\n• Place SVG in Keynote (⌘D) drops it directly onto the current slide. Requires Accessibility permission (System Settings ▸ Privacy & Security).";
 "help.section.pull.title" = "Convert Keynote to PDF";

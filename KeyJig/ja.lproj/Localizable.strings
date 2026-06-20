@@ -151,6 +151,8 @@
 "dialog.help.title" = "ヘルプ";
 "help.section.import.title" = "SVGを読み込む";
 "help.section.import.body" = "• SVGファイルをプレビューエリアにドロップします。\n• Illustrator・Affinity・Inkscapeでアートワークをコピー（⌘C）すると、KeyJigが自動で検出します。\n• ファイル ▸ SVGファイルを開く…（⌘O）でファイルを開きます。\n• Inkscapeがインストールされていれば、PDFや.aiファイルも開けます。";
+"help.section.history.title" = "履歴と取り消し";
+"help.section.history.body" = "• ⌘Zでキャンバスのクリアを取り消せます。⇧⌘Zでやり直せます。取り消しはクリア操作のみ対象で、読み込み済みのコンテンツには影響しません。\n• ⌘[ / ⌘]で最近読み込んだグラフィックの履歴を前後に移動できます（最大10件、新しい順）。";
 "help.section.keynote.title" = "Keynoteに送る";
 "help.section.keynote.body" = "• Keynote用にコピー（⌘K）— Keynoteで貼り付け（⌘V）後、フォーマット ▸ 図形と線 ▸ 分割でパスを編集できます。\n• SVGをKeynoteに配置（⌘D）で現在のスライドに直接配置します。アクセシビリティアクセスが必要です（システム設定 ▸ プライバシーとセキュリティ）。";
 "help.section.pull.title" = "KeynoteをPDFに変換";

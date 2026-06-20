@@ -63,6 +63,17 @@ struct HelpView: View {
             )
             Divider()
             HelpSection(
+                symbol: "arrow.uturn.backward.circle.fill",
+                color: .purple,
+                title: NSLocalizedString(
+                    "help.section.history.title",
+                    comment: "Help: History and undo section heading"),
+                content: NSLocalizedString(
+                    "help.section.history.body",
+                    comment: "Help: History and undo section bullet points")
+            )
+            Divider()
+            HelpSection(
                 symbol: "document.on.document.fill",
                 color: .green,
                 title: NSLocalizedString(

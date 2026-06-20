@@ -151,6 +151,8 @@
 "dialog.help.title" = "Ayuda";
 "help.section.import.title" = "Importar SVG";
 "help.section.import.body" = "• Arrastra un archivo SVG al área de vista previa.\n• Copia una ilustración en Illustrator, Affinity o Inkscape (⌘C) — KeyJig lo detecta automáticamente.\n• Usa Archivo > Abrir archivo SVG… (⌘O).\n• Con Inkscape instalado, KeyJig también abre archivos PDF y .ai.";
+"help.section.history.title" = "Historial y deshacer";
+"help.section.history.body" = "• ⌘Z deshace una limpieza del canvas; ⇧⌘Z la rehace. Solo se pueden deshacer operaciones de limpieza — el contenido cargado no se ve afectado.\n• ⌘[ / ⌘] navega hacia atrás y adelante por los gráficos cargados recientemente (hasta 10 entradas, más recientes primero).";
 "help.section.keynote.title" = "Enviar a Keynote";
 "help.section.keynote.body" = "• Copiar para Keynote (⌘K) — pega en Keynote (⌘V) y usa Formato > Formas y líneas > Separar para editar los trayectos.\n• Insertar SVG en Keynote (⌘D) lo coloca directamente en la diapositiva actual. Requiere permiso de accesibilidad (Configuración del Sistema ▸ Privacidad y seguridad).";
 "help.section.pull.title" = "Convertir Keynote a PDF";
