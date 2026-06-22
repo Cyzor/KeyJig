@@ -120,6 +120,7 @@
 "menu.edit.paste" = "Pegar";
 "menu.edit.clear" = "Eliminar";
 "menu.edit.copy_for_keynote" = "Copiar para Keynote";
+"menu.edit.reload_from_clipboard" = "Recargar desde portapapeles";
 "menu.edit.back" = "Atrás";
 "menu.edit.forward" = "Adelante";
 

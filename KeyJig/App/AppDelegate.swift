@@ -284,6 +284,9 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
     /// so the usual dedup guard doesn't suppress the reload.
     @objc func reloadFromClipboard(_ sender: Any?) {
         guard let state = frontWindowState else { return }
+        if !state.svgString.isEmpty || state.previewPDFURL != nil {
+            state.clearContent(registeringWith: undoManager(for: state))
+        }
         state.lastLoadedClipboardChangeCount = -1
         checkAndLoadClipboardSVG(into: state)
     }

@@ -120,6 +120,7 @@
 "menu.edit.paste" = "ペースト";
 "menu.edit.clear" = "削除";
 "menu.edit.copy_for_keynote" = "Keynote用にコピー";
+"menu.edit.reload_from_clipboard" = "クリップボードから再読み込み";
 "menu.edit.back" = "戻る";
 "menu.edit.forward" = "進む";
 

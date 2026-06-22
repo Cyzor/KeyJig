@@ -345,6 +345,12 @@ class AppMenu {
                 comment: "Edit menu: Clear item (clears the loaded SVG)"),
             action: #selector(AppDelegate.clearSVG),
             keyEquivalent: "")
+        editMenu.addItem(
+            withTitle: NSLocalizedString(
+                "menu.edit.reload_from_clipboard",
+                comment: "Edit menu: clear canvas and reload from clipboard"),
+            action: #selector(AppDelegate.reloadFromClipboard),
+            keyEquivalent: "b")
         editMenu.addItem(NSMenuItem.separator())
         editMenu.addItem(
             withTitle: NSLocalizedString(

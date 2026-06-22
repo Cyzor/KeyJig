@@ -121,6 +121,7 @@
 "menu.edit.paste" = "Paste";
 "menu.edit.clear" = "Clear";
 "menu.edit.copy_for_keynote" = "Copy for Keynote";
+"menu.edit.reload_from_clipboard" = "Reload from Clipboard";
 "menu.edit.back" = "Back";
 "menu.edit.forward" = "Forward";
 
