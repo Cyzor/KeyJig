@@ -375,6 +375,7 @@ struct ContentView: View {
             // a stale origin would mislabel the proxy icon and derived temp
             // names with the previous file's name).
             appState.svgURL = first.sourceURL?.path ?? ""
+            appState.sourceClipboardPDFData = nil
             appState.svgString = first.svg
             appState.statusMessage = ""
             for item in items.dropFirst() {
@@ -831,7 +832,7 @@ struct ContentView: View {
                 }
 
             SVGInteractionViewWrapper(
-                onDragStart: { url },
+                onDragStart: { _ in url },
                 onMultiFileDropStarted: {
                     if !isPopoverSurface { appState.conversionStatus = .converting }
                 },
@@ -887,14 +888,34 @@ struct ContentView: View {
             // Single interaction layer — handles outbound drag, inbound drop,
             // and right-click menu with no Z-order conflict.
             SVGInteractionViewWrapper(
-                onDragStart: { [weak appState] in
-                    guard let svg = appState?.svgString else { return nil }
+                onDragStart: { [weak appState] event in
+                    guard let appState else { return nil }
+
+                    // Option-drag: export the source PDF when available.
+                    if event.modifierFlags.contains(.option),
+                       let pdfData = appState.sourceClipboardPDFData {
+                        let uuid = UUID().uuidString.prefix(8)
+                        let url = URL(fileURLWithPath: NSTemporaryDirectory())
+                            .appendingPathComponent("KeyJig-Clipboard-\(uuid).pdf")
+                        do {
+                            try pdfData.write(to: url)
+                            try FileManager.default.setAttributes(
+                                [.posixPermissions: 0o600],
+                                ofItemAtPath: url.path)
+                        } catch {
+                            log.error("error writing temp PDF for Option-drag: \(error.localizedDescription, privacy: .public)")
+                            return nil
+                        }
+                        return url
+                    }
+
+                    let svg = appState.svgString
                     // Reject oversized SVG before writing temp file
                     guard svg.utf8.count <= maxSVGBytes else {
                         log.error("dropped SVG exceeds size limit of \(maxSVGBytes, privacy: .public) bytes")
                         return nil
                     }
-                    let url = makeTempSVGURL(svg: svg, originPath: appState?.svgURL)
+                    let url = makeTempSVGURL(svg: svg, originPath: appState.svgURL)
                     do {
                         try svg.write(to: url, atomically: true, encoding: .utf8)
                         // Hardened permissions: owner read/write only (0600)
@@ -902,7 +923,7 @@ struct ContentView: View {
                             [.posixPermissions: 0o600],
                             ofItemAtPath: url.path
                         )
-                        appState?.bridgeFileURL = url
+                        appState.bridgeFileURL = url
                     } catch {
                         log.error("error writing temp SVG: \(error.localizedDescription, privacy: .public)")
                         return nil

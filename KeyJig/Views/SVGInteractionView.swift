@@ -73,7 +73,8 @@ class SVGInteractionView: NSView {
         comment: "Text on the drag image thumbnail shown when dragging the SVG preview")
 
     /// Return the file URL to use as the drag payload, or nil to cancel the drag.
-    var onDragStart: (() -> URL?)?
+    /// The event is forwarded so the callback can check modifier flags.
+    var onDragStart: ((NSEvent) -> URL?)?
 
     /// Called with one or more dropped vectors when a valid inbound drop lands.
     /// Single drops fire immediately with a one-element array; multi-file drops
@@ -256,7 +257,7 @@ class SVGInteractionView: NSView {
     override func acceptsFirstMouse(for event: NSEvent?) -> Bool { true }
 
     override func mouseDown(with event: NSEvent) {
-        guard let fileURL = onDragStart?() else {
+        guard let fileURL = onDragStart?(event) else {
             super.mouseDown(with: event)
             return
         }
@@ -561,7 +562,7 @@ extension SVGInteractionView: NSDraggingSource {
 
 struct SVGInteractionViewWrapper: NSViewRepresentable {
 
-    var onDragStart: (() -> URL?)?
+    var onDragStart: ((NSEvent) -> URL?)?
     var onMultiFileDropStarted: (() -> Void)?
     var onSVGDropped: (([DroppedVector]) -> Void)?
     var onDropRejected: ((String) -> Void)?

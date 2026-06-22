@@ -140,6 +140,11 @@ class AppState: ObservableObject {
     /// denied state is surfaced in Settings — nil and true need no user action.
     @Published var keynoteAutomationGranted: Bool? = nil
 
+    /// The original clipboard PDF data that was converted to SVG via Inkscape.
+    /// Retained so Option-drag can export the source PDF instead of the
+    /// outlined SVG. Cleared when content arrives from a non-PDF source.
+    var sourceClipboardPDFData: Data?
+
     private var clipboardCancellable: AnyCancellable?
     private var workspaceObservers: [Any] = []
     private var appObservers: [Any] = []
@@ -350,6 +355,7 @@ class AppState: ObservableObject {
     /// svgString and previewPDFURL mutually exclusive (each didSet clears
     /// the other).
     private func applySnapshot(_ snap: ContentSnapshot) {
+        sourceClipboardPDFData = nil
         if let pdf = snap.previewPDFURL {
             previewPDFURL = pdf
         } else {
@@ -389,6 +395,7 @@ class AppState: ObservableObject {
             bridgeFileURL = nil
             conversionStatus = .idle
         }
+        sourceClipboardPDFData = nil
         statusMessage = ""
     }
 

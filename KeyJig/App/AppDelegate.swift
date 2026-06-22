@@ -326,6 +326,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
             // so the proxy icon and derived temp names don't show the
             // previous file's name.
             state.svgURL = ""
+            state.sourceClipboardPDFData = nil
             state.svgString = svg
             state.lastLoadedClipboardChangeCount = currentChangeCount
             return
@@ -338,12 +339,14 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
             inkscapeURL() != nil
         else { return }
 
+        let sourcePDF = pdfDataFromClipboard()
         state.conversionStatus = .converting
         state.lastLoadedClipboardChangeCount = currentChangeCount
         convertClipboardPDFToSVG { [weak state] result in
             guard let state = state else { return }
             if let svg = result, !svg.isEmpty {
                 state.svgURL = ""
+                state.sourceClipboardPDFData = sourcePDF
                 state.svgString = svg
                 state.conversionStatus = .idle
             } else {
