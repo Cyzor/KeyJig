@@ -25,6 +25,8 @@
 /* ── Preview area ───────────────────────────────────────────────────── */
 "preview.drag_label" = "In Keynote ziehen";
 "preview.drag_label_pdf" = "Zum Ziel ziehen";
+"preview.drag_as_svg" = "Als SVG ziehen";
+"preview.drag_as_pdf" = "Als PDF ziehen";
 "context_menu.copy_for_keynote" = "Konvertieren und für Keynote kopieren";
 "context_menu.reload_from_clipboard" = "Aus Zwischenablage laden";
 "context_menu.clear" = "Löschen";

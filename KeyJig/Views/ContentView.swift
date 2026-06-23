@@ -888,27 +888,8 @@ struct ContentView: View {
             // Single interaction layer — handles outbound drag, inbound drop,
             // and right-click menu with no Z-order conflict.
             SVGInteractionViewWrapper(
-                onDragStart: { [weak appState] event in
+                onDragStart: { [weak appState] _ in
                     guard let appState else { return nil }
-
-                    // Option-drag: export the source PDF when available.
-                    if event.modifierFlags.contains(.option),
-                       let pdfData = appState.sourceClipboardPDFData {
-                        let uuid = UUID().uuidString.prefix(8)
-                        let url = URL(fileURLWithPath: NSTemporaryDirectory())
-                            .appendingPathComponent("KeyJig-Clipboard-\(uuid).pdf")
-                        do {
-                            try pdfData.write(to: url)
-                            try FileManager.default.setAttributes(
-                                [.posixPermissions: 0o600],
-                                ofItemAtPath: url.path)
-                        } catch {
-                            log.error("error writing temp PDF for Option-drag: \(error.localizedDescription, privacy: .public)")
-                            return nil
-                        }
-                        return url
-                    }
-
                     let svg = appState.svgString
                     // Reject oversized SVG before writing temp file
                     guard svg.utf8.count <= maxSVGBytes else {
@@ -929,6 +910,9 @@ struct ContentView: View {
                         return nil
                     }
                     return url
+                },
+                alternateDragData: { [weak appState] in
+                    appState?.sourceClipboardPDFData
                 },
                 onMultiFileDropStarted: {
                     if !isPopoverSurface { appState.conversionStatus = .converting }

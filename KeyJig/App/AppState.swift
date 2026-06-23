@@ -2,6 +2,9 @@ import Combine
 import Foundation
 import SwiftUI
 import AppKit
+import os
+
+private let log = Logger(subsystem: "com.cyzor.KeyJig", category: "AppState")
 
 // MARK: - Clipboard Watcher
 
@@ -356,6 +359,7 @@ class AppState: ObservableObject {
     /// the other).
     private func applySnapshot(_ snap: ContentSnapshot) {
         sourceClipboardPDFData = nil
+        log.info("applySnapshot: cleared sourceClipboardPDFData")
         if let pdf = snap.previewPDFURL {
             previewPDFURL = pdf
         } else {
@@ -396,6 +400,7 @@ class AppState: ObservableObject {
             conversionStatus = .idle
         }
         sourceClipboardPDFData = nil
+        log.info("clearContent: cleared sourceClipboardPDFData")
         statusMessage = ""
     }
 

@@ -337,7 +337,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
             // so the proxy icon and derived temp names don't show the
             // previous file's name.
             state.svgURL = ""
-            state.sourceClipboardPDFData = nil
+            state.sourceClipboardPDFData = pdfDataFromClipboard()
+            log.info("clipboard fast path: sourceClipboardPDFData = \(state.sourceClipboardPDFData?.count ?? 0, privacy: .public) bytes")
             state.svgString = svg
             state.lastLoadedClipboardChangeCount = currentChangeCount
             return
@@ -358,6 +359,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
             if let svg = result, !svg.isEmpty {
                 state.svgURL = ""
                 state.sourceClipboardPDFData = sourcePDF
+                log.info("clipboard slow path: set sourceClipboardPDFData (\(sourcePDF?.count ?? 0, privacy: .public) bytes)")
                 state.svgString = svg
                 state.conversionStatus = .idle
             } else {

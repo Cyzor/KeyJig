@@ -1,5 +1,8 @@
 import AppKit
+import os
 import SwiftUI
+
+private let log = Logger(subsystem: "com.cyzor.KeyJig", category: "DragSource")
 
 // MARK: - Tooltip Text Constants
 
@@ -73,8 +76,11 @@ class SVGInteractionView: NSView {
         comment: "Text on the drag image thumbnail shown when dragging the SVG preview")
 
     /// Return the file URL to use as the drag payload, or nil to cancel the drag.
-    /// The event is forwarded so the callback can check modifier flags.
     var onDragStart: ((NSEvent) -> URL?)?
+
+    /// Optional: return PDF data for an alternate Option-drag export.
+    /// When non-nil, the modifier check is deferred to drop time.
+    var alternateDragData: (() -> Data?)?
 
     /// Called with one or more dropped vectors when a valid inbound drop lands.
     /// Single drops fire immediately with a one-element array; multi-file drops
@@ -113,6 +119,9 @@ class SVGInteractionView: NSView {
     }
 
     private var trashButton: NSButton?
+    private var activeDragDelegate: DragPromiseDelegate?
+    private var activeDragSession: NSDraggingSession?
+    private var lastDragBadgeWasPDF = false
 
     // MARK: Multi-file helpers (also used by StatusBarDragProxy)
 
@@ -265,18 +274,63 @@ class SVGInteractionView: NSView {
         let dragPoint = event.locationInWindow
         let viewPoint = self.convert(dragPoint, from: nil)
 
-        let dragImage = NSImage(size: NSSize(width: 180, height: 180))
-        dragImage.lockFocus()
+        let pasteboardWriter: NSPasteboardWriting
+        let hasPDFAlternate: Bool
+        if let pdfData = alternateDragData?() {
+            log.info("drag: using file-promise path (PDF data available, \(pdfData.count, privacy: .public) bytes)")
+            let delegate = DragPromiseDelegate(svgURL: fileURL, pdfData: pdfData)
+            activeDragDelegate = delegate
+            pasteboardWriter = DragPromiseProvider(
+                fileType: "public.data",
+                delegate: delegate,
+                fallbackURL: fileURL)
+            hasPDFAlternate = true
+        } else {
+            log.info("drag: using plain NSURL path (no alternate PDF data)")
+            pasteboardWriter = fileURL as NSURL
+            hasPDFAlternate = false
+        }
+
+        let wantPDF = hasPDFAlternate && NSEvent.modifierFlags.contains(.option)
+        lastDragBadgeWasPDF = wantPDF
+        let dragImage = makeDragImage(wantPDF: wantPDF, hasPDFAlternate: hasPDFAlternate)
+
+        let draggingItem = NSDraggingItem(pasteboardWriter: pasteboardWriter)
+        draggingItem.setDraggingFrame(
+            NSRect(x: viewPoint.x - 90, y: viewPoint.y - 90, width: 180, height: 180),
+            contents: dragImage)
+        let session = self.beginDraggingSession(with: [draggingItem], event: event, source: self)
+        activeDragSession = hasPDFAlternate ? session : nil
+    }
+
+    // MARK: Drag image
+
+    private func makeDragImage(wantPDF: Bool, hasPDFAlternate: Bool) -> NSImage {
+        let size = NSSize(width: 180, height: 180)
+        let image = NSImage(size: size)
+        image.lockFocus()
+        NSAppearance.current = effectiveAppearance
         NSColor.controlBackgroundColor.setFill()
         NSBezierPath(
-            roundedRect: NSRect(x: 0, y: 0, width: 180, height: 180),
+            roundedRect: NSRect(origin: .zero, size: size),
             xRadius: 12, yRadius: 12
         ).fill()
-        if let icon = NSImage(
+        if let symbol = NSImage(
             systemSymbolName: "photo.fill.on.rectangle.fill",
             accessibilityDescription: "image"
         ) {
-            icon.draw(in: NSRect(x: 50, y: 60, width: 80, height: 80))
+            let iconRect = NSRect(x: 50, y: 60, width: 80, height: 80)
+            let tinted = symbol.withSymbolConfiguration(
+                .init(pointSize: 48, weight: .regular))
+            let icon = tinted ?? symbol
+            let tintedIcon = NSImage(size: iconRect.size)
+            tintedIcon.lockFocus()
+            NSColor.labelColor.setFill()
+            NSRect(origin: .zero, size: iconRect.size).fill()
+            icon.draw(in: NSRect(origin: .zero, size: iconRect.size),
+                       from: .zero, operation: .destinationIn, fraction: 1)
+            tintedIcon.unlockFocus()
+            tintedIcon.draw(in: iconRect)
         }
         let style = NSMutableParagraphStyle()
         style.alignment = .center
@@ -285,15 +339,20 @@ class SVGInteractionView: NSView {
             .foregroundColor: NSColor.labelColor,
             .paragraphStyle: style,
         ]
-        NSAttributedString(string: dragLabel, attributes: attrs)
+        let label: String
+        if hasPDFAlternate {
+            label = wantPDF
+                ? NSLocalizedString("preview.drag_as_pdf",
+                    comment: "Drag badge when Option held — PDF output")
+                : NSLocalizedString("preview.drag_as_svg",
+                    comment: "Drag badge when no modifier — SVG output")
+        } else {
+            label = dragLabel
+        }
+        NSAttributedString(string: label, attributes: attrs)
             .draw(in: NSRect(x: 0, y: 15, width: 180, height: 30))
-        dragImage.unlockFocus()
-
-        let draggingItem = NSDraggingItem(pasteboardWriter: fileURL as NSURL)
-        draggingItem.setDraggingFrame(
-            NSRect(x: viewPoint.x - 90, y: viewPoint.y - 90, width: 180, height: 180),
-            contents: dragImage)
-        _ = self.beginDraggingSession(with: [draggingItem], event: event, source: self)
+        image.unlockFocus()
+        return image
     }
 
     // MARK: Inbound drop (NSDraggingDestination)
@@ -556,6 +615,123 @@ extension SVGInteractionView: NSDraggingSource {
         _ session: NSDraggingSession,
         sourceOperationMaskFor context: NSDraggingContext
     ) -> NSDragOperation { .copy }
+
+    func draggingSession(
+        _ session: NSDraggingSession,
+        movedTo screenPoint: NSPoint
+    ) {
+        guard activeDragSession != nil else { return }
+        let wantPDF = NSEvent.modifierFlags.contains(.option)
+        guard wantPDF != lastDragBadgeWasPDF else { return }
+        lastDragBadgeWasPDF = wantPDF
+        let newImage = makeDragImage(wantPDF: wantPDF, hasPDFAlternate: true)
+        session.enumerateDraggingItems(
+            options: [],
+            for: self,
+            classes: [NSPasteboardItem.self],
+            searchOptions: [:]
+        ) { item, _, _ in
+            item.setDraggingFrame(item.draggingFrame, contents: newImage)
+        }
+    }
+
+    func draggingSession(
+        _ session: NSDraggingSession,
+        endedAt screenPoint: NSPoint,
+        operation: NSDragOperation
+    ) {
+        activeDragDelegate = nil
+        activeDragSession = nil
+    }
+}
+
+// MARK: - File-promise drag provider (modifier checked at drop time)
+
+/// NSFilePromiseProvider subclass that also vends `public.file-url` as a
+/// direct fallback for destinations that don't support file promises (e.g.
+/// Keynote). The fallback always delivers the SVG; the promise path checks
+/// the Option modifier at drop time to decide SVG vs PDF.
+private class DragPromiseProvider: NSFilePromiseProvider {
+    let fallbackURL: URL
+
+    init(fileType: String, delegate: NSFilePromiseProviderDelegate, fallbackURL: URL) {
+        self.fallbackURL = fallbackURL
+        super.init()
+        self.fileType = fileType
+        self.delegate = delegate
+    }
+
+    @available(*, unavailable)
+    required init?(coder: NSCoder) { fatalError() }
+
+    override func writableTypes(for pasteboard: NSPasteboard) -> [NSPasteboard.PasteboardType] {
+        var types: [NSPasteboard.PasteboardType] = [.fileURL]
+        types.append(contentsOf: super.writableTypes(for: pasteboard))
+        return types
+    }
+
+    override func writingOptions(
+        forType type: NSPasteboard.PasteboardType,
+        pasteboard: NSPasteboard
+    ) -> NSPasteboard.WritingOptions {
+        if type == .fileURL { return [] }
+        return super.writingOptions(forType: type, pasteboard: pasteboard)
+    }
+
+    override func pasteboardPropertyList(forType type: NSPasteboard.PasteboardType) -> Any? {
+        if type == .fileURL { return fallbackURL.absoluteString }
+        return super.pasteboardPropertyList(forType: type)
+    }
+}
+
+private class DragPromiseDelegate: NSObject, NSFilePromiseProviderDelegate {
+    let svgURL: URL
+    let pdfData: Data
+    private var wantPDF = false
+    private let writeQueue: OperationQueue = {
+        let q = OperationQueue()
+        q.qualityOfService = .userInitiated
+        return q
+    }()
+
+    init(svgURL: URL, pdfData: Data) {
+        self.svgURL = svgURL
+        self.pdfData = pdfData
+    }
+
+    func filePromiseProvider(
+        _ provider: NSFilePromiseProvider,
+        fileNameForType fileType: String
+    ) -> String {
+        wantPDF = NSEvent.modifierFlags.contains(.option)
+        let stem = svgURL.deletingPathExtension().lastPathComponent
+        let name = stem + (wantPDF ? ".pdf" : ".svg")
+        log.info("fileNameForType: wantPDF=\(self.wantPDF, privacy: .public) → \(name, privacy: .public)")
+        return name
+    }
+
+    func filePromiseProvider(
+        _ provider: NSFilePromiseProvider,
+        writePromiseTo url: URL,
+        completionHandler handler: @escaping (Error?) -> Void
+    ) {
+        log.info("writePromiseTo: wantPDF=\(self.wantPDF, privacy: .public) dest=\(url.lastPathComponent, privacy: .public)")
+        do {
+            if wantPDF {
+                try pdfData.write(to: url)
+            } else {
+                try FileManager.default.copyItem(at: svgURL, to: url)
+            }
+            handler(nil)
+        } catch {
+            log.error("file promise write failed: \(error.localizedDescription, privacy: .public)")
+            handler(error)
+        }
+    }
+
+    func operationQueue(for provider: NSFilePromiseProvider) -> OperationQueue {
+        writeQueue
+    }
 }
 
 // MARK: - SwiftUI wrapper
@@ -563,6 +739,7 @@ extension SVGInteractionView: NSDraggingSource {
 struct SVGInteractionViewWrapper: NSViewRepresentable {
 
     var onDragStart: ((NSEvent) -> URL?)?
+    var alternateDragData: (() -> Data?)?
     var onMultiFileDropStarted: (() -> Void)?
     var onSVGDropped: (([DroppedVector]) -> Void)?
     var onDropRejected: ((String) -> Void)?
@@ -580,6 +757,7 @@ struct SVGInteractionViewWrapper: NSViewRepresentable {
         nsView.toolTip = Tooltips.previewAreaLoaded
         nsView.dragLabel = dragLabel
         nsView.onDragStart = onDragStart
+        nsView.alternateDragData = alternateDragData
         nsView.onSVGDropped = onSVGDropped
         nsView.onMultiFileDropStarted = onMultiFileDropStarted
         nsView.onDropRejected = onDropRejected
