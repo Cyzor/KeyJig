@@ -288,7 +288,18 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
             state.clearContent(registeringWith: undoManager(for: state))
         }
         state.lastLoadedClipboardChangeCount = -1
-        checkAndLoadClipboardSVG(into: state)
+        // Delay so SwiftUI flushes the empty-canvas render before the reload.
+        // Without this, the "X" → "" → "X" round-trip coalesces into one pass
+        // and the WebView's dedupe guard (lastSVG == svg) silently no-ops.
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) { [weak self] in
+            self?.checkAndLoadClipboardSVG(into: state)
+            if state.svgString.isEmpty && state.previewPDFURL == nil
+                && state.conversionStatus != .converting {
+                state.statusMessage = NSLocalizedString(
+                    "status.no_svg_on_clipboard",
+                    comment: "Status shown when no SVG or convertible content found on clipboard")
+            }
+        }
     }
 
     func checkAndLoadClipboardSVG(into state: AppState) {
