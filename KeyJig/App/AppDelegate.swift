@@ -478,7 +478,25 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
             activePopoverState = target
         }
 
-        checkAndLoadClipboardSVG(into: target)
+        // If the popover is about to show against a target that already holds
+        // content from a prior load, mirror what reloadFromClipboard does:
+        // clear the well and reset the change-count sentinel so the slow
+        // (Inkscape) branch doesn't silently no-op behind the "X" -> "" -> "X"
+        // round-trip. Without this, every popover activation preserves the
+        // previous Inkscape conversion and the user sees stale data.
+        let alreadyPopulatedPop = !target.svgString.isEmpty || target.previewPDFURL != nil
+        let pasteboardPop = NSPasteboard.general
+        if alreadyPopulatedPop
+            && pasteboardPop.changeCount != target.lastLoadedClipboardChangeCount
+        {
+            target.clearContent(registeringWith: undoManager(for: target))
+            target.lastLoadedClipboardChangeCount = -1
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) { [weak self] in
+                self?.checkAndLoadClipboardSVG(into: target)
+            }
+        } else {
+            checkAndLoadClipboardSVG(into: target)
+        }
         popover.show(relativeTo: button.bounds, of: button, preferredEdge: .minY)
         installPopoverDismissMonitor()
     }
@@ -923,7 +941,26 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
         // frontWindowState already accounts for the popover's active state,
         // so no separate popover seeding is needed here.
         if let state = frontWindowState {
-            checkAndLoadClipboardSVG(into: state)
+            // If the window already holds content from a prior load and the
+            // pasteboard has actually changed, mirror reloadFromClipboard:
+            // clear the well and reset the change-count sentinel so the
+            // Inkscape slow path doesn't silently no-op behind an already-
+            // populated svgString. Without this, re-activating the app while
+            // it displays a previous Inkscape conversion leaves the user
+            // stuck with stale data.
+            let alreadyPopulated = !state.svgString.isEmpty || state.previewPDFURL != nil
+            let pasteboard = NSPasteboard.general
+            if alreadyPopulated
+                && pasteboard.changeCount != state.lastLoadedClipboardChangeCount
+            {
+                state.clearContent(registeringWith: undoManager(for: state))
+                state.lastLoadedClipboardChangeCount = -1
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) { [weak self] in
+                    self?.checkAndLoadClipboardSVG(into: state)
+                }
+            } else {
+                checkAndLoadClipboardSVG(into: state)
+            }
         }
     }
 
