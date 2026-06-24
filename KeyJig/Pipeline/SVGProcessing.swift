@@ -75,14 +75,15 @@ func validateSVG(_ string: String) -> SVGValidationError? {
     // belt-and-braces — but it also keeps us from copying anything obviously
     // hostile onto the system pasteboard. Not a substitute for a real XML
     // sanitiser; if a new attack surface comes up, extend this list.
-    let dangerousPatterns = [
-        "<script", "javascript:", "onerror=", "onclick=",
-        "onload=", "onmouseover=",
-    ]
+    let dangerousPatterns = ["<script", "javascript:", "<foreignObject"]
     for pattern in dangerousPatterns {
         if string.range(of: pattern, options: .caseInsensitive) != nil {
             return .containsDangerousContent
         }
+    }
+    // Catch any on* event handler attribute (onerror=, onclick=, onload=, onbegin=, etc.)
+    if string.range(of: #"\bon\w+\s*="#, options: [.regularExpression, .caseInsensitive]) != nil {
+        return .containsDangerousContent
     }
     // External references: any href (SVG 2) or xlink:href (SVG 1.1) pointing
     // at a remote URL. Matched as a regex — namespace *declarations*
@@ -140,17 +141,19 @@ enum SVGIngestError: Error {
 /// Like `ingestSVG`, but reports why the SVG was refused so deliberate user
 /// actions can surface the reason. Same size cap and content screen.
 func checkedIngestSVG(_ string: String) -> Result<String, SVGIngestError> {
-    guard string.utf8.count <= maxSVGBytes else {
-        return .failure(.tooLarge(bytes: string.utf8.count))
-    }
+    // Validate content before the size check — a large hostile SVG is still hostile.
     switch validateSVG(string) {
-    case nil:
-        return .success(addSVGMargin(string))
     case .containsDangerousContent:
         return .failure(.unsafe)
     case .empty, .notSVGElement:
         return .failure(.notSVG)
+    case nil:
+        break
     }
+    guard string.utf8.count <= maxSVGBytes else {
+        return .failure(.tooLarge(bytes: string.utf8.count))
+    }
+    return .success(addSVGMargin(string))
 }
 
 // MARK: - SVG Processing Utilities
