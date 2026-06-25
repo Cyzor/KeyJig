@@ -498,3 +498,33 @@ func wrapSVGForResponsiveDisplay(svgString: String) -> String {
         </html>
         """
 }
+
+/// Wrap SVG in minimal HTML sized to its native dimensions for PDF export.
+/// No background, no padding — the page is exactly the SVG's bounding box.
+func wrapSVGForExport(svgString: String, width: Double, height: Double) -> String {
+    let normalisedSVG = normaliseSVGRootTag(svgString)
+    return """
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <meta charset="UTF-8">
+            <style>
+                * { margin: 0; padding: 0; }
+                html, body {
+                    width: \(width)px;
+                    height: \(height)px;
+                    overflow: hidden;
+                    background: transparent;
+                }
+                body > svg {
+                    width: \(width)px !important;
+                    height: \(height)px !important;
+                }
+            </style>
+        </head>
+        <body>
+            \(normalisedSVG)
+        </body>
+        </html>
+        """
+}

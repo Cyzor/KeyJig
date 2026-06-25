@@ -111,6 +111,9 @@ class SVGInteractionView: NSView {
     /// Called when the user chooses "Convert and Copy for Keynote" from the context menu.
     var onCopyForKeynote: (() -> Void)?
 
+    /// Called when the user chooses "Copy as PDF" from the context menu.
+    var onCopyAsPDF: (() -> Void)?
+
     /// Called when the user chooses "Clear" from the context menu.
     var onClear: (() -> Void)? {
         didSet { trashButton?.isHidden = onClear == nil }
@@ -283,14 +286,32 @@ class SVGInteractionView: NSView {
 
         let pasteboardWriter: NSPasteboardWriting
         let hasPDFAlternate: Bool
+        let optionHeld = !NSEvent.modifierFlags.isDisjoint(with: [.option, .shift])
         if let pdfData = alternateDragData?() {
-            log.info("drag: using file-promise path (PDF data available, \(pdfData.count, privacy: .public) bytes)")
-            let delegate = DragPromiseDelegate(svgURL: fileURL, pdfData: pdfData)
-            activeDragDelegate = delegate
-            pasteboardWriter = DragPromiseProvider(
-                fileType: "public.data",
-                delegate: delegate,
-                fallbackURL: fileURL)
+            if optionHeld {
+                // Option held at drag start: write PDF to temp file and use it
+                // as the primary drag URL so apps that read public.file-url
+                // directly (InDesign, Affinity) receive the PDF.
+                let stem = fileURL.deletingPathExtension().lastPathComponent
+                let pdfURL = FileManager.default.temporaryDirectory
+                    .appendingPathComponent(stem + ".pdf")
+                do {
+                    try pdfData.write(to: pdfURL)
+                    log.info("drag: Option held, wrote PDF to \(pdfURL.lastPathComponent, privacy: .public)")
+                    pasteboardWriter = pdfURL as NSURL
+                } catch {
+                    log.error("drag: failed to write temp PDF: \(error.localizedDescription, privacy: .public)")
+                    pasteboardWriter = fileURL as NSURL
+                }
+            } else {
+                log.info("drag: using file-promise path (PDF data available, \(pdfData.count, privacy: .public) bytes)")
+                let delegate = DragPromiseDelegate(svgURL: fileURL, pdfData: pdfData)
+                activeDragDelegate = delegate
+                pasteboardWriter = DragPromiseProvider(
+                    fileType: "public.data",
+                    delegate: delegate,
+                    fallbackURL: fileURL)
+            }
             hasPDFAlternate = true
         } else {
             log.info("drag: using plain NSURL path (no alternate PDF data)")
@@ -298,7 +319,7 @@ class SVGInteractionView: NSView {
             hasPDFAlternate = false
         }
 
-        let wantPDF = hasPDFAlternate && NSEvent.modifierFlags.contains(.option)
+        let wantPDF = hasPDFAlternate && optionHeld
         lastDragBadgeWasPDF = wantPDF
         let dragImage = makeDragImage(wantPDF: wantPDF, hasPDFAlternate: hasPDFAlternate)
 
@@ -438,7 +459,7 @@ class SVGInteractionView: NSView {
     // MARK: Context menu
 
     override func menu(for event: NSEvent) -> NSMenu? {
-        guard onCopyForKeynote != nil || onClear != nil || onReloadFromClipboard != nil
+        guard onCopyForKeynote != nil || onCopyAsPDF != nil || onClear != nil || onReloadFromClipboard != nil
         else { return nil }
         let menu = NSMenu()
         if onCopyForKeynote != nil {
@@ -449,6 +470,17 @@ class SVGInteractionView: NSView {
                 action: #selector(handleCopyForKeynote),
                 keyEquivalent: "")
             copyItem.target = self
+        }
+        if onCopyAsPDF != nil {
+            let pdfItem = menu.addItem(
+                withTitle: NSLocalizedString(
+                    "context_menu.copy_as_pdf",
+                    comment: "Context menu: copy content as PDF to clipboard"),
+                action: #selector(handleCopyAsPDF),
+                keyEquivalent: "")
+            pdfItem.target = self
+        }
+        if onCopyForKeynote != nil || onCopyAsPDF != nil {
             menu.addItem(NSMenuItem.separator())
         }
         if let reloadItem = menu.addItem(
@@ -473,6 +505,7 @@ class SVGInteractionView: NSView {
     }
 
     @objc private func handleCopyForKeynote() { onCopyForKeynote?() }
+    @objc private func handleCopyAsPDF() { onCopyAsPDF?() }
     @objc private func handleReloadFromClipboard() { onReloadFromClipboard?() }
     @objc private func handleClear() { onClear?() }
 
@@ -644,7 +677,7 @@ extension SVGInteractionView: NSDraggingSource {
         movedTo screenPoint: NSPoint
     ) {
         guard activeDragSession != nil else { return }
-        let wantPDF = NSEvent.modifierFlags.contains(.option)
+        let wantPDF = !NSEvent.modifierFlags.isDisjoint(with: [.option, .shift])
         guard wantPDF != lastDragBadgeWasPDF else { return }
         lastDragBadgeWasPDF = wantPDF
         let newImage = makeDragImage(wantPDF: wantPDF, hasPDFAlternate: true)
@@ -726,7 +759,7 @@ private class DragPromiseDelegate: NSObject, NSFilePromiseProviderDelegate {
         _ provider: NSFilePromiseProvider,
         fileNameForType fileType: String
     ) -> String {
-        wantPDF = NSEvent.modifierFlags.contains(.option)
+        wantPDF = !NSEvent.modifierFlags.isDisjoint(with: [.option, .shift])
         let stem = svgURL.deletingPathExtension().lastPathComponent
         let name = stem + (wantPDF ? ".pdf" : ".svg")
         log.info("fileNameForType: wantPDF=\(self.wantPDF, privacy: .public) → \(name, privacy: .public)")
@@ -769,6 +802,7 @@ struct SVGInteractionViewWrapper: NSViewRepresentable {
     var onDropRejected: ((String) -> Void)?
     var onOversizedSVGDropped: ((_ string: String, _ url: String?) -> Void)?
     var onCopyForKeynote: (() -> Void)?
+    var onCopyAsPDF: (() -> Void)?
     var onClear: (() -> Void)?
     var onReloadFromClipboard: (() -> Void)?
     var dragLabel: String = NSLocalizedString(
@@ -788,6 +822,7 @@ struct SVGInteractionViewWrapper: NSViewRepresentable {
         nsView.onDropRejected = onDropRejected
         nsView.onOversizedSVGDropped = onOversizedSVGDropped
         nsView.onCopyForKeynote = onCopyForKeynote
+        nsView.onCopyAsPDF = onCopyAsPDF
         nsView.onClear = onClear
         nsView.onReloadFromClipboard = onReloadFromClipboard
     }

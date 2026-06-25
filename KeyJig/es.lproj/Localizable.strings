@@ -27,6 +27,7 @@
 "preview.drag_as_svg" = "Arrastrar como SVG";
 "preview.drag_as_pdf" = "Arrastrar como PDF";
 "context_menu.copy_for_keynote" = "Convertir y copiar para Keynote";
+"context_menu.copy_as_pdf" = "Copiar como PDF";
 "context_menu.reload_from_clipboard" = "Recargar desde portapapeles";
 "context_menu.clear" = "Eliminar";
 
@@ -42,6 +43,8 @@
 "status.ready" = "Listo — arrastra la vista previa a Keynote o usa Copiar para Keynote.";
 "status.no_svg_on_clipboard" = "No se encontró ningún SVG en el portapapeles.";
 "status.copied" = "¡Copiado al portapapeles!";
+"status.copied_pdf" = "¡PDF copiado al portapapeles!";
+"status.pdf_render_failed" = "No se pudo generar el PDF a partir del contenido actual.";
 "status.keynote.sending" = "Insertando en Keynote…";
 "status.keynote.success" = "Insertado en Keynote — selecciona el objeto y usa Formato ▸ Formas y líneas ▸ Separar.";
 "status.keynote.pulling" = "Exportando desde Keynote…";
@@ -153,7 +156,7 @@
 /* ── Help window ────────────────────────────────────────────────────── */
 "dialog.help.title" = "Ayuda";
 "help.section.import.title" = "Importar SVG";
-"help.section.import.body" = "• Arrastra un archivo SVG o usa Archivo > Abrir archivo SVG… (⌘O).\n• Copia una ilustración en Illustrator, Affinity o Inkscape (⌘C) — KeyJig lo detecta automáticamente.\n• Con Inkscape instalado, KeyJig también abre archivos PDF y .ai.\n• Mantén ⌥ al arrastrar la vista previa para exportar PDF en lugar de SVG — cuando la fuente y el destino lo admiten.";
+"help.section.import.body" = "• Arrastra un archivo SVG o usa Archivo > Abrir archivo SVG… (⌘O).\n• Copia una ilustración en Illustrator, Affinity o Inkscape (⌘C) — KeyJig lo detecta automáticamente.\n• Con Inkscape instalado, KeyJig también abre archivos PDF y .ai.\n• Mantén ⌥ o ⇧ al arrastrar la vista previa para exportar PDF en lugar de SVG — cuando la fuente y el destino lo admiten.";
 "help.section.history.title" = "Historial y deshacer";
 "help.section.history.body" = "• ⌘Z / ⇧⌘Z deshace y rehace limpiezas del canvas; ⌘[ / ⌘] navega por los gráficos cargados recientemente.";
 "help.section.keynote.title" = "Enviar a Keynote";

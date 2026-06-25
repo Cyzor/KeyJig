@@ -51,6 +51,7 @@ class AppState: ObservableObject {
                 svgDimensions = nil
                 svgFileSize = ""
                 svgCreator = nil
+                renderedPDFData = nil
             } else {
                 svgDimensions = extractSVGDimensions(svgString: svgString)
                 svgFileSize = getFileSizeString(svgString: svgString)
@@ -147,6 +148,11 @@ class AppState: ObservableObject {
     /// Retained so Option-drag can export the source PDF instead of the
     /// outlined SVG. Cleared when content arrives from a non-PDF source.
     var sourceClipboardPDFData: Data?
+
+    /// Cached PDF rendering of the current SVG content. Populated lazily by
+    /// ContentView after the WKWebView finishes loading. Used by Option-drag
+    /// when no source PDF passthrough is available.
+    var renderedPDFData: Data?
 
     private var clipboardCancellable: AnyCancellable?
     private var workspaceObservers: [Any] = []

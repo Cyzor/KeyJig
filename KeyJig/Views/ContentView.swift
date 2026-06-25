@@ -54,6 +54,20 @@ private enum PreviewNetworkBlocker {
     }
 }
 
+// MARK: - Offscreen SVG→PDF export delegate
+
+/// Navigation delegate for the offscreen export WKWebView. Fires createPDF
+/// once the SVG HTML finishes loading, then releases itself.
+private final class ExportWebViewDelegate: NSObject, WKNavigationDelegate {
+    static var key: UInt8 = 0
+    let onLoad: (WKWebView) -> Void
+    init(onLoad: @escaping (WKWebView) -> Void) { self.onLoad = onLoad }
+    func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
+        onLoad(webView)
+        objc_setAssociatedObject(webView, &Self.key, nil, .OBJC_ASSOCIATION_RETAIN)
+    }
+}
+
 // MARK: - Responsive SVG renderer
 
 /// A WKWebView-backed renderer that scales the SVG to fill its frame while
@@ -458,6 +472,88 @@ struct ContentView: View {
             registeringWith: AppDelegate.shared?.undoManager(for: appState))
     }
 
+    /// Copies a PDF to the clipboard. Uses source PDF passthrough when available
+    /// (higher fidelity); falls back to previewPDFURL, then SVG→PDF render.
+    private func copyAsPDF() {
+        if let sourceData = appState.sourceClipboardPDFData {
+            if pdfToClipboard(pdfData: sourceData) {
+                appState.statusMessage = NSLocalizedString(
+                    "status.copied_pdf",
+                    comment: "Confirmation shown after copying PDF to clipboard")
+            }
+            return
+        }
+        if let pdfURL = appState.previewPDFURL {
+            if pdfToClipboard(url: pdfURL) {
+                appState.statusMessage = NSLocalizedString(
+                    "status.copied_pdf",
+                    comment: "Confirmation shown after copying PDF to clipboard")
+            }
+            return
+        }
+        renderSVGToPDF { data in
+            if let data, pdfToClipboard(pdfData: data) {
+                appState.statusMessage = NSLocalizedString(
+                    "status.copied_pdf",
+                    comment: "Confirmation shown after copying PDF to clipboard")
+            } else if data == nil {
+                appState.statusMessage = NSLocalizedString(
+                    "status.pdf_render_failed",
+                    comment: "Error shown when SVG to PDF conversion fails")
+            }
+        }
+    }
+
+    /// Pre-renders the current SVG to PDF and caches the result on AppState so
+    /// Option-drag can provide PDF data synchronously.
+    private func preRenderPDF() {
+        renderSVGToPDF { [weak appState] data in
+            guard let appState else { return }
+            if let data {
+                appState.renderedPDFData = data
+                log.info("pre-rendered SVG→PDF (\(data.count, privacy: .public) bytes)")
+            }
+        }
+    }
+
+    /// Renders the current SVG to a vector PDF at its native dimensions using a
+    /// dedicated offscreen WKWebView (no checkerboard, no preview scaling).
+    /// Calls the completion handler on the main thread.
+    private func renderSVGToPDF(completion: @escaping (Data?) -> Void) {
+        let svg = appState.svgString
+        guard !svg.isEmpty else { completion(nil); return }
+        let dims = appState.svgDimensions ?? (width: 800, height: 600)
+
+        let html = wrapSVGForExport(svgString: svg, width: dims.width, height: dims.height)
+
+        let config = WKWebViewConfiguration()
+        let pagePrefs = WKWebpagePreferences()
+        pagePrefs.allowsContentJavaScript = false
+        config.defaultWebpagePreferences = pagePrefs
+
+        let exportView = WKWebView(
+            frame: NSRect(x: 0, y: 0, width: dims.width, height: dims.height),
+            configuration: config)
+        exportView.setValue(false, forKey: "drawsBackground")
+
+        let delegate = ExportWebViewDelegate { webView in
+            webView.createPDF(configuration: WKPDFConfiguration()) { result in
+                DispatchQueue.main.async {
+                    switch result {
+                    case .success(let data): completion(data)
+                    case .failure(let error):
+                        log.error("SVG→PDF render failed: \(error.localizedDescription, privacy: .public)")
+                        completion(nil)
+                    }
+                }
+            }
+        }
+        objc_setAssociatedObject(exportView, &ExportWebViewDelegate.key, delegate, .OBJC_ASSOCIATION_RETAIN)
+        exportView.navigationDelegate = delegate
+        exportView.loadHTMLString(html, baseURL: nil)
+    }
+
+
     var body: some View {
         VStack(spacing: 16) {
 
@@ -849,6 +945,7 @@ struct ContentView: View {
                 onOversizedSVGDropped: { string, url in
                     handleOversizedSVGDropped(string: string, url: url)
                 },
+                onCopyAsPDF: { copyAsPDF() },
                 onClear: { clearCanvas() },
                 onReloadFromClipboard: { AppDelegate.shared?.reloadFromClipboard(nil) },
                 dragLabel: NSLocalizedString(
@@ -879,6 +976,9 @@ struct ContentView: View {
                     appState.isLoadingLargeSVG = false
                     appState.conversionStatus = .idle
                     appState.statusMessage = ""
+                    if appState.sourceClipboardPDFData == nil {
+                        preRenderPDF()
+                    }
                     guard !svgPopReady else { return }
                     withAnimation(.easeOut(duration: 0.25)) { svgPopReady = true }
                 },
@@ -916,7 +1016,7 @@ struct ContentView: View {
                     return url
                 },
                 alternateDragData: { [weak appState] in
-                    appState?.sourceClipboardPDFData
+                    appState?.sourceClipboardPDFData ?? appState?.renderedPDFData
                 },
                 onMultiFileDropStarted: {
                     if !isPopoverSurface { appState.conversionStatus = .converting }
@@ -942,6 +1042,7 @@ struct ContentView: View {
                                 "Confirmation shown after copying to clipboard via context menu")
                     }
                 },
+                onCopyAsPDF: { copyAsPDF() },
                 onClear: { clearCanvas() },
                 onReloadFromClipboard: { AppDelegate.shared?.reloadFromClipboard(nil) }
             )

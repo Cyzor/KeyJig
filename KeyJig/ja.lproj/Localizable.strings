@@ -27,6 +27,7 @@
 "preview.drag_as_svg" = "SVGとしてドラッグ";
 "preview.drag_as_pdf" = "PDFとしてドラッグ";
 "context_menu.copy_for_keynote" = "変換してKeynoteにコピー";
+"context_menu.copy_as_pdf" = "PDFとしてコピー";
 "context_menu.reload_from_clipboard" = "クリップボードから再読み込み";
 "context_menu.clear" = "クリア";
 
@@ -42,6 +43,8 @@
 "status.ready" = "準備完了 — プレビューをKeynoteにドラッグするか、Keynote用にコピーしてください。";
 "status.no_svg_on_clipboard" = "クリップボードにSVGが見つかりません。";
 "status.copied" = "クリップボードにコピーしました！";
+"status.copied_pdf" = "PDFをクリップボードにコピーしました！";
+"status.pdf_render_failed" = "現在のコンテンツからPDFを生成できませんでした。";
 "status.keynote.sending" = "Keynoteに配置中…";
 "status.keynote.success" = "Keynoteに配置しました — オブジェクトを選択し、フォーマット ▸ 図形と線 ▸ 分割を選択してください。";
 "status.keynote.pulling" = "Keynoteからエクスポート中…";
@@ -153,7 +156,7 @@
 /* ── Help window ────────────────────────────────────────────────────── */
 "dialog.help.title" = "ヘルプ";
 "help.section.import.title" = "SVGを読み込む";
-"help.section.import.body" = "• SVGファイルをドロップするか、ファイル ▸ SVGファイルを開く…（⌘O）を使います。\n• Illustrator・Affinity・Inkscapeでアートワークをコピー（⌘C）すると、KeyJigが自動で検出します。\n• Inkscapeがインストールされていれば、PDFや.aiファイルも開けます。\n• プレビューをドラッグする際に⌥を押すと、SVGではなくPDFで書き出せます — ソースと書き出し先の両方が対応している場合のみ有効です。";
+"help.section.import.body" = "• SVGファイルをドロップするか、ファイル ▸ SVGファイルを開く…（⌘O）を使います。\n• Illustrator・Affinity・Inkscapeでアートワークをコピー（⌘C）すると、KeyJigが自動で検出します。\n• Inkscapeがインストールされていれば、PDFや.aiファイルも開けます。\n• プレビューをドラッグする際に⌥または⇧を押すと、SVGではなくPDFで書き出せます — ソースと書き出し先の両方が対応している場合のみ有効です。";
 "help.section.history.title" = "履歴と取り消し";
 "help.section.history.body" = "• ⌘Z / ⇧⌘Zでキャンバスのクリアを取り消し・やり直し；⌘[ / ⌘]で最近読み込んだグラフィックを移動。";
 "help.section.keynote.title" = "Keynoteに送る";

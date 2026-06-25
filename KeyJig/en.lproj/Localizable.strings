@@ -28,6 +28,7 @@
 "preview.drag_as_svg" = "Drag as SVG";
 "preview.drag_as_pdf" = "Drag as PDF";
 "context_menu.copy_for_keynote" = "Convert and Copy for Keynote";
+"context_menu.copy_as_pdf" = "Copy as PDF";
 "context_menu.reload_from_clipboard" = "Reload from Clipboard";
 "context_menu.clear" = "Clear";
 
@@ -43,6 +44,8 @@
 "status.ready" = "Ready — drag the preview into Keynote, or Copy for Keynote.";
 "status.no_svg_on_clipboard" = "No SVG found on clipboard.";
 "status.copied" = "Copied to clipboard!";
+"status.copied_pdf" = "PDF copied to clipboard!";
+"status.pdf_render_failed" = "Could not render PDF from the current content.";
 "status.keynote.sending" = "Placing in Keynote…";
 "status.keynote.success" = "Placed in Keynote — select it and use Format ▸ Shapes and Lines ▸ Break Apart.";
 "status.keynote.pulling" = "Exporting from Keynote…";
@@ -154,7 +157,7 @@
 /* ── Help window ────────────────────────────────────────────────────── */
 "dialog.help.title" = "Help";
 "help.section.import.title" = "Import an SVG";
-"help.section.import.body" = "• Drop an SVG file, or use File > Open SVG File… (⌘O).\n• Copy artwork in Illustrator, Affinity, or Inkscape (⌘C) — KeyJig picks it up automatically.\n• With Inkscape installed, KeyJig also opens PDF and .ai files.\n• Hold ⌥ while dragging the preview to export PDF instead of SVG — when the source provides one and the destination supports it.";
+"help.section.import.body" = "• Drop an SVG file, or use File > Open SVG File… (⌘O).\n• Copy artwork in Illustrator, Affinity, or Inkscape (⌘C) — KeyJig picks it up automatically.\n• With Inkscape installed, KeyJig also opens PDF and .ai files.\n• Hold ⌥ or ⇧ while dragging the preview to export PDF instead of SVG — when the source provides one and the destination supports it.";
 "help.section.history.title" = "History & Undo";
 "help.section.history.body" = "• ⌘Z / ⇧⌘Z undo and redo canvas clears; ⌘[ / ⌘] browse recently loaded graphics.";
 "help.section.keynote.title" = "Send to Keynote";
