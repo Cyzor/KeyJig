@@ -344,12 +344,50 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
             return
         }
 
-        // Slow path — only attempt if the window is empty, there is convertible
-        // data on the clipboard, and Inkscape is actually installed.
-        guard state.svgString.isEmpty,
-            clipboardHasConvertibleVectorData(),
-            inkscapeURL() != nil
-        else { return }
+        // Slow path — PDF/AI clipboard data. Attempt if the window is empty and
+        // convertible data is present.
+        // Priority 1 (always): native Quartz PDF scanner → editable SVG paths.
+        // Priority 2 (Inkscape available): Inkscape conversion (handles complex PDFs
+        //   that the scanner can't express as SVG, e.g. raster-heavy or encrypted).
+        // Priority 3 (fallback): PDF preview mode so the user can at least drag to Keynote.
+        guard state.svgString.isEmpty, clipboardHasConvertibleVectorData() else { return }
+
+        // Native scanner: try to extract vector paths directly from the PDF content stream.
+        if let pdfData = pdfDataFromClipboard(), !pdfData.isEmpty {
+            if let svg = convertPDFToSVG(pdfData) {
+                let sourcePDF = pdfData
+                state.svgURL = ""
+                state.sourceClipboardPDFData = sourcePDF
+                log.info("clipboard native PDF scan: SVG extracted (\(sourcePDF.count, privacy: .public) bytes PDF)")
+                state.svgString = svg
+                state.lastLoadedClipboardChangeCount = currentChangeCount
+                return
+            }
+        }
+
+        guard inkscapeURL() != nil else {
+            // No Inkscape and native scan yielded nothing — fall back to PDF preview
+            // mode (same display path as a Keynote pull). Guard against PostScript /
+            // legacy AI bytes that arrive under a PDF pasteboard type.
+            guard let pdfData = pdfDataFromClipboard(), !pdfData.isEmpty else { return }
+            guard pdfData.count >= 5,
+                  pdfData[0] == 0x25, pdfData[1] == 0x50, pdfData[2] == 0x44,
+                  pdfData[3] == 0x46, pdfData[4] == 0x2D   // %PDF-
+            else { return }
+            let outURL = makeTempKeynotePDFURL()
+            do {
+                try pdfData.write(to: outURL)
+                try FileManager.default.setAttributes(
+                    [.posixPermissions: 0o600], ofItemAtPath: outURL.path)
+                state.svgURL = ""
+                state.sourceClipboardPDFData = nil
+                state.previewPDFURL = outURL
+                state.lastLoadedClipboardChangeCount = currentChangeCount
+            } catch {
+                log.error("clipboard PDF (no-Inkscape) write failed: \(error.localizedDescription, privacy: .public)")
+            }
+            return
+        }
 
         let sourcePDF = pdfDataFromClipboard()
         state.conversionStatus = .converting
@@ -1077,6 +1115,10 @@ private final class StatusBarDragProxy: NSView {
             state.svgString = dropped.svg
             state.statusMessage = ""
             state.pendingOversizedSVG = nil
+            return true
+        case .loadedPDF(let url):
+            state.sourceClipboardPDFData = nil
+            state.previewPDFURL = url
             return true
         case .rejected(let reason, let oversized):
             state.conversionStatus = .idle

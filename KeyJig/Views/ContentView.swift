@@ -839,6 +839,10 @@ struct ContentView: View {
                 onSVGDropped: { svgs in
                     handleDroppedSVGs(svgs)
                 },
+                onPDFDropped: { pdfURL in
+                    appState.sourceClipboardPDFData = nil
+                    appState.previewPDFURL = pdfURL
+                },
                 onDropRejected: { reason in
                     handleDropRejected(reason)
                 },
@@ -920,6 +924,10 @@ struct ContentView: View {
                 onSVGDropped: { svgs in
                     handleDroppedSVGs(svgs)
                 },
+                onPDFDropped: { pdfURL in
+                    appState.sourceClipboardPDFData = nil
+                    appState.previewPDFURL = pdfURL
+                },
                 onDropRejected: { reason in
                     handleDropRejected(reason)
                 },
@@ -979,6 +987,10 @@ struct ContentView: View {
                 },
                 onSVGDropped: { svgs in
                     handleDroppedSVGs(svgs)
+                },
+                onPDFDropped: { pdfURL in
+                    appState.sourceClipboardPDFData = nil
+                    appState.previewPDFURL = pdfURL
                 },
                 onDropRejected: { reason in
                     handleDropRejected(reason)

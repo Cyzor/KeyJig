@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 77;
+	objectVersion = 71;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -26,14 +26,7 @@
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
-		459A278F23AA910B003D50EC /* KeyJig */ = {
-			isa = PBXFileSystemSynchronizedRootGroup;
-			exceptions = (
-				AA3001010000000000000001 /* PBXFileSystemSynchronizedBuildFileExceptionSet */,
-			);
-			path = KeyJig;
-			sourceTree = "<group>";
-		};
+		459A278F23AA910B003D50EC /* KeyJig */ = {isa = PBXFileSystemSynchronizedRootGroup; exceptions = (AA3001010000000000000001 /* PBXFileSystemSynchronizedBuildFileExceptionSet */, ); explicitFileTypes = {}; explicitFolders = (); path = KeyJig; sourceTree = "<group>"; };
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -123,7 +116,6 @@
 				ja,
 			);
 			mainGroup = 459A278423AA910A003D50EC;
-			preferredProjectObjectVersion = 77;
 			productRefGroup = 459A278E23AA910B003D50EC /* Products */;
 			projectDirPath = "";
 			projectRoot = "";

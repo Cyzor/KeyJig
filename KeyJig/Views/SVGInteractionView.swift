@@ -57,6 +57,9 @@ enum SVGDropOutcome {
     /// recognised as SVG but refused; `oversized` carries the raw content + byte
     /// count when the only reason is size (so the UI can offer a bypass).
     case rejected(String, oversized: (string: String, url: String?, bytes: Int)? = nil)
+    /// PDF data accepted for preview (Inkscape absent — can drag to Keynote but
+    /// not edited as vector paths).
+    case loadedPDF(URL)
     case notHandled
 }
 
@@ -87,6 +90,10 @@ class SVGInteractionView: NSView {
     /// fire once on the main thread after all files are processed serially.
     /// First element targets the receiving window; extras open new floating windows.
     var onSVGDropped: (([DroppedVector]) -> Void)?
+
+    /// Called when a PDF drop is accepted in preview mode (Inkscape absent).
+    /// The URL points to the PDF file (may be a temp file).
+    var onPDFDropped: ((URL) -> Void)?
 
     /// Called synchronously on the main thread when a multi-file async drop
     /// begins. Use this to show a progress indicator while files are processed.
@@ -410,6 +417,9 @@ class SVGInteractionView: NSView {
         case .loaded(let dropped):
             onSVGDropped?([dropped])
             return true
+        case .loadedPDF(let url):
+            onPDFDropped?(url)
+            return true
         case .rejected(let reason, let oversized):
             if let o = oversized {
                 onOversizedSVGDropped?(o.string, o.url)
@@ -519,8 +529,17 @@ class SVGInteractionView: NSView {
                     if ext == "ai", aiPDFLayerIsPlaceholder(at: url) {
                         return .rejected(NSLocalizedString("error.ai.no_pdf_layer", comment: ""))
                     }
+                    // Native scanner first — produces editable SVG regardless of Inkscape.
+                    if let data = try? Data(contentsOf: url),
+                       let svg = convertPDFToSVG(data) {
+                        return .loaded(DroppedVector(svg: svg, sourceURL: url))
+                    }
                     if let s = convertToSVGWithInkscape(inputURL: url) {
                         return .loaded(DroppedVector(svg: s, sourceURL: url))
+                    }
+                    // No Inkscape and scanner yielded nothing — PDF preview fallback.
+                    if sniffVectorFileType(at: url) == "pdf" {
+                        return .loadedPDF(url)
                     }
                     return .rejected(convertFailed)
                 default:
@@ -529,31 +548,34 @@ class SVGInteractionView: NSView {
             }
         }
 
-        if inkscapeURL() != nil {
-            let pdfTypes: [NSPasteboard.PasteboardType] = [
-                NSPasteboard.PasteboardType("com.adobe.pdf"),
-                NSPasteboard.PasteboardType("Apple PDF pasteboard type"),
-            ]
-            for type in pdfTypes {
-                if let data = pasteboard.data(forType: type), !data.isEmpty {
-                    let tempURL = URL(fileURLWithPath: NSTemporaryDirectory())
-                        .appendingPathComponent(UUID().uuidString)
-                        .appendingPathExtension("pdf")
-                    guard (try? data.write(to: tempURL)) != nil else { continue }
-                    // Reject PostScript/legacy AI data that Finder places under
-                    // a PDF pasteboard type for .ai files saved without "Create
-                    // PDF Compatible File". Only real PDF bytes should proceed.
-                    if sniffVectorFileType(at: tempURL) != "pdf" {
-                        try? FileManager.default.removeItem(at: tempURL)
-                        return .rejected(NSLocalizedString("error.ai.no_pdf_layer", comment: ""))
-                    }
-                    if let s = convertToSVGWithInkscape(inputURL: tempURL) {
-                        try? FileManager.default.removeItem(at: tempURL)
-                        return .loaded(DroppedVector(svg: s, sourceURL: nil))
-                    }
-                    try? FileManager.default.removeItem(at: tempURL)
-                    return .rejected(convertFailed)
+        let pdfTypes: [NSPasteboard.PasteboardType] = [
+            NSPasteboard.PasteboardType("com.adobe.pdf"),
+            NSPasteboard.PasteboardType("Apple PDF pasteboard type"),
+        ]
+        for type in pdfTypes {
+            if let data = pasteboard.data(forType: type), !data.isEmpty {
+                // Native scanner: extract vector paths without writing a temp file.
+                if let svg = convertPDFToSVG(data) {
+                    return .loaded(DroppedVector(svg: svg, sourceURL: nil))
                 }
+                // Native scan yielded nothing — try Inkscape or fall back to PDF preview.
+                let tempURL = URL(fileURLWithPath: NSTemporaryDirectory())
+                    .appendingPathComponent(UUID().uuidString)
+                    .appendingPathExtension("pdf")
+                guard (try? data.write(to: tempURL)) != nil else { continue }
+                // Reject PostScript/legacy AI data that Finder places under
+                // a PDF pasteboard type for .ai files saved without "Create
+                // PDF Compatible File". Only real PDF bytes should proceed.
+                if sniffVectorFileType(at: tempURL) != "pdf" {
+                    try? FileManager.default.removeItem(at: tempURL)
+                    return .rejected(NSLocalizedString("error.ai.no_pdf_layer", comment: ""))
+                }
+                if let s = convertToSVGWithInkscape(inputURL: tempURL) {
+                    try? FileManager.default.removeItem(at: tempURL)
+                    return .loaded(DroppedVector(svg: s, sourceURL: nil))
+                }
+                // Inkscape absent or failed — keep temp file for PDF preview.
+                return .loadedPDF(tempURL)
             }
         }
 
@@ -597,14 +619,12 @@ class SVGInteractionView: NSView {
             }
         }
 
-        if inkscapeURL() != nil {
-            let pdfTypes: [NSPasteboard.PasteboardType] = [
-                NSPasteboard.PasteboardType("com.adobe.pdf"),
-                NSPasteboard.PasteboardType("Apple PDF pasteboard type"),
-            ]
-            for type in pdfTypes {
-                if let data = pasteboard.data(forType: type), !data.isEmpty { return true }
-            }
+        let pdfTypes: [NSPasteboard.PasteboardType] = [
+            NSPasteboard.PasteboardType("com.adobe.pdf"),
+            NSPasteboard.PasteboardType("Apple PDF pasteboard type"),
+        ]
+        for type in pdfTypes {
+            if let data = pasteboard.data(forType: type), !data.isEmpty { return true }
         }
 
         if let s = pasteboard.string(forType: .string), s.contains("<svg") { return true }
@@ -745,6 +765,7 @@ struct SVGInteractionViewWrapper: NSViewRepresentable {
     var alternateDragData: (() -> Data?)?
     var onMultiFileDropStarted: (() -> Void)?
     var onSVGDropped: (([DroppedVector]) -> Void)?
+    var onPDFDropped: ((URL) -> Void)?
     var onDropRejected: ((String) -> Void)?
     var onOversizedSVGDropped: ((_ string: String, _ url: String?) -> Void)?
     var onCopyForKeynote: (() -> Void)?
@@ -762,6 +783,7 @@ struct SVGInteractionViewWrapper: NSViewRepresentable {
         nsView.onDragStart = onDragStart
         nsView.alternateDragData = alternateDragData
         nsView.onSVGDropped = onSVGDropped
+        nsView.onPDFDropped = onPDFDropped
         nsView.onMultiFileDropStarted = onMultiFileDropStarted
         nsView.onDropRejected = onDropRejected
         nsView.onOversizedSVGDropped = onOversizedSVGDropped
