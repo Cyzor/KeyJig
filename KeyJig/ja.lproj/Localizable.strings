@@ -153,15 +153,15 @@
 /* ── Help window ────────────────────────────────────────────────────── */
 "dialog.help.title" = "ヘルプ";
 "help.section.import.title" = "SVGを読み込む";
-"help.section.import.body" = "• SVGファイルをプレビューエリアにドロップします。\n• Illustrator・Affinity・Inkscapeでアートワークをコピー（⌘C）すると、KeyJigが自動で検出します。\n• ファイル ▸ SVGファイルを開く…（⌘O）でファイルを開きます。\n• Inkscapeがインストールされていれば、PDFや.aiファイルも開けます。";
+"help.section.import.body" = "• SVGファイルをドロップするか、ファイル ▸ SVGファイルを開く…（⌘O）を使います。\n• Illustrator・Affinity・Inkscapeでアートワークをコピー（⌘C）すると、KeyJigが自動で検出します。\n• Inkscapeがインストールされていれば、PDFや.aiファイルも開けます。\n• プレビューをドラッグする際に⌥を押すと、SVGではなくPDFで書き出せます — ソースがPDFを提供している場合のみ有効です。";
 "help.section.history.title" = "履歴と取り消し";
-"help.section.history.body" = "• ⌘Zでキャンバスのクリアを取り消せます。⇧⌘Zでやり直せます。取り消しはクリア操作のみ対象で、読み込み済みのコンテンツには影響しません。\n• ⌘[ / ⌘]で最近読み込んだグラフィックの履歴を前後に移動できます（最大10件、新しい順）。";
+"help.section.history.body" = "• ⌘Z / ⇧⌘Zでキャンバスのクリアを取り消し・やり直し；⌘[ / ⌘]で最近読み込んだグラフィックを移動。";
 "help.section.keynote.title" = "Keynoteに送る";
-"help.section.keynote.body" = "• Keynote用にコピー（⌘K）— Keynoteで貼り付け（⌘V）後、フォーマット ▸ 図形と線 ▸ 分割でパスを編集できます。\n• SVGをKeynoteに配置（⌘D）で現在のスライドに直接配置します。アクセシビリティアクセスが必要です（システム設定 ▸ プライバシーとセキュリティ）。";
+"help.section.keynote.body" = "• Keynote用にコピー（⌘K）— Keynoteで貼り付け（⌘V）後、フォーマット ▸ 図形と線 ▸ 分割でパスを編集。\n• SVGをKeynoteに配置（⌘D）で現在のスライドに直接配置します。";
 "help.section.pull.title" = "KeynoteをPDFに変換";
-"help.section.pull.body" = "• Keynoteクリップボードを変換（⌘E）— 先にKeynoteで選択をコピー（⌘C）すると、ベクターデータのみを正確に取得できます。コピーなしの場合は、現在の選択の囲み矩形で取得します。\n• KeynoteスライドをPDFに変換（⌘R）— 現在のスライド全体をベクターPDFとして取得します。事前のコピーは不要です。\n• PDFプレビューをAffinity・Illustrator・Figmaなどのアプリにドラッグしてください。";
+"help.section.pull.body" = "• Keynoteクリップボードを変換（⌘E）— 先にKeynoteで選択をコピー（⌘C）すると、正確なベクター結果を取得できます。\n• KeynoteスライドをPDFに変換（⌘R）— 現在のスライド全体を書き出します。\n• プレビューをAffinity・Illustrator・Figmaなどのアプリにドラッグできます。";
 "help.section.setup.title" = "権限と依存関係";
-"help.section.setup.body" = "• SVGをKeynoteに配置（⌘D）にはアクセシビリティアクセスが必要です — システム設定 ▸ プライバシーとセキュリティ ▸ アクセシビリティで許可してください。\n• PDFや.aiファイルを開くにはInkscapeが必要です — inkscape.orgからダウンロードするか: brew install inkscape。\n• GhostscriptとMuPDF（オプション）はPDF切り抜き品質を向上させます — brew install ghostscript および brew install mupdf-tools。";
+"help.section.setup.body" = "• ⌘Dにはアクセシビリティアクセスが必要です — システム設定 ▸ プライバシーとセキュリティ ▸ アクセシビリティ。\n• PDFや.aiにはInkscapeが必要です — inkscape.org または brew install inkscape。\n• GhostscriptとMuPDF（オプション）はPDF切り抜き品質を向上させます。";
 
 /* ── Settings ───────────────────────────────────────────────────────── */
 "settings.window.title" = "設定";

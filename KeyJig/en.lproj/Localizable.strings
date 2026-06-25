@@ -154,15 +154,15 @@
 /* ── Help window ────────────────────────────────────────────────────── */
 "dialog.help.title" = "Help";
 "help.section.import.title" = "Import an SVG";
-"help.section.import.body" = "• Drop an SVG file onto the preview area.\n• Copy artwork in Illustrator, Affinity, or Inkscape (⌘C) — KeyJig picks it up automatically.\n• Use File > Open SVG File… (⌘O).\n• With Inkscape installed, KeyJig also opens PDF and .ai files.";
+"help.section.import.body" = "• Drop an SVG file, or use File > Open SVG File… (⌘O).\n• Copy artwork in Illustrator, Affinity, or Inkscape (⌘C) — KeyJig picks it up automatically.\n• With Inkscape installed, KeyJig also opens PDF and .ai files.\n• Hold ⌥ while dragging the preview to export PDF instead of SVG — when the source provides one.";
 "help.section.history.title" = "History & Undo";
-"help.section.history.body" = "• ⌘Z undoes a canvas clear; ⇧⌘Z redoes it. Only clear operations can be undone — loaded content itself is not affected.\n• ⌘[ / ⌘] navigate back and forward through recently loaded graphics (up to 10 entries, newest first).";
+"help.section.history.body" = "• ⌘Z / ⇧⌘Z undo and redo canvas clears; ⌘[ / ⌘] browse recently loaded graphics.";
 "help.section.keynote.title" = "Send to Keynote";
-"help.section.keynote.body" = "• Copy for Keynote (⌘K) — paste into Keynote (⌘V) and use Format > Shapes & Lines > Break Apart to edit paths.\n• Place SVG in Keynote (⌘D) drops it directly onto the current slide. Requires Accessibility permission (System Settings ▸ Privacy & Security).";
+"help.section.keynote.body" = "• Copy for Keynote (⌘K) — paste into Keynote (⌘V), then Format > Shapes & Lines > Break Apart to edit paths.\n• Place SVG in Keynote (⌘D) drops it directly onto the current slide.";
 "help.section.pull.title" = "Convert Keynote to PDF";
-"help.section.pull.body" = "• Convert Keynote Clipboard (⌘E) — copy your selection in Keynote first (⌘C) for a precise, vector-only result. Without a prior copy, captures the bounding rectangle of the current selection instead.\n• Convert Keynote Slide to PDF (⌘R) exports the entire current slide as a vector PDF — no prior copy needed.\n• Drag the PDF preview to Affinity, Illustrator, Figma, or any PDF-capable app.";
+"help.section.pull.body" = "• Convert Keynote Clipboard (⌘E) — copy your selection in Keynote first (⌘C) for a precise vector result.\n• Convert Keynote Slide to PDF (⌘R) exports the entire current slide.\n• Drag the preview to Affinity, Illustrator, Figma, or any PDF-capable app.";
 "help.section.setup.title" = "Permissions & Dependencies";
-"help.section.setup.body" = "• Place SVG in Keynote (⌘D) needs Accessibility access — grant it in System Settings ▸ Privacy & Security ▸ Accessibility.\n• Opening PDF and .ai files needs Inkscape — download from inkscape.org, or: brew install inkscape.\n• Ghostscript and MuPDF (optional) improve PDF crop quality — brew install ghostscript and brew install mupdf-tools.";
+"help.section.setup.body" = "• ⌘D needs Accessibility access — System Settings ▸ Privacy & Security ▸ Accessibility.\n• PDF and .ai files need Inkscape — inkscape.org or brew install inkscape.\n• Ghostscript and MuPDF (optional) improve PDF crop quality.";
 
 /* ── Settings ───────────────────────────────────────────────────────── */
 "settings.window.title" = "Settings";
