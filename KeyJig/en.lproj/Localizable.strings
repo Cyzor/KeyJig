@@ -154,7 +154,7 @@
 /* ── Help window ────────────────────────────────────────────────────── */
 "dialog.help.title" = "Help";
 "help.section.import.title" = "Import an SVG";
-"help.section.import.body" = "• Drop an SVG file, or use File > Open SVG File… (⌘O).\n• Copy artwork in Illustrator, Affinity, or Inkscape (⌘C) — KeyJig picks it up automatically.\n• With Inkscape installed, KeyJig also opens PDF and .ai files.\n• Hold ⌥ while dragging the preview to export PDF instead of SVG — when the source provides one.";
+"help.section.import.body" = "• Drop an SVG file, or use File > Open SVG File… (⌘O).\n• Copy artwork in Illustrator, Affinity, or Inkscape (⌘C) — KeyJig picks it up automatically.\n• With Inkscape installed, KeyJig also opens PDF and .ai files.\n• Hold ⌥ while dragging the preview to export PDF instead of SVG — when the source provides one and the destination supports it.";
 "help.section.history.title" = "History & Undo";
 "help.section.history.body" = "• ⌘Z / ⇧⌘Z undo and redo canvas clears; ⌘[ / ⌘] browse recently loaded graphics.";
 "help.section.keynote.title" = "Send to Keynote";

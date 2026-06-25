@@ -153,7 +153,7 @@
 /* ── Help window ────────────────────────────────────────────────────── */
 "dialog.help.title" = "Ayuda";
 "help.section.import.title" = "Importar SVG";
-"help.section.import.body" = "• Arrastra un archivo SVG o usa Archivo > Abrir archivo SVG… (⌘O).\n• Copia una ilustración en Illustrator, Affinity o Inkscape (⌘C) — KeyJig lo detecta automáticamente.\n• Con Inkscape instalado, KeyJig también abre archivos PDF y .ai.\n• Mantén ⌥ al arrastrar la vista previa para exportar PDF en lugar de SVG — cuando la fuente lo proporciona.";
+"help.section.import.body" = "• Arrastra un archivo SVG o usa Archivo > Abrir archivo SVG… (⌘O).\n• Copia una ilustración en Illustrator, Affinity o Inkscape (⌘C) — KeyJig lo detecta automáticamente.\n• Con Inkscape instalado, KeyJig también abre archivos PDF y .ai.\n• Mantén ⌥ al arrastrar la vista previa para exportar PDF en lugar de SVG — cuando la fuente y el destino lo admiten.";
 "help.section.history.title" = "Historial y deshacer";
 "help.section.history.body" = "• ⌘Z / ⇧⌘Z deshace y rehace limpiezas del canvas; ⌘[ / ⌘] navega por los gráficos cargados recientemente.";
 "help.section.keynote.title" = "Enviar a Keynote";

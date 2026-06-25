@@ -154,7 +154,7 @@
 /* ── Help window ────────────────────────────────────────────────────── */
 "dialog.help.title" = "Hilfe";
 "help.section.import.title" = "SVG importieren";
-"help.section.import.body" = "• SVG-Datei ziehen oder Ablage > SVG-Datei öffnen… (⌘O) verwenden.\n• Grafik in Illustrator, Affinity oder Inkscape kopieren (⌘C) – KeyJig erkennt sie automatisch.\n• Mit installiertem Inkscape öffnet KeyJig auch PDF- und .ai-Dateien.\n• ⌥ beim Ziehen der Vorschau gedrückt halten, um PDF statt SVG zu exportieren – wenn die Quelle eines bereitstellt.";
+"help.section.import.body" = "• SVG-Datei ziehen oder Ablage > SVG-Datei öffnen… (⌘O) verwenden.\n• Grafik in Illustrator, Affinity oder Inkscape kopieren (⌘C) – KeyJig erkennt sie automatisch.\n• Mit installiertem Inkscape öffnet KeyJig auch PDF- und .ai-Dateien.\n• ⌥ beim Ziehen der Vorschau gedrückt halten, um PDF statt SVG zu exportieren – wenn Quelle und Ziel es unterstützen.";
 "help.section.history.title" = "Verlauf & Widerrufen";
 "help.section.history.body" = "• ⌘Z / ⇧⌘Z macht Canvas-Löschungen rückgängig und wiederholt sie; ⌘[ / ⌘] durchsucht zuletzt geladene Grafiken.";
 "help.section.keynote.title" = "An Keynote senden";

@@ -315,14 +315,17 @@ class SVGInteractionView: NSView {
             roundedRect: NSRect(origin: .zero, size: size),
             xRadius: 12, yRadius: 12
         ).fill()
+        let symbolName = wantPDF ? "photo.fill" : "photo"
         if let symbol = NSImage(
-            systemSymbolName: "photo.fill.on.rectangle.fill",
+            systemSymbolName: symbolName,
             accessibilityDescription: "image"
         ) {
-            let iconRect = NSRect(x: 50, y: 60, width: 80, height: 80)
-            let tinted = symbol.withSymbolConfiguration(
-                .init(pointSize: 48, weight: .regular))
-            let icon = tinted ?? symbol
+            let icon = symbol.withSymbolConfiguration(
+                .init(pointSize: 48, weight: .regular)) ?? symbol
+            let iconSize = icon.size
+            let drawX = 50 + (80 - iconSize.width) / 2
+            let drawY = 60 + (80 - iconSize.height) / 2
+            let iconRect = NSRect(x: drawX, y: drawY, width: iconSize.width, height: iconSize.height)
             let tintedIcon = NSImage(size: iconRect.size)
             tintedIcon.lockFocus()
             NSColor.labelColor.setFill()

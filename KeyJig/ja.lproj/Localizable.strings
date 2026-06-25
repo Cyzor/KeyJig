@@ -153,7 +153,7 @@
 /* ── Help window ────────────────────────────────────────────────────── */
 "dialog.help.title" = "ヘルプ";
 "help.section.import.title" = "SVGを読み込む";
-"help.section.import.body" = "• SVGファイルをドロップするか、ファイル ▸ SVGファイルを開く…（⌘O）を使います。\n• Illustrator・Affinity・Inkscapeでアートワークをコピー（⌘C）すると、KeyJigが自動で検出します。\n• Inkscapeがインストールされていれば、PDFや.aiファイルも開けます。\n• プレビューをドラッグする際に⌥を押すと、SVGではなくPDFで書き出せます — ソースがPDFを提供している場合のみ有効です。";
+"help.section.import.body" = "• SVGファイルをドロップするか、ファイル ▸ SVGファイルを開く…（⌘O）を使います。\n• Illustrator・Affinity・Inkscapeでアートワークをコピー（⌘C）すると、KeyJigが自動で検出します。\n• Inkscapeがインストールされていれば、PDFや.aiファイルも開けます。\n• プレビューをドラッグする際に⌥を押すと、SVGではなくPDFで書き出せます — ソースと書き出し先の両方が対応している場合のみ有効です。";
 "help.section.history.title" = "履歴と取り消し";
 "help.section.history.body" = "• ⌘Z / ⇧⌘Zでキャンバスのクリアを取り消し・やり直し；⌘[ / ⌘]で最近読み込んだグラフィックを移動。";
 "help.section.keynote.title" = "Keynoteに送る";
