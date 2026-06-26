@@ -46,9 +46,9 @@
 "status.pdf_render_failed" = "No se pudo generar el PDF a partir del contenido actual.";
 "status.keynote.sending" = "Insertando en Keynote…";
 "status.keynote.success" = "Insertado en Keynote — selecciona el objeto y usa Formato ▸ Formas y líneas ▸ Separar.";
-"status.keynote.pulling" = "Exportando desde Keynote…";
+"status.keynote.pulling" = "Convirtiendo desde Keynote…";
 "status.keynote.pulled" = "Extraído de Keynote — arrastra la vista previa o copia el PDF.";
-"instruction.break_apart" = "Una vez en Keynote, selecciona el objeto y elige Formato ‣ Formas y líneas ‣ Separar.";
+"instruction.break_apart" = "Una vez en Keynote, selecciona el objeto y elige Formato ▸ Formas y líneas ▸ Separar.";
 
 /* ── Buttons ────────────────────────────────────────────────────────── */
 "button.cancel" = "Cancelar";
@@ -112,7 +112,7 @@
 "menu.file.open_svg" = "Abrir archivo SVG…";
 "menu.file.close" = "Cerrar";
 "menu.file.convert_keynote_slide" = "Convertir diapositiva de Keynote a PDF";
-"menu.file.convert_keynote_clipboard" = "Convertir portapapeles de Keynote";
+"menu.file.convert_keynote_clipboard" = "Convertir portapapeles de Keynote a PDF";
 "menu.file.place_in_keynote" = "Insertar en Keynote";
 
 /* ── Edit menu ──────────────────────────────────────────────────────── */

@@ -47,9 +47,9 @@
 "status.pdf_render_failed" = "PDF konnte nicht aus dem aktuellen Inhalt gerendert werden.";
 "status.keynote.sending" = "Wird in Keynote eingefügt…";
 "status.keynote.success" = "In Keynote eingefügt – Objekt auswählen und Format ▸ Formen und Linien ▸ Aufteilen wählen.";
-"status.keynote.pulling" = "Wird aus Keynote exportiert…";
+"status.keynote.pulling" = "Wird aus Keynote konvertiert…";
 "status.keynote.pulled" = "Aus Keynote abgerufen – Vorschau ziehen oder das PDF kopieren.";
-"instruction.break_apart" = "Nach dem Einsetzen in Keynote das Objekt auswählen und Format ‣ Formen und Linien ‣ Aufteilen wählen.";
+"instruction.break_apart" = "Nach dem Einsetzen in Keynote das Objekt auswählen und Format ▸ Formen und Linien ▸ Aufteilen wählen.";
 
 /* ── Buttons ────────────────────────────────────────────────────────── */
 "button.cancel" = "Abbrechen";
@@ -113,7 +113,7 @@
 "menu.file.open_svg" = "SVG-Datei öffnen…";
 "menu.file.close" = "Schließen";
 "menu.file.convert_keynote_slide" = "Keynote-Folie als PDF konvertieren";
-"menu.file.convert_keynote_clipboard" = "Keynote-Zwischenablage konvertieren";
+"menu.file.convert_keynote_clipboard" = "Keynote-Zwischenablage als PDF konvertieren";
 "menu.file.place_in_keynote" = "In Keynote einfügen";
 
 /* ── Edit menu ──────────────────────────────────────────────────────── */

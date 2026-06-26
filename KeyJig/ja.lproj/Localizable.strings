@@ -46,9 +46,9 @@
 "status.pdf_render_failed" = "現在のコンテンツからPDFを生成できませんでした。";
 "status.keynote.sending" = "Keynoteに配置中…";
 "status.keynote.success" = "Keynoteに配置しました — オブジェクトを選択し、フォーマット ▸ 図形と線 ▸ 分割を選択してください。";
-"status.keynote.pulling" = "Keynoteからエクスポート中…";
+"status.keynote.pulling" = "Keynoteから変換中…";
 "status.keynote.pulled" = "Keynoteから取り出しました — プレビューをドラッグするか、PDFをコピーしてください。";
-"instruction.break_apart" = "Keynoteに配置後、オブジェクトを選択し、フォーマット ‣ 図形と線 ‣ 分割を選択してください。";
+"instruction.break_apart" = "Keynoteに配置後、オブジェクトを選択し、フォーマット ▸ 図形と線 ▸ 分割を選択してください。";
 
 /* ── Buttons ────────────────────────────────────────────────────────── */
 "button.cancel" = "キャンセル";
@@ -112,7 +112,7 @@
 "menu.file.open_svg" = "SVGファイルを開く…";
 "menu.file.close" = "閉じる";
 "menu.file.convert_keynote_slide" = "KeynoteスライドをPDFに変換";
-"menu.file.convert_keynote_clipboard" = "Keynoteクリップボードを変換";
+"menu.file.convert_keynote_clipboard" = "KeynoteクリップボードをPDFに変換";
 "menu.file.place_in_keynote" = "Keynoteに配置";
 
 /* ── Edit menu ──────────────────────────────────────────────────────── */
