@@ -51,11 +51,13 @@ class AppState: ObservableObject {
                 svgDimensions = nil
                 svgFileSize = ""
                 svgCreator = nil
+                svgHasText = false
                 renderedPDFData = nil
             } else {
                 svgDimensions = extractSVGDimensions(svgString: svgString)
                 svgFileSize = getFileSizeString(svgString: svgString)
                 svgCreator = extractSVGCreator(svgString: svgString)
+                svgHasText = svgString.range(of: "<text[\\s>]", options: .regularExpression) != nil
                 scheduleHistoryCapture()
             }
         }
@@ -66,6 +68,20 @@ class AppState: ObservableObject {
     private(set) var svgFileSize: String = ""
     /// Cached result of extractSVGCreator — updated whenever svgString changes.
     private(set) var svgCreator: String? = nil
+    /// True when the SVG contains <text> elements (live text, not just outlined paths).
+    private(set) var svgHasText: Bool = false
+
+    /// Cached PDF page dimensions — updated whenever previewPDFURL changes.
+    private(set) var pdfDimensions: (width: Double, height: Double)? = nil
+    /// Cached PDF file size string — updated whenever previewPDFURL changes.
+    private(set) var pdfFileSize: String = ""
+
+    /// Human-readable label for the content format currently on the canvas.
+    var contentFormatLabel: String? {
+        if previewPDFURL != nil { return "PDF" }
+        if !svgString.isEmpty { return svgHasText ? "SVG + Text" : "SVG" }
+        return nil
+    }
     /// The last temp file written by svgToClipboard() or an outbound drag.
     /// Stored here so the proxy icon can find it even though each write now
     /// produces a uniquely-named file.
@@ -88,9 +104,13 @@ class AppState: ObservableObject {
                 svgString = ""
                 svgURL = ""
             }
-            if previewPDFURL != nil {
+            if let url = previewPDFURL {
                 bridgeFileURL = nil
+                cachePDFMetadata(url)
                 scheduleHistoryCapture()
+            } else {
+                pdfDimensions = nil
+                pdfFileSize = ""
             }
         }
     }
@@ -462,6 +482,24 @@ class AppState: ObservableObject {
             DispatchQueue.main.async {
                 self.mutoolStatus = url.map { .installed(path: $0.path) } ?? .notInstalled
             }
+        }
+    }
+
+    private func cachePDFMetadata(_ url: URL) {
+        let formatter = ByteCountFormatter()
+        formatter.allowedUnits = [.useBytes, .useKB, .useMB]
+        formatter.countStyle = .file
+        if let attrs = try? FileManager.default.attributesOfItem(atPath: url.path),
+           let bytes = attrs[.size] as? Int64 {
+            pdfFileSize = formatter.string(fromByteCount: bytes)
+        } else {
+            pdfFileSize = ""
+        }
+        if let doc = CGPDFDocument(url as CFURL), let page = doc.page(at: 1) {
+            let box = page.getBoxRect(.mediaBox)
+            pdfDimensions = (width: Double(box.width), height: Double(box.height))
+        } else {
+            pdfDimensions = nil
         }
     }
 }

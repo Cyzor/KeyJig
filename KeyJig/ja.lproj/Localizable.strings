@@ -32,6 +32,7 @@
 "context_menu.clear" = "クリア";
 
 /* ── Metadata overlay ───────────────────────────────────────────────── */
+"metadata.format" = "形式";
 "metadata.dimensions" = "サイズ";
 "metadata.size" = "ファイルサイズ";
 "metadata.source" = "ソース";

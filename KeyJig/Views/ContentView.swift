@@ -205,10 +205,18 @@ struct PDFPreviewView: NSViewRepresentable {
 struct MetadataOverlay: View {
     let dimensions: (width: Double, height: Double)?
     let fileSize: String
-    let creator: String?
+    var creator: String? = nil
+    var contentFormat: String? = nil
 
     var body: some View {
         VStack(alignment: .leading, spacing: 4) {
+            if let contentFormat {
+                MetadataRow(
+                    label: NSLocalizedString(
+                        "metadata.format",
+                        comment: "Metadata overlay label for the content format (SVG, PDF, etc.)"),
+                    value: contentFormat)
+            }
             if let (width, height) = dimensions {
                 MetadataRow(
                     label: NSLocalizedString(
@@ -953,6 +961,18 @@ struct ContentView: View {
                     comment: "Text on the drag image thumbnail when dragging a pulled PDF")
             )
 
+            VStack {
+                Spacer()
+                HStack {
+                    MetadataOverlay(
+                        dimensions: appState.pdfDimensions,
+                        fileSize: appState.pdfFileSize,
+                        contentFormat: appState.contentFormatLabel)
+                        .padding(8)
+                    Spacer()
+                }
+            }
+            .allowsHitTesting(false)
         }
         .help(Tooltips.previewPDFLoaded)
     }
@@ -1054,7 +1074,8 @@ struct ContentView: View {
                     MetadataOverlay(
                         dimensions: appState.svgDimensions,
                         fileSize: appState.svgFileSize,
-                        creator: appState.svgCreator)
+                        creator: appState.svgCreator,
+                        contentFormat: appState.contentFormatLabel)
                         .padding(8)
                     Spacer()
                 }

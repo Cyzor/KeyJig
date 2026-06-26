@@ -33,6 +33,7 @@
 "context_menu.clear" = "Löschen";
 
 /* ── Metadata overlay ───────────────────────────────────────────────── */
+"metadata.format" = "Format";
 "metadata.dimensions" = "Maße";
 "metadata.size" = "Größe";
 "metadata.source" = "Quelle";
