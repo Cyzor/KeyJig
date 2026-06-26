@@ -150,12 +150,9 @@ func browseFile(into appState: AppState) -> BrowseResult {
     dialog.canChooseDirectories = false
     dialog.allowsMultipleSelection = false
 
-    var types: [UTType] = [.svg]
-    if inkscapeURL() != nil {
-        types.append(.pdf)
-        if let aiType = UTType(filenameExtension: "ai") {
-            types.append(aiType)
-        }
+    var types: [UTType] = [.svg, .pdf]
+    if let aiType = UTType(filenameExtension: "ai") {
+        types.append(aiType)
     }
     dialog.allowedContentTypes = types
 
@@ -172,6 +169,39 @@ func browseFile(into appState: AppState) -> BrowseResult {
     }
 
     if ext == "pdf" || ext == "ai" {
+        if let pdfData = try? Data(contentsOf: url),
+           let svg = convertPDFToSVG(pdfData), !svg.isEmpty {
+            appState.svgURL = url.path
+            appState.sourceClipboardPDFData = pdfData
+            appState.svgString = svg
+            return .loaded
+        }
+
+        guard inkscapeURL() != nil else {
+            // No Inkscape — fall back to PDF preview mode
+            guard let pdfData = try? Data(contentsOf: url), !pdfData.isEmpty,
+                  pdfData.count >= 5,
+                  pdfData[0] == 0x25, pdfData[1] == 0x50, pdfData[2] == 0x44,
+                  pdfData[3] == 0x46, pdfData[4] == 0x2D
+            else {
+                appState.conversionStatus = .failed
+                return .converting
+            }
+            let outURL = makeTempKeynotePDFURL()
+            do {
+                try pdfData.write(to: outURL)
+                try FileManager.default.setAttributes(
+                    [.posixPermissions: 0o600], ofItemAtPath: outURL.path)
+                appState.svgURL = url.path
+                appState.sourceClipboardPDFData = nil
+                appState.previewPDFURL = outURL
+                return .loaded
+            } catch {
+                appState.conversionStatus = .failed
+                return .converting
+            }
+        }
+
         appState.conversionStatus = .converting
         DispatchQueue.global(qos: .userInitiated).async {
             let svg = convertToSVGWithInkscape(inputURL: url)
