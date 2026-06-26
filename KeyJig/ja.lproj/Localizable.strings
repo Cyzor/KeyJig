@@ -26,7 +26,7 @@
 "preview.drag_label_pdf" = "ドラッグして移動";
 "preview.drag_as_svg" = "SVGとしてドラッグ";
 "preview.drag_as_pdf" = "PDFとしてドラッグ";
-"context_menu.copy_for_keynote" = "変換してKeynoteにコピー";
+"context_menu.copy_for_keynote" = "Keynote用にコピー";
 "context_menu.copy_as_pdf" = "PDFとしてコピー";
 "context_menu.reload_from_clipboard" = "クリップボードから再読み込み";
 "context_menu.clear" = "クリア";

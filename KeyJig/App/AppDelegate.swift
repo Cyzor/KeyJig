@@ -302,6 +302,16 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
         }
     }
 
+    private func clipboardHasApplicableData() -> Bool {
+        let pasteboard = NSPasteboard.general
+        let types = Set(pasteboard.types ?? [])
+        let iWorkType = NSPasteboard.PasteboardType("com.apple.iWork.TSPNativeData")
+        if types.contains(iWorkType) { return true }
+        if !convertClipboardToSVG().isEmpty { return true }
+        if clipboardHasConvertibleVectorData() { return true }
+        return false
+    }
+
     func checkAndLoadClipboardSVG(into state: AppState) {
         let pasteboard = NSPasteboard.general
         let currentChangeCount = pasteboard.changeCount
@@ -526,6 +536,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
         let pasteboardPop = NSPasteboard.general
         if alreadyPopulatedPop
             && pasteboardPop.changeCount != target.lastLoadedClipboardChangeCount
+            && clipboardHasApplicableData()
         {
             target.clearContent(registeringWith: undoManager(for: target))
             target.lastLoadedClipboardChangeCount = -1
@@ -990,6 +1001,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
             let pasteboard = NSPasteboard.general
             if alreadyPopulated
                 && pasteboard.changeCount != state.lastLoadedClipboardChangeCount
+                && clipboardHasApplicableData()
             {
                 state.clearContent(registeringWith: undoManager(for: state))
                 state.lastLoadedClipboardChangeCount = -1

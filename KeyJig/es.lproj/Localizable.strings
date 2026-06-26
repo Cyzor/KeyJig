@@ -26,7 +26,7 @@
 "preview.drag_label_pdf" = "Arrastrar al destino";
 "preview.drag_as_svg" = "Arrastrar como SVG";
 "preview.drag_as_pdf" = "Arrastrar como PDF";
-"context_menu.copy_for_keynote" = "Convertir y copiar para Keynote";
+"context_menu.copy_for_keynote" = "Copiar para Keynote";
 "context_menu.copy_as_pdf" = "Copiar como PDF";
 "context_menu.reload_from_clipboard" = "Recargar desde portapapeles";
 "context_menu.clear" = "Eliminar";
