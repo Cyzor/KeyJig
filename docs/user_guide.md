@@ -75,7 +75,7 @@ Select one or more objects in Keynote and copy them (**⌘C**), then press **⌘
 
 ## Preview Well
 
-**Outbound drag** — drag the preview to any compatible app: Keynote, Affinity Designer, Illustrator, Figma, etc. The clipboard is not modified.
+**Outbound drag** — drag the preview to any compatible app such as Keynote, Affinity, or the Finder. Hold **Option** or **Shift** while starting the drag to deliver a PDF instead of SVG.  The badge updates to indicate expected delivery results.
 
 **Inbound drop** — drop an SVG file onto the preview to replace the current content.
 
