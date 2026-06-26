@@ -47,9 +47,9 @@
 "status.pdf_render_failed" = "Could not render PDF from the current content.";
 "status.keynote.sending" = "Placing in Keynote…";
 "status.keynote.success" = "Placed in Keynote — select it and use Format ▸ Shapes and Lines ▸ Break Apart.";
-"status.keynote.pulling" = "Exporting from Keynote…";
+"status.keynote.pulling" = "Converting from Keynote…";
 "status.keynote.pulled" = "Pulled from Keynote — drag the preview or copy the PDF.";
-"instruction.break_apart" = "Once placed in Keynote, select the object and choose Format ‣ Shapes and Lines ‣ Break Apart.";
+"instruction.break_apart" = "Once placed in Keynote, select the object and choose Format ▸ Shapes and Lines ▸ Break Apart.";
 
 /* ── Keynote errors ─────────────────────────────────────────────────── */
 "error.keynote.not_running" = "Keynote is not running.";
@@ -113,7 +113,7 @@
 "menu.file.open_svg" = "Open SVG File…";
 "menu.file.close" = "Close";
 "menu.file.convert_keynote_slide" = "Convert Keynote Slide to PDF";
-"menu.file.convert_keynote_clipboard" = "Convert Keynote Clipboard";
+"menu.file.convert_keynote_clipboard" = "Convert Keynote Clipboard to PDF";
 "menu.file.place_in_keynote" = "Place in Keynote";
 
 /* ── Edit menu ──────────────────────────────────────────────────────── */
