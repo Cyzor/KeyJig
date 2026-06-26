@@ -29,7 +29,7 @@ KeyJig also extracts graphics (charts, tables, and whole slides) from Keynote as
 1. **Copy** vector artwork in Illustrator, Affinity Designer, or any app that copies vector graphics to the clipboard (`⌘C`).
 2. **Switch** to KeyJig, which detects and converts it automatically. Alternatively, drag the artwork directly onto the KeyJig icon in the menu bar.
 3. **Send it to Keynote** in any of three ways:
-   - **Drag** the preview directly onto a slide.
+   - **Drag** the preview directly onto a slide. Hold **Option** or **Shift** while dragging to drop a PDF instead of SVG — suitable for placing Keynote slides or Excel charts directly into InDesign, Affinity, or similar apps.
    - **⌘K** (or right-click the preview) to copy it to the clipboard, then paste in Keynote (`⌘V`).
    - **⌘D / Place in Keynote** to insert it onto the current slide automatically.
 4. **Break Apart** in Keynote via *Format → Shapes and Lines → Break Apart* (or right-click the object). The paths are now native Keynote shapes — adjust color, stroke, and anchor points freely.
@@ -100,11 +100,11 @@ Open `KeyJig.xcodeproj` in Xcode, select the **KeyJig** scheme, and Build (`⌘B
 
 - **Clipboard auto-detect** — the preview updates the moment an SVG lands on the clipboard, so switching to KeyJig from your drawing app is all it takes.
 - **Menu bar drop target** — drag artwork directly onto the KeyJig menu bar icon to load it without opening the main window.
-- **Drag-and-drop send** — drag the preview straight onto a Keynote slide.
+- **Drag-and-drop send** — drag the preview straight onto a Keynote slide. Hold **Option** or **Shift** to export a PDF instead of SVG.
 - **Place in Keynote** — drops the SVG onto the current Keynote slide directly, no manual paste needed.
 - **Pull Slide** — exports the current Keynote slide as a vector PDF.
 - **Extract Selection** — extracts only the selected Keynote objects as a clean vector PDF; non-contiguous selections work correctly.
-- **PDF/AI conversion** — converts PDF and Adobe Illustrator files to SVG via Inkscape when Keynote's native importer isn't enough.
+- **PDF/AI conversion** — converts PDF and Adobe Illustrator files to SVG natively, with Inkscape as a fallback for more complex files.
 - **File open** — load an SVG file directly.  Support for additional vector formats may vary depending on system configuration.
 - **Multiple windows** — open independent viewer windows for side-by-side work.
 - **AppleScript** — multiple commands covering conversion, file import/export, and window control.
