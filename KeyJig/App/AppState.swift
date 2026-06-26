@@ -2,6 +2,7 @@ import Combine
 import Foundation
 import SwiftUI
 import AppKit
+import WebKit
 import os
 
 private let log = Logger(subsystem: "com.cyzor.KeyJig", category: "AppState")
@@ -54,6 +55,7 @@ class AppState: ObservableObject {
                 svgHasText = false
                 renderedPDFData = nil
             } else {
+                renderedPDFData = nil
                 svgDimensions = extractSVGDimensions(svgString: svgString)
                 svgFileSize = getFileSizeString(svgString: svgString)
                 svgCreator = extractSVGCreator(svgString: svgString)
@@ -173,6 +175,11 @@ class AppState: ObservableObject {
     /// ContentView after the WKWebView finishes loading. Used by Option-drag
     /// when no source PDF passthrough is available.
     var renderedPDFData: Data?
+
+    /// Retains the offscreen WKWebView used by preRenderPDF until the render
+    /// completes. Without a strong reference the view is deallocated before
+    /// the navigation callback fires.
+    var exportWebView: WKWebView?
 
     private var clipboardCancellable: AnyCancellable?
     private var workspaceObservers: [Any] = []

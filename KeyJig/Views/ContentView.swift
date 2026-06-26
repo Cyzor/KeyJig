@@ -397,7 +397,7 @@ struct ContentView: View {
             // a stale origin would mislabel the proxy icon and derived temp
             // names with the previous file's name).
             appState.svgURL = first.sourceURL?.path ?? ""
-            appState.sourceClipboardPDFData = nil
+            appState.sourceClipboardPDFData = first.sourcePDFData
             appState.svgString = first.svg
             appState.statusMessage = ""
             for item in items.dropFirst() {
@@ -544,9 +544,10 @@ struct ContentView: View {
             configuration: config)
         exportView.setValue(false, forKey: "drawsBackground")
 
-        let delegate = ExportWebViewDelegate { webView in
+        let delegate = ExportWebViewDelegate { [weak appState] webView in
             webView.createPDF(configuration: WKPDFConfiguration()) { result in
                 DispatchQueue.main.async {
+                    appState?.exportWebView = nil
                     switch result {
                     case .success(let data): completion(data)
                     case .failure(let error):
@@ -559,6 +560,7 @@ struct ContentView: View {
         objc_setAssociatedObject(exportView, &ExportWebViewDelegate.key, delegate, .OBJC_ASSOCIATION_RETAIN)
         exportView.navigationDelegate = delegate
         exportView.loadHTMLString(html, baseURL: nil)
+        appState.exportWebView = exportView
     }
 
 
@@ -956,9 +958,7 @@ struct ContentView: View {
                 onCopyAsPDF: { copyAsPDF() },
                 onClear: { clearCanvas() },
                 onReloadFromClipboard: { AppDelegate.shared?.reloadFromClipboard(nil) },
-                dragLabel: NSLocalizedString(
-                    "preview.drag_label_pdf",
-                    comment: "Text on the drag image thumbnail when dragging a pulled PDF")
+                defaultIsPDF: true
             )
 
             VStack {

@@ -22,8 +22,6 @@
 "tooltip.settings.mutool_website" = "Opción alternativa para operaciones de recorte de PDF";
 
 /* ── Preview area ───────────────────────────────────────────────────── */
-"preview.drag_label" = "Arrastrar a Keynote";
-"preview.drag_label_pdf" = "Arrastrar al destino";
 "preview.drag_as_svg" = "Arrastrar como SVG";
 "preview.drag_as_pdf" = "Arrastrar como PDF";
 "context_menu.copy_for_keynote" = "Copiar para Keynote";

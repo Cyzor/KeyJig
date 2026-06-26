@@ -22,8 +22,6 @@
 "tooltip.settings.mutool_website" = "PDFの切り抜き処理のフォールバックオプション";
 
 /* ── Preview area ───────────────────────────────────────────────────── */
-"preview.drag_label" = "Keynoteへドラッグ";
-"preview.drag_label_pdf" = "ドラッグして移動";
 "preview.drag_as_svg" = "SVGとしてドラッグ";
 "preview.drag_as_pdf" = "PDFとしてドラッグ";
 "context_menu.copy_for_keynote" = "Keynote用にコピー";

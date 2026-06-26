@@ -23,8 +23,6 @@
 "tooltip.settings.mutool_website" = "Fallback-Option für PDF-Zuschneideprozesse";
 
 /* ── Preview area ───────────────────────────────────────────────────── */
-"preview.drag_label" = "In Keynote ziehen";
-"preview.drag_label_pdf" = "Zum Ziel ziehen";
 "preview.drag_as_svg" = "Als SVG ziehen";
 "preview.drag_as_pdf" = "Als PDF ziehen";
 "context_menu.copy_for_keynote" = "Für Keynote kopieren";

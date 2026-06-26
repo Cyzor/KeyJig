@@ -711,11 +711,13 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
             state.statusMessage = ""
             state.pendingOversizedSVG = nil
             state.conversionStatus = .converting
+            let pdfData = try? Data(contentsOf: url)
             DispatchQueue.global(qos: .userInitiated).async {
                 let svg = convertToSVGWithInkscape(inputURL: url)
                 DispatchQueue.main.async {
                     if let svg = svg, !svg.isEmpty {
                         state.svgURL = url.path
+                        state.sourceClipboardPDFData = pdfData
                         state.svgString = svg
                         state.conversionStatus = .idle
                         fireCompletionHook(outputPath: url.path,

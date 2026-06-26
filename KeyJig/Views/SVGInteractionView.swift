@@ -45,6 +45,12 @@ struct Tooltips {
 struct DroppedVector {
     let svg: String
     let sourceURL: URL?
+    let sourcePDFData: Data?
+    init(svg: String, sourceURL: URL?, sourcePDFData: Data? = nil) {
+        self.svg = svg
+        self.sourceURL = sourceURL
+        self.sourcePDFData = sourcePDFData
+    }
 }
 
 /// Result of inspecting a single dropped item.
@@ -73,10 +79,9 @@ class SVGInteractionView: NSView {
 
     // MARK: Callbacks
 
-    /// Text shown on the drag image thumbnail. Defaults to "Drag into Keynote".
-    var dragLabel: String = NSLocalizedString(
-        "preview.drag_label",
-        comment: "Text on the drag image thumbnail shown when dragging the SVG preview")
+    /// When true the drag badge always reads "Drag as PDF" (no SVG/PDF toggle).
+    /// Used for the pulled-PDF preview path where the payload is always a PDF file.
+    var defaultIsPDF: Bool = false
 
     /// Return the file URL to use as the drag payload, or nil to cancel the drag.
     var onDragStart: ((NSEvent) -> URL?)?
@@ -343,7 +348,8 @@ class SVGInteractionView: NSView {
             roundedRect: NSRect(origin: .zero, size: size),
             xRadius: 12, yRadius: 12
         ).fill()
-        let symbolName = wantPDF ? "photo.fill" : "photo"
+        let showAsPDF = wantPDF || defaultIsPDF
+        let symbolName = showAsPDF ? "doc.fill" : "doc"
         if let symbol = NSImage(
             systemSymbolName: symbolName,
             accessibilityDescription: "image"
@@ -370,16 +376,11 @@ class SVGInteractionView: NSView {
             .foregroundColor: NSColor.labelColor,
             .paragraphStyle: style,
         ]
-        let label: String
-        if hasPDFAlternate {
-            label = wantPDF
-                ? NSLocalizedString("preview.drag_as_pdf",
-                    comment: "Drag badge when Option held — PDF output")
-                : NSLocalizedString("preview.drag_as_svg",
-                    comment: "Drag badge when no modifier — SVG output")
-        } else {
-            label = dragLabel
-        }
+        let label: String = showAsPDF
+            ? NSLocalizedString("preview.drag_as_pdf",
+                comment: "Drag badge when Option held, or always PDF for PDF-only previews")
+            : NSLocalizedString("preview.drag_as_svg",
+                comment: "Drag badge — SVG output (default)")
         NSAttributedString(string: label, attributes: attrs)
             .draw(in: NSRect(x: 0, y: 15, width: 180, height: 30))
         image.unlockFocus()
@@ -563,12 +564,12 @@ class SVGInteractionView: NSView {
                         return .rejected(NSLocalizedString("error.ai.no_pdf_layer", comment: ""))
                     }
                     // Native scanner first — produces editable SVG regardless of Inkscape.
-                    if let data = try? Data(contentsOf: url),
-                       let svg = convertPDFToSVG(data) {
-                        return .loaded(DroppedVector(svg: svg, sourceURL: url))
+                    let fileData = try? Data(contentsOf: url)
+                    if let fileData, let svg = convertPDFToSVG(fileData) {
+                        return .loaded(DroppedVector(svg: svg, sourceURL: url, sourcePDFData: fileData))
                     }
                     if let s = convertToSVGWithInkscape(inputURL: url) {
-                        return .loaded(DroppedVector(svg: s, sourceURL: url))
+                        return .loaded(DroppedVector(svg: s, sourceURL: url, sourcePDFData: fileData))
                     }
                     // No Inkscape and scanner yielded nothing — PDF preview fallback.
                     if sniffVectorFileType(at: url) == "pdf" {
@@ -589,7 +590,7 @@ class SVGInteractionView: NSView {
             if let data = pasteboard.data(forType: type), !data.isEmpty {
                 // Native scanner: extract vector paths without writing a temp file.
                 if let svg = convertPDFToSVG(data) {
-                    return .loaded(DroppedVector(svg: svg, sourceURL: nil))
+                    return .loaded(DroppedVector(svg: svg, sourceURL: nil, sourcePDFData: data))
                 }
                 // Native scan yielded nothing — try Inkscape or fall back to PDF preview.
                 let tempURL = URL(fileURLWithPath: NSTemporaryDirectory())
@@ -605,7 +606,7 @@ class SVGInteractionView: NSView {
                 }
                 if let s = convertToSVGWithInkscape(inputURL: tempURL) {
                     try? FileManager.default.removeItem(at: tempURL)
-                    return .loaded(DroppedVector(svg: s, sourceURL: nil))
+                    return .loaded(DroppedVector(svg: s, sourceURL: nil, sourcePDFData: data))
                 }
                 // Inkscape absent or failed — keep temp file for PDF preview.
                 return .loadedPDF(tempURL)
@@ -805,15 +806,13 @@ struct SVGInteractionViewWrapper: NSViewRepresentable {
     var onCopyAsPDF: (() -> Void)?
     var onClear: (() -> Void)?
     var onReloadFromClipboard: (() -> Void)?
-    var dragLabel: String = NSLocalizedString(
-        "preview.drag_label",
-        comment: "Text on the drag image thumbnail shown when dragging the SVG preview")
+    var defaultIsPDF: Bool = false
 
     func makeNSView(context: Context) -> SVGInteractionView { SVGInteractionView() }
 
     func updateNSView(_ nsView: SVGInteractionView, context: Context) {
         nsView.toolTip = Tooltips.previewAreaLoaded
-        nsView.dragLabel = dragLabel
+        nsView.defaultIsPDF = defaultIsPDF
         nsView.onDragStart = onDragStart
         nsView.alternateDragData = alternateDragData
         nsView.onSVGDropped = onSVGDropped
