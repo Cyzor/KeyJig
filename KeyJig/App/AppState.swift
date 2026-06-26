@@ -517,6 +517,7 @@ enum ConversionStatus: Equatable {
     case idle
     case converting
     case failed
+    case emptyOnInitialLoad
 }
 
 enum KeynoteSendStatus: Equatable {

@@ -411,7 +411,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
                 state.svgString = svg
                 state.conversionStatus = .idle
             } else {
-                state.conversionStatus = .failed
+                state.conversionStatus = .emptyOnInitialLoad
             }
         }
     }

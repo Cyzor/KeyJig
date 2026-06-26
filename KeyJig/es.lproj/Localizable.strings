@@ -39,6 +39,7 @@
 "status.converting" = "Convirtiendo con Inkscape…";
 "status.loading_svg" = "Cargando SVG…";
 "status.failed" = "Error de conversión — no se encontraron datos SVG ni convertibles.";
+"status.empty_on_launch" = "Copia una PDF o diapositiva de Keynote.";
 "status.ready" = "Listo — arrastra la vista previa a Keynote o usa Copiar para Keynote.";
 "status.no_svg_on_clipboard" = "No se encontró ningún SVG en el portapapeles.";
 "status.copied" = "¡Copiado al portapapeles!";

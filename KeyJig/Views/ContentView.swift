@@ -432,6 +432,10 @@ struct ContentView: View {
             return NSLocalizedString(
                 "status.failed",
                 comment: "Status: conversion found no usable data")
+        case .emptyOnInitialLoad:
+            return NSLocalizedString(
+                "status.empty_on_launch",
+                comment: "Status: Initial empty state prompting user to provide content")
         case .idle:
             break
         }

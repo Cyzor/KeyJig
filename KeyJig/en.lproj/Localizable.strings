@@ -40,6 +40,7 @@
 "status.converting" = "Converting via Inkscape…";
 "status.loading_svg" = "Loading SVG…";
 "status.failed" = "Conversion failed — no SVG or convertible data found.";
+"status.empty_on_launch" = "Paste a PDF or slide from Keynote.";
 "status.ready" = "Ready — drag the preview into Keynote, or Copy for Keynote.";
 "status.no_svg_on_clipboard" = "No SVG found on clipboard.";
 "status.copied" = "Copied to clipboard!";

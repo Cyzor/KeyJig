@@ -39,6 +39,7 @@
 "status.converting" = "Inkscapeで変換中…";
 "status.loading_svg" = "SVGを読み込み中…";
 "status.failed" = "変換に失敗しました — SVGまたは変換可能なデータが見つかりません。";
+"status.empty_on_launch" = "KeynoteからPDFまたはスライドをコピー。";
 "status.ready" = "準備完了 — プレビューをKeynoteにドラッグするか、Keynote用にコピーしてください。";
 "status.no_svg_on_clipboard" = "クリップボードにSVGが見つかりません。";
 "status.copied" = "クリップボードにコピーしました！";
