@@ -671,7 +671,17 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
         switch type {
         case "svg":
             do {
-                let content = try String(contentsOf: url, encoding: .utf8)
+                let data = try Data(contentsOf: url)
+                // UTF-8 first; UTF-16 (BOM-carrying) SVGs exist in the wild —
+                // the clipboard ingest path already accepts both.
+                guard let content = String(data: data, encoding: .utf8)
+                    ?? String(data: data, encoding: .utf16)
+                else {
+                    log.error("undecodable SVG: \(url.lastPathComponent, privacy: .public)")
+                    state.conversionStatus = .idle
+                    state.statusMessage = SVGIngestError.notSVG.userMessage
+                    return
+                }
                 switch checkedIngestSVG(content) {
                 case .success(let safe):
                     state.svgURL = url.path

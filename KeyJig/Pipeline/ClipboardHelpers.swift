@@ -1,5 +1,4 @@
 import Cocoa
-import UniformTypeIdentifiers
 import os
 
 private let log = Logger(subsystem: "com.cyzor.KeyJig", category: "Clipboard")
@@ -125,100 +124,6 @@ private func derivedNameStem(svg: String?, originPath: String?) -> String? {
     { return stem }
     if let svg, let stem = extractSVGNameHint(svgString: svg) { return stem }
     return nil
-}
-
-// MARK: - File Browser
-
-/// Result of presenting the open-file dialog.
-/// `.loaded` means an SVG was read synchronously and `appState.svgString` is now populated.
-/// `.converting` means a PDF/AI was picked and Inkscape conversion is running on a
-///     background queue — `appState.conversionStatus` will transition to `.idle`/`.failed`.
-/// `.cancelled` means the user dismissed the dialog or the file failed to read.
-enum BrowseResult {
-    case loaded
-    case converting
-    case cancelled
-}
-
-@discardableResult
-func browseFile(into appState: AppState) -> BrowseResult {
-    let dialog = NSOpenPanel()
-    dialog.title = NSLocalizedString(
-        "file_dialog.title",
-        comment: "Title of the file open panel")
-    dialog.showsHiddenFiles = false
-    dialog.canChooseDirectories = false
-    dialog.allowsMultipleSelection = false
-
-    var types: [UTType] = [.svg, .pdf]
-    if let aiType = UTType(filenameExtension: "ai") {
-        types.append(aiType)
-    }
-    dialog.allowedContentTypes = types
-
-    guard dialog.runModal() == .OK, let url = dialog.url else { return .cancelled }
-
-    let ext = url.pathExtension.lowercased()
-
-    if ext == "svg" {
-        let content = (try? String(contentsOf: url, encoding: .utf8)) ?? ""
-        guard let safe = ingestSVG(content) else { return .cancelled }
-        appState.svgURL = url.path
-        appState.svgString = safe
-        return .loaded
-    }
-
-    if ext == "pdf" || ext == "ai" {
-        if let pdfData = try? Data(contentsOf: url),
-           let svg = convertPDFToSVG(pdfData), !svg.isEmpty {
-            appState.svgURL = url.path
-            appState.sourceClipboardPDFData = pdfData
-            appState.svgString = svg
-            return .loaded
-        }
-
-        guard inkscapeURL() != nil else {
-            // No Inkscape — fall back to PDF preview mode
-            guard let pdfData = try? Data(contentsOf: url), !pdfData.isEmpty,
-                  pdfData.count >= 5,
-                  pdfData[0] == 0x25, pdfData[1] == 0x50, pdfData[2] == 0x44,
-                  pdfData[3] == 0x46, pdfData[4] == 0x2D
-            else {
-                appState.conversionStatus = .failed
-                return .converting
-            }
-            let outURL = makeTempKeynotePDFURL()
-            do {
-                try pdfData.write(to: outURL)
-                try FileManager.default.setAttributes(
-                    [.posixPermissions: 0o600], ofItemAtPath: outURL.path)
-                appState.svgURL = url.path
-                appState.sourceClipboardPDFData = nil
-                appState.previewPDFURL = outURL
-                return .loaded
-            } catch {
-                appState.conversionStatus = .failed
-                return .converting
-            }
-        }
-
-        appState.conversionStatus = .converting
-        DispatchQueue.global(qos: .userInitiated).async {
-            let svg = convertToSVGWithInkscape(inputURL: url)
-            DispatchQueue.main.async {
-                if let svg = svg, !svg.isEmpty {
-                    appState.svgURL = url.path
-                    appState.svgString = svg
-                    appState.conversionStatus = .idle
-                } else {
-                    appState.conversionStatus = .failed
-                }
-            }
-        }
-        return .converting
-    }
-
-    return .cancelled
 }
 
 // MARK: - Clipboard SVG Detection

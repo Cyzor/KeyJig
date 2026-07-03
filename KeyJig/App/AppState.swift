@@ -24,7 +24,7 @@ final class ClipboardWatcher {
 
     private init() {
         changeCount = CurrentValueSubject(NSPasteboard.general.changeCount)
-        let timer = Timer.scheduledTimer(withTimeInterval: 0.5, repeats: true) { [weak self] _ in
+        let timer = Timer(timeInterval: 0.5, repeats: true) { [weak self] _ in
             guard let self else { return }
             let count = NSPasteboard.general.changeCount
             if count != self.changeCount.value {
@@ -32,6 +32,9 @@ final class ClipboardWatcher {
             }
         }
         timer.tolerance = 0.1
+        // .common keeps the clipboard watch ticking during menu tracking and
+        // modal panels (e.g. the open-file dialog), where the default mode pauses.
+        RunLoop.main.add(timer, forMode: .common)
         self.timer = timer
     }
 }

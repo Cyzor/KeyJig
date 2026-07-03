@@ -61,6 +61,15 @@ final class PullCancellationToken {
     }
 }
 
+// MARK: - Pull queue
+
+/// The single serial queue for all pull-related Apple Events. Shared by every
+/// entry point: a second concurrent AppleScript stream to Keynote is exactly
+/// what reproduces the wrong-`front document` reads (see CLAUDE.md), and a
+/// per-call queue — even with the same label — provides no such serialization.
+private let keynotePullQueue = DispatchQueue(
+    label: "com.cyzor.KeyJig.keynotePull", qos: .userInitiated)
+
 // MARK: - Public entry point
 
 /// Pulls vector graphics from the current Keynote slide as a PDF.
@@ -83,9 +92,7 @@ func pullFromKeynote(
     cancellationToken: PullCancellationToken? = nil,
     completion: @escaping (Result<URL, KeynotePullError>) -> Void
 ) {
-    // Serial queue keeps NSAppleScript calls non-concurrent.
-    let queue = DispatchQueue(label: "com.cyzor.KeyJig.keynotePull", qos: .userInitiated)
-    queue.async { autoreleasepool {
+    keynotePullQueue.async { autoreleasepool {
 
         // 1. Verify Keynote is running.
         guard NSRunningApplication
@@ -932,7 +939,13 @@ private func extractSlidePDF(
     //      MuPDF's pdfwrite device, stripping the hidden Form XObject content.
     //   3. CGPDFContext alone — display-correct but content not removed.
 
-    if !selectionBoxes.isEmpty, let gs = ghostscriptURL() {
+    // Gate the destructive-crop tiers on whether a crop actually happened —
+    // the content-bounds path crops even with no selection boxes (clipboard
+    // pull, chart geometry-read failures), and leaving those to CGPDFContext
+    // alone would ship the full uncropped stream as a hidden Form XObject.
+    let didCrop = cropRect != pageRect
+
+    if didCrop, let gs = ghostscriptURL() {
         let outURL = docName.map { makeDescriptivePDFURL(docName: $0, slideIndex: slideIndex) }
             ?? makeTempKeynotePDFURL()
         if cropWithGhostscript(gs: gs, input: exportURL, cropRect: cropRect, output: outURL) {
@@ -965,7 +978,7 @@ private func extractSlidePDF(
         return .failure(.exportFailed("PDF context failed to write output"))
     }
 
-    if !selectionBoxes.isEmpty, let mt = mutoolURL() {
+    if didCrop, let mt = mutoolURL() {
         let outURL = docName.map { makeDescriptivePDFURL(docName: $0, slideIndex: slideIndex) }
             ?? makeTempKeynotePDFURL()
         if reprocessWithMutool(mutool: mt, input: cgURL, output: outURL) {
@@ -1160,8 +1173,7 @@ func triggerKeynoteClipboard(appState: AppState, setStatus: @escaping (String) -
     let prevFrontApp = AppDelegate.shared?.appBeforePopover
         ?? NSWorkspace.shared.frontmostApplication
 
-    let queue = DispatchQueue(label: "com.cyzor.KeyJig.keynotePull", qos: .userInitiated)
-    queue.async { autoreleasepool {
+    keynotePullQueue.async { autoreleasepool {
         if token.isCancelled {
             DispatchQueue.main.async { appState.activePullToken = nil; appState.keynotePullStatus = .idle; setStatus("") }
             return
