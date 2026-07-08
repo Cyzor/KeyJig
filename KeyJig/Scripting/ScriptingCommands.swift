@@ -93,7 +93,15 @@ class LoadSVGFileCommand: NSScriptCommand {
             return NSNumber(value: false)
         }
         do {
-            let content = try String(contentsOfFile: path, encoding: .utf8)
+            // UTF-8 first; UTF-16 (BOM-carrying) SVGs exist in the wild.
+            // Returns nil when the bytes aren't either encoding — treated
+            // below as a wrong-data-type error (the file is not an SVG).
+            let url = URL(fileURLWithPath: path)
+            guard let content = try readSVGFile(at: url) else {
+                self.scriptErrorNumber = Int(errAEWrongDataType)
+                self.scriptErrorString = "File is not a readable SVG (expected UTF-8 or UTF-16 text)."
+                return NSNumber(value: false)
+            }
             guard content.utf8.count <= maxSVGBytes else {
                 self.scriptErrorNumber = Int(errAEWrongDataType)
                 self.scriptErrorString = "SVG file exceeds the \(maxSVGBytes / (1024 * 1024)) MB size limit."

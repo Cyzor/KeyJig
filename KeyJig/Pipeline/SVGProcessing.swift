@@ -106,6 +106,19 @@ func ingestSVG(_ string: String) -> String? {
     try? checkedIngestSVG(string).get()
 }
 
+/// Reads an SVG file from disk, accepting either UTF-8 or UTF-16 (BOM-carrying).
+/// UTF-16 SVGs exist in the wild — the clipboard ingest path already accepts
+/// both, and the file-URL paths (drop, File → Open, `load SVG file`,
+/// session-restore) all need the same treatment or a UTF-16 file is rejected
+/// at the decode step. Throws on read error so callers can distinguish
+/// "unreadable" from "not an SVG" (which is the encoding-failure case, returned
+/// as nil by the caller via `try?`).
+func readSVGFile(at url: URL) throws -> String? {
+    let data = try Data(contentsOf: url)
+    return String(data: data, encoding: .utf8)
+        ?? String(data: data, encoding: .utf16)
+}
+
 /// Why an outside-world SVG was refused, carrying a user-facing explanation.
 /// Detection/predicate sites stay on the silent `ingestSVG`; only deliberate
 /// user actions (drop, file open) need the reason so they can explain instead

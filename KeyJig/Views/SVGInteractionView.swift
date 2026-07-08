@@ -173,7 +173,10 @@ class SVGInteractionView: NSView {
                     : (sniffVectorFileType(at: url) ?? ext)
                 switch type {
                 case "svg":
-                    guard let s = try? String(contentsOf: url, encoding: .utf8) else {
+                    // try? flattens read errors to nil; the helper itself may
+                    // also return nil when the bytes aren't UTF-8 or UTF-16.
+                    // Either case surfaces here as "not an SVG".
+                    guard let s = try? readSVGFile(at: url) else {
                         rejections.append(SVGIngestError.notSVG.userMessage)
                         continue
                     }
@@ -545,7 +548,7 @@ class SVGInteractionView: NSView {
                     : (sniffVectorFileType(at: url) ?? ext)
                 switch type {
                 case "svg":
-                    guard let s = try? String(contentsOf: url, encoding: .utf8) else {
+                    guard let s = try? readSVGFile(at: url) else {
                         return .rejected(SVGIngestError.notSVG.userMessage)
                     }
                     switch checkedIngestSVG(s) {
@@ -643,7 +646,7 @@ class SVGInteractionView: NSView {
                     : (sniffVectorFileType(at: url) ?? ext)
                 switch type {
                 case "svg":
-                    if let s = try? String(contentsOf: url, encoding: .utf8),
+                    if let s = try? readSVGFile(at: url),
                         s.contains("<svg") { return true }
                 case "pdf", "ai":
                     return true
