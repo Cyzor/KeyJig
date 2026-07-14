@@ -147,6 +147,8 @@ KeyJig is a signed and notarized app that uses a Hardened Runtime environment.
 
 ## Acknowledgments
 
+KeyJig is an independent, third-party tool. Apple does not affiliate with, endorse, or sponsor it. Keynote is a trademark of Apple Inc.
+
 KeyJig draws inspiration from [**SVG2Keynote**](https://github.com/eth-siplab/SVG2Keynote-gui) by [Jonathan Lampérth](https://www.linkedin.com/in/jonathan-lamperth-7059b418a) and [Christian Holz](https://www.christianholz.net) at the [Sensing, Interaction & Perception Lab](https://siplab.org), ETH Zürich. Where SVG2Keynote writes Keynote's native file format directly, KeyJig drives Keynote's built-in SVG importer instead.
 
 KeyJig optionally delegates certain operations to three open-source command-line tools it auto-detects on your system. None are bundled or distributed with the app:
