@@ -3,15 +3,6 @@ import os
 
 private let log = Logger(subsystem: "com.cyzor.KeyJig", category: "Clipboard")
 
-// MARK: - SVG Size Limit
-
-/// Upper bound on SVG payload size we will write to the pasteboard or to a
-/// temp file. Keynote's importer struggles with multi-megabyte SVGs, and
-/// passing very large strings through `String.write(to:)` and the pasteboard
-/// risks blocking the UI. 50 MB is generous in practice; legitimate vector
-/// art is almost always under 1 MB.
-let maxSVGBytes = 50 * 1024 * 1024
-
 // MARK: - Temp SVG File Naming
 
 // Each call to `svgToClipboard` writes to a freshly-named temp file because

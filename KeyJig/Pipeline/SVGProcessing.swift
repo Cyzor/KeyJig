@@ -1,6 +1,17 @@
 import Foundation
 import PDFKit
 
+// MARK: - SVG Size Limit
+
+/// Upper bound on SVG payload size we will write to the pasteboard or to a
+/// temp file. Keynote's importer struggles with multi-megabyte SVGs, and
+/// passing very large strings through `String.write(to:)` and the pasteboard
+/// risks blocking the UI. 50 MB is generous in practice; legitimate vector
+/// art is almost always under 1 MB.
+/// (Defined here rather than in ClipboardHelpers so the ingest gate and its
+/// tests don't depend on the clipboard layer.)
+let maxSVGBytes = 50 * 1024 * 1024
+
 // MARK: - File-type detection by content
 
 /// Identifies a vector file's format by examining content rather than extension.
@@ -154,16 +165,27 @@ enum SVGIngestError: Error {
 /// Like `ingestSVG`, but reports why the SVG was refused so deliberate user
 /// actions can surface the reason. Same size cap and content screen.
 func checkedIngestSVG(_ string: String) -> Result<String, SVGIngestError> {
-    // Validate content before the size check — a large hostile SVG is still hostile.
-    switch validateSVG(string) {
+    // Content is screened before the size check — a large hostile SVG is
+    // still hostile and should be reported as such. But the case-insensitive
+    // scans in validateSVG cost roughly a second per MB, so running them over
+    // an oversized payload would stall ingest for the better part of a minute
+    // on a 50 MB clipboard — only to reject the content anyway. For oversized
+    // input, screen a bounded prefix instead: hostile markers (scripts, event
+    // handlers, external hrefs) cluster near the document head, and both
+    // verdicts reject; only the reported reason differs.
+    let oversized = string.utf8.count > maxSVGBytes
+    let screened = oversized ? String(string.prefix(1_048_576)) : string
+    switch validateSVG(screened) {
     case .containsDangerousContent:
         return .failure(.unsafe)
     case .empty, .notSVGElement:
-        return .failure(.notSVG)
+        // A prefix can't prove the full string lacks an <svg> element — for
+        // oversized input the size rejection below is the accurate verdict.
+        if !oversized { return .failure(.notSVG) }
     case nil:
         break
     }
-    guard string.utf8.count <= maxSVGBytes else {
+    guard !oversized else {
         return .failure(.tooLarge(bytes: string.utf8.count))
     }
     return .success(addSVGMargin(string))
@@ -235,8 +257,13 @@ func extractSVGCreator(svgString: String) -> String? {
             if let valueRange = match.range(
                 of: ":\\s*(.+?)(?:[\"']|-->|<|$)", options: .regularExpression)
             {
-                let value = String(match[valueRange]).trimmingCharacters(
-                    in: CharacterSet(charactersIn: ": \"'"))
+                // range(of:) spans the whole match including the terminator
+                // ("-->" or "<"), which the character-set trim below can't
+                // remove — strip it first or it leaks into the result.
+                let value = String(match[valueRange])
+                    .replacingOccurrences(
+                        of: "\\s*(?:-->|<)$", with: "", options: .regularExpression)
+                    .trimmingCharacters(in: CharacterSet(charactersIn: ": \"'"))
                 if !value.isEmpty && value != "Creator" {
                     return value
                 }

@@ -43,6 +43,15 @@ jobs:
           echo "marketing=$VERSION" >> "$GITHUB_OUTPUT"
           echo "build=${{ github.run_number }}" >> "$GITHUB_OUTPUT"
 
+      - name: Run unit tests
+        run: |
+          xcodebuild \
+            -project KeyJig.xcodeproj \
+            -scheme KeyJig \
+            -configuration Debug \
+            CODE_SIGNING_ALLOWED=NO \
+            test
+
       - name: Build (Release)
         run: |
           xcodebuild \

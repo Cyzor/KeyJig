@@ -13,6 +13,7 @@
 /* Begin PBXFileReference section */
 		051673BF2FA9205400E4FD20 /* AppIcon.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; path = AppIcon.icns; sourceTree = "<group>"; };
 		459A278D23AA910B003D50EC /* KeyJig.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = KeyJig.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		AA4001010000000000000001 /* KeyJigTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = KeyJigTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -23,14 +24,30 @@
 			);
 			target = 459A278C23AA910B003D50EC /* KeyJig */;
 		};
+		AA4003010000000000000001 /* PBXFileSystemSynchronizedBuildFileExceptionSet */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Pipeline/PDFToSVGConverter.swift,
+				Pipeline/SVGProcessing.swift,
+			);
+			target = AA4000010000000000000001 /* KeyJigTests */;
+		};
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
-		459A278F23AA910B003D50EC /* KeyJig */ = {isa = PBXFileSystemSynchronizedRootGroup; exceptions = (AA3001010000000000000001 /* PBXFileSystemSynchronizedBuildFileExceptionSet */, ); explicitFileTypes = {}; explicitFolders = (); path = KeyJig; sourceTree = "<group>"; };
+		459A278F23AA910B003D50EC /* KeyJig */ = {isa = PBXFileSystemSynchronizedRootGroup; exceptions = (AA3001010000000000000001 /* PBXFileSystemSynchronizedBuildFileExceptionSet */, AA4003010000000000000001 /* PBXFileSystemSynchronizedBuildFileExceptionSet */, ); explicitFileTypes = {}; explicitFolders = (); path = KeyJig; sourceTree = "<group>"; };
+		AA4002010000000000000001 /* KeyJigTests */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = KeyJigTests; sourceTree = "<group>"; };
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
 		459A278A23AA910B003D50EC /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		AA4006010000000000000001 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -44,6 +61,7 @@
 			isa = PBXGroup;
 			children = (
 				459A278F23AA910B003D50EC /* KeyJig */,
+				AA4002010000000000000001 /* KeyJigTests */,
 				AA2001010000000000000001 /* Resources */,
 				459A278E23AA910B003D50EC /* Products */,
 			);
@@ -53,6 +71,7 @@
 			isa = PBXGroup;
 			children = (
 				459A278D23AA910B003D50EC /* KeyJig.app */,
+				AA4001010000000000000001 /* KeyJigTests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -88,6 +107,26 @@
 			productReference = 459A278D23AA910B003D50EC /* KeyJig.app */;
 			productType = "com.apple.product-type.application";
 		};
+		AA4000010000000000000001 /* KeyJigTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = AA4004010000000000000001 /* Build configuration list for PBXNativeTarget "KeyJigTests" */;
+			buildPhases = (
+				AA4005010000000000000001 /* Sources */,
+				AA4006010000000000000001 /* Frameworks */,
+				AA4007010000000000000001 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				AA4002010000000000000001 /* KeyJigTests */,
+			);
+			name = KeyJigTests;
+			productName = KeyJigTests;
+			productReference = AA4001010000000000000001 /* KeyJigTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -101,6 +140,9 @@
 					459A278C23AA910B003D50EC = {
 						CreatedOnToolsVersion = 11.3;
 						LastSwiftMigration = 1250;
+					};
+					AA4000010000000000000001 = {
+						CreatedOnToolsVersion = 16.0;
 					};
 				};
 			};
@@ -121,6 +163,7 @@
 			projectRoot = "";
 			targets = (
 				459A278C23AA910B003D50EC /* KeyJig */,
+				AA4000010000000000000001 /* KeyJigTests */,
 			);
 		};
 /* End PBXProject section */
@@ -134,10 +177,24 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		AA4007010000000000000001 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		459A278923AA910B003D50EC /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		AA4005010000000000000001 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -358,6 +415,36 @@
 			};
 			name = Release;
 		};
+		AA4008010000000000000001 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_IDENTITY = "-";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 11.5;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.cyzor.KeyJigTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		AA4008010000000000000002 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_IDENTITY = "-";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 11.5;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.cyzor.KeyJigTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -375,6 +462,15 @@
 			buildConfigurations = (
 				459A27A123AA910B003D50EC /* Debug */,
 				459A27A223AA910B003D50EC /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+	AA4004010000000000000001 /* Build configuration list for PBXNativeTarget "KeyJigTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				AA4008010000000000000001 /* Debug */,
+				AA4008010000000000000002 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
