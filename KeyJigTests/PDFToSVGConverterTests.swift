@@ -127,6 +127,29 @@ final class PDFToSVGConverterTests: XCTestCase {
         XCTAssertNil(convertPDFToSVG(Data()))
     }
 
+    // MARK: - Parallel <text> orientation (the OmniGraffle flipped-CTM fix)
+
+    func testTextTransformUprightUnderFlippedCTM() throws {
+        // OmniGraffle wraps text in a Y-flip CTM and uses a negative-d text
+        // matrix; the two cancel, so the text is upright in PDF space. The
+        // parallel <text> transform must come out with positive d in SVG
+        // space (upright) — negating d instead of c renders it upside down.
+        let font = "<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>"
+        let pdf = PDFFixtures.makePDF(
+            content: "q 1 0 0 -1 0 100 cm BT /F1 1 Tf 12 0 0 -12 10 20 Tm (Hi) Tj ET Q",
+            resources: "<< /Font << /F1 5 0 R >> >>",
+            extraObjects: [font])
+        let svg = try XCTUnwrap(convertPDFToSVG(pdf))
+        XCTAssertTrue(svg.contains("<text "), "a resolvable font family must produce a parallel <text> element")
+        // Effective Tm·CTM = (12 0 0 12, 10, 80); flipped to SVG space the
+        // transform is (12 0 0 12, 10, 20). %.4g may print negated zeros as
+        // "-0", so match b/c loosely but pin a and d exactly.
+        let transform = try XCTUnwrap(
+            svg.range(of: "matrix\\(12 -?0 -?0 12 10 20\\)", options: .regularExpression),
+            "text transform must keep d positive (upright); got: \(svg.components(separatedBy: "<g transform=\"").dropFirst().first.map { String($0.prefix(40)) } ?? "no <g>")")
+        _ = transform
+    }
+
     // MARK: - Output document shape
 
     func testSVGRootCarriesNamespaceAndPageSizedViewBox() throws {

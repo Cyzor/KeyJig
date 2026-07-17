@@ -1114,10 +1114,10 @@ private final class PDFStreamScanner {
         if isFill, !trimmed.isEmpty, let family = resolvedTextFamily() {
             // Adapt the run's PDF-Y-up text matrix into an SVG-Y-down canvas
             // transform. flipY is its own inverse, so flipY · M · flipY reduces
-            // piece-wise to: keep a/c/tx, negate b/d, transform ty = H - ty.
+            // piece-wise to: keep a/d/tx, negate b/c, transform ty = H - ty.
             let m = run.pageTm.concatenating(run.ctmAtStart)
             let adapted = CGAffineTransform(
-                a: m.a, b: -m.b, c: m.c, d: -m.d,
+                a: m.a, b: -m.b, c: -m.c, d: m.d,
                 tx: m.tx, ty: H - m.ty
             )
             let txAttr = affineToAttr(adapted)
