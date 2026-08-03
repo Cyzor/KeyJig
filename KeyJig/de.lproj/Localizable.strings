@@ -214,6 +214,7 @@
 "tooltip.settings.automation_open" = "Systemeinstellungen öffnen, um KeyJig den Automatisierungszugriff auf Keynote erneut zu erteilen";
 "accessibility.automation_notice" = "Für Keynote-Aktionen ist Automatisierungszugriff erforderlich.";
 "accessibility.automation_denied" = "Automatisierungsberechtigung für Keynote verweigert";
+"accessibility.stalled_notice" = "Keynote reagiert nicht – möglicherweise wurde die Automatisierungsberechtigung zurückgesetzt (z. B. nach einem macOS-Update). Prüfe die Einstellungen oder melde dich ab und wieder an.";
 "settings.section.appearance" = "Darstellung";
 "settings.appearance.always_show_keynote_buttons" = "Optionale Keynote-Tasten anzeigen";
 "settings.appearance.always_show_keynote_buttons.description" = "Zeigt Folie extrahieren und Auswahl extrahieren immer an. Standardmäßig ausgeblendet; Einblenden durch Halten der ⌥-Taste.";

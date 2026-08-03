@@ -169,6 +169,15 @@ class AppState: ObservableObject {
     /// denied state is surfaced in Settings — nil and true need no user action.
     @Published var keynoteAutomationGranted: Bool? = nil
 
+    /// True when a Keynote pull has been running unusually long — set by a
+    /// watchdog timer in triggerKeynoteSlide/triggerKeynoteClipboard, cleared
+    /// as soon as the pull completes. macOS can silently reset the Automation
+    /// TCC entry (e.g. on an OS upgrade) without ever showing a consent
+    /// dialog; when that happens the underlying NSAppleScript call blocks
+    /// indefinitely with zero on-screen feedback. This flag is the backstop
+    /// that surfaces *something* even when we can't identify the exact cause.
+    @Published var keynotePullStalled: Bool = false
+
     /// The original clipboard PDF data that was converted to SVG via Inkscape.
     /// Retained so Option-drag can export the source PDF instead of the
     /// outlined SVG. Cleared when content arrives from a non-PDF source.
@@ -274,6 +283,35 @@ class AppState: ObservableObject {
         if keynoteAutomationGranted != result {
             keynoteAutomationGranted = result
         }
+    }
+
+    /// Actively requests Automation permission to control Keynote, prompting
+    /// the user with the system consent dialog if macOS hasn't decided yet.
+    /// Must be called off the main thread — the call blocks until the user
+    /// answers the dialog (or returns immediately if already decided).
+    ///
+    /// checkKeynoteAutomationStatus() above always passes askUserIfNeeded:
+    /// false, so it only ever *reads* the TCC state — it never causes macOS
+    /// to show the consent dialog. If the TCC entry has been reset (observed
+    /// after an OS upgrade) and nothing ever asks with askUserIfNeeded: true,
+    /// the entry stays undecided forever and every subsequent NSAppleScript
+    /// send to Keynote blocks silently with no dialog and no error. Call this
+    /// once at the start of each pull, before the first real Apple Event.
+    func requestKeynoteAutomationPermission() -> Bool {
+        guard let data = "com.apple.iWork.Keynote".data(using: .utf8),
+              let desc = NSAppleEventDescriptor(descriptorType: 0x62756E64, data: data),
+              let ptr = desc.aeDesc else { return true }
+
+        let wildcard: AEEventClass = 0x2A2A2A2A
+        let status = AEDeterminePermissionToAutomateTarget(ptr, wildcard, wildcard, true)
+        let granted = status == noErr
+        let result: Bool? = granted ? true : (status == -1743 ? false : nil)
+        DispatchQueue.main.async { [weak self] in
+            if self?.keynoteAutomationGranted != result {
+                self?.keynoteAutomationGranted = result
+            }
+        }
+        return granted
     }
 
     // MARK: - Content history (⌘[ / ⌘] navigation)

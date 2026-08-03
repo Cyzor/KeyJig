@@ -87,6 +87,7 @@ private let keynotePullQueue = DispatchQueue(
 ///
 /// Calls completion on the main thread.
 func pullFromKeynote(
+    appState: AppState,
     wantSelection: Bool = false,
     clipboardPDFData: Data? = nil,
     cancellationToken: PullCancellationToken? = nil,
@@ -99,6 +100,15 @@ func pullFromKeynote(
             .runningApplications(withBundleIdentifier: "com.apple.iWork.Keynote").first != nil
         else {
             DispatchQueue.main.async { completion(.failure(.keynoteNotRunning)) }
+            return
+        }
+
+        // Actively (re-)request Automation permission before the first real
+        // Apple Event. If macOS hasn't decided yet, this is what makes the
+        // consent dialog appear instead of leaving the next NSAppleScript
+        // send silently blocked. Cheap no-op when already granted/denied.
+        if cancellationToken?.isCancelled != true, appState.requestKeynoteAutomationPermission() == false {
+            DispatchQueue.main.async { completion(.failure(.exportFailed("Automation permission for Keynote was denied. Check System Settings ▸ Privacy & Security ▸ Automation."))) }
             return
         }
 
@@ -1130,10 +1140,26 @@ func triggerKeynoteSlide(appState: AppState, setStatus: @escaping (String) -> Vo
     let token = PullCancellationToken()
     appState.activePullToken = token
     appState.keynotePullStatus = .pulling
+    appState.keynotePullStalled = false
     setStatus(NSLocalizedString("status.keynote.pulling",
         comment: "Status: PDF export from Keynote in progress"))
     appState.previewPDFURL = nil
-    pullFromKeynote(wantSelection: false, clipboardPDFData: nil, cancellationToken: token) { result in
+
+    // Watchdog: a hung Apple Event (e.g. a silently-reset Automation TCC
+    // entry — see project memory on the macOS-upgrade hang) otherwise leaves
+    // .pulling on screen forever with no indication anything is wrong. This
+    // never touches Keynote or cancels the pull — it only surfaces a notice;
+    // the pull may still complete normally afterward.
+    let watchdog = DispatchWorkItem {
+        if appState.keynotePullStatus == .pulling {
+            appState.keynotePullStalled = true
+        }
+    }
+    DispatchQueue.main.asyncAfter(deadline: .now() + 12, execute: watchdog)
+
+    pullFromKeynote(appState: appState, wantSelection: false, clipboardPDFData: nil, cancellationToken: token) { result in
+        watchdog.cancel()
+        appState.keynotePullStalled = false
         appState.activePullToken = nil
         switch result {
         case .success(let url):
@@ -1164,6 +1190,7 @@ func triggerKeynoteClipboard(appState: AppState, setStatus: @escaping (String) -
     let token = PullCancellationToken()
     appState.activePullToken = token
     appState.keynotePullStatus = .pulling
+    appState.keynotePullStalled = false
     setStatus(NSLocalizedString("status.keynote.pulling",
         comment: "Status: PDF export from Keynote in progress"))
     appState.previewPDFURL = nil
@@ -1173,15 +1200,32 @@ func triggerKeynoteClipboard(appState: AppState, setStatus: @escaping (String) -
     let prevFrontApp = AppDelegate.shared?.appBeforePopover
         ?? NSWorkspace.shared.frontmostApplication
 
+    // See triggerKeynoteSlide for rationale — same watchdog against a silently
+    // stalled Apple Event, most commonly a reset Automation TCC entry.
+    let watchdog = DispatchWorkItem {
+        if appState.keynotePullStatus == .pulling {
+            appState.keynotePullStalled = true
+        }
+    }
+    DispatchQueue.main.asyncAfter(deadline: .now() + 12, execute: watchdog)
+
     keynotePullQueue.async { autoreleasepool {
         if token.isCancelled {
-            DispatchQueue.main.async { appState.activePullToken = nil; appState.keynotePullStatus = .idle; setStatus("") }
+            DispatchQueue.main.async {
+                watchdog.cancel()
+                appState.keynotePullStalled = false
+                appState.activePullToken = nil
+                appState.keynotePullStatus = .idle
+                setStatus("")
+            }
             return
         }
         guard let keynoteApp = NSRunningApplication
             .runningApplications(withBundleIdentifier: "com.apple.iWork.Keynote").first
         else {
             DispatchQueue.main.async {
+                watchdog.cancel()
+                appState.keynotePullStalled = false
                 appState.activePullToken = nil
                 appState.keynotePullStatus = .failed
                 setStatus(KeynotePullError.keynoteNotRunning.localizedDescription)
@@ -1192,9 +1236,24 @@ func triggerKeynoteClipboard(appState: AppState, setStatus: @escaping (String) -
             keynoteApp.unhide()
             Thread.sleep(forTimeInterval: 0.3)
         }
+        // Actively (re-)request Automation permission before the first real
+        // Apple Event — see AppState.requestKeynoteAutomationPermission for
+        // why the passive status check alone isn't enough.
+        if !token.isCancelled, appState.requestKeynoteAutomationPermission() == false {
+            DispatchQueue.main.async {
+                watchdog.cancel()
+                appState.keynotePullStalled = false
+                appState.activePullToken = nil
+                appState.keynotePullStatus = .failed
+                setStatus(KeynotePullError.exportFailed("Automation permission for Keynote was denied. Check System Settings ▸ Privacy & Security ▸ Automation.").localizedDescription)
+            }
+            return
+        }
         let kpid = keynoteApp.processIdentifier
         let result = extractClipboardViaScratchDoc(keynotePID: kpid, prevFrontApp: prevFrontApp)
         DispatchQueue.main.async {
+            watchdog.cancel()
+            appState.keynotePullStalled = false
             appState.activePullToken = nil
             if let url = result {
                 appState.previewPDFURL = url

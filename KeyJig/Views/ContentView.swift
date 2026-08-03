@@ -726,6 +726,29 @@ struct ContentView: View {
                 }
                 .padding(.horizontal)
                 .padding(.bottom, 6)
+            } else if appState.keynotePullStalled {
+                HStack(spacing: 6) {
+                    Image(systemName: "exclamationmark.triangle.fill")
+                        .foregroundColor(.orange)
+                        .font(.caption)
+                    Text(NSLocalizedString(
+                        "accessibility.stalled_notice",
+                        comment: "Notice: a Keynote pull is taking unusually long, likely a permission problem"))
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                    Spacer()
+                    Button(NSLocalizedString(
+                        "settings.accessibility.open_settings",
+                        comment: "Button: open System Settings")) {
+                        NSWorkspace.shared.open(automationSettingsURL)
+                    }
+                    .font(.caption)
+                    .help(NSLocalizedString(
+                        "tooltip.settings.automation_open",
+                        comment: "Tooltip for automation settings button"))
+                }
+                .padding(.horizontal)
+                .padding(.bottom, 6)
             } else if appState.keynoteAutomationGranted == false && appState.keynoteRunning {
                 HStack(spacing: 6) {
                     Image(systemName: "xmark.circle.fill")
