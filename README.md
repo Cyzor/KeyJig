@@ -7,7 +7,7 @@
 KeyJig is a Mac utility that sits between your vector tools and Apple Keynote. It sends vector artwork onto a Keynote slide as editable paths, and extracts vector content from a slide for desktop publishing or external editing.
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![macOS](https://img.shields.io/badge/macOS-11.5+-blue.svg)](#installation)
+[![macOS](https://img.shields.io/badge/macOS-12.0+-blue.svg)](#installation)
 [![Release](https://img.shields.io/github/v/release/Cyzor/KeyJig)](https://github.com/Cyzor/KeyJig/releases/latest)
 
 ---
@@ -72,7 +72,7 @@ _App Settings:_
 
 ### Requirements
 
-- macOS 11.5 (Big Sur) or later
+- macOS 12.0 (Monterey) or later
 - Keynote 13.1 or later — the June 2023 iWork update that added native SVG import (itself requiring macOS 12.3), available free from the Mac App Store. Numbers and Pages support the same SVG format and work identically. Pulling slides or selections *from* Keynote also works on somewhat older versions, but KeyJig is developed and tested against Keynote 14.5; sending SVG to an older Keynote is blocked with an explanatory message.
 - Two permissions in System Settings → Privacy & Security:
   - **Accessibility** — required to place SVGs directly onto slides (⌘D)
