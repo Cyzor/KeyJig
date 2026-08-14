@@ -73,7 +73,8 @@ _App Settings:_
 ### Requirements
 
 - macOS 12.0 (Monterey) or later
-- Keynote 13.1 or later — the June 2023 iWork update that added native SVG import (itself requiring macOS 12.3), available free from the Mac App Store. Numbers and Pages support the same SVG format and work identically. Pulling slides or selections *from* Keynote also works on somewhat older versions, but KeyJig is developed and tested against Keynote 14.5; sending SVG to an older Keynote is blocked with an explanatory message.
+- Keynote 13.1 or later — the June 2023 iWork update that added native SVG import (itself requiring macOS 12.3), available free from the Mac App Store. Numbers and Pages support the same SVG format and work identically. Pulling slides or selections *from* Keynote also works on somewhat older versions; sending SVG to an older Keynote is blocked with an explanatory message.
+- **Keynote 15 ("Creator Studio") is supported.** Apple shipped it as a separate app rather than an update, so it can sit alongside an older Keynote — KeyJig detects both and targets whichever one you were last working in. KeyJig is developed and tested against Keynote 14.5 and 15.3.1.
 - Two permissions in System Settings → Privacy & Security:
   - **Accessibility** — required to place SVGs directly onto slides (⌘D)
   - **Automation** — required to pull slides and selections from Keynote; macOS prompts on first use
