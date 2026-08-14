@@ -95,40 +95,43 @@ func pullFromKeynote(
 ) {
     keynotePullQueue.async { autoreleasepool {
 
-        // 1. Verify Keynote is running.
-        guard NSRunningApplication
-            .runningApplications(withBundleIdentifier: "com.apple.iWork.Keynote").first != nil
-        else {
+        // Use the app that was frontmost before the popover opened; fall back to
+        // current frontmost when triggered from a document window (no popover).
+        // Resolved first because it also disambiguates *which* Keynote to drive
+        // when both a 14.x and a 15.x install are running.
+        let prevFrontApp: NSRunningApplication? = DispatchQueue.main.sync {
+            AppDelegate.shared?.appBeforePopover ?? NSWorkspace.shared.frontmostApplication
+        }
+
+        // 1. Verify Keynote is running — either identity (see keynoteBundleIDs).
+        guard let keynoteApp = runningKeynote(preferring: prevFrontApp) else {
             DispatchQueue.main.async { completion(.failure(.keynoteNotRunning)) }
             return
         }
+        // Every Apple Event in this pull addresses this one bundle ID. Resolved
+        // once so a mid-pull app switch can't retarget us halfway through.
+        let keynoteID = keynoteApp.bundleIdentifier ?? keynoteBundleIDs[0]
 
         // Actively (re-)request Automation permission before the first real
         // Apple Event. If macOS hasn't decided yet, this is what makes the
         // consent dialog appear instead of leaving the next NSAppleScript
         // send silently blocked. Cheap no-op when already granted/denied.
-        if cancellationToken?.isCancelled != true, appState.requestKeynoteAutomationPermission() == false {
+        // TCC is keyed per bundle ID, so this must name the resolved Keynote —
+        // a grant for 14.x does not carry over to the 15.x app.
+        if cancellationToken?.isCancelled != true,
+           appState.requestKeynoteAutomationPermission(bundleID: keynoteID) == false {
             DispatchQueue.main.async { completion(.failure(.exportFailed("Automation permission for Keynote was denied. Check System Settings ▸ Privacy & Security ▸ Automation."))) }
             return
         }
 
-        // Use the app that was frontmost before the popover opened; fall back to
-        // current frontmost when triggered from a document window (no popover).
-        let prevFrontApp: NSRunningApplication? = DispatchQueue.main.sync {
-            AppDelegate.shared?.appBeforePopover ?? NSWorkspace.shared.frontmostApplication
-        }
-
         // Log the Keynote version once per pull so reports from untested
         // versions are triageable (only 14.5 has been exercised in anger).
-        log.info("pull: Keynote version \(keynoteVersionString() ?? "unknown", privacy: .public)")
+        log.info("pull: Keynote \(keynoteVersionString(preferring: keynoteApp) ?? "unknown", privacy: .public) (\(keynoteID, privacy: .public))")
 
         // Unhide Keynote if it is hidden — a hidden app silently ignores
         // AppleScript export calls, causing the pull to stall indefinitely.
         // `unhide()` makes the app visible without stealing focus.
-        if let keynoteApp = NSRunningApplication
-            .runningApplications(withBundleIdentifier: "com.apple.iWork.Keynote").first,
-            keynoteApp.isHidden
-        {
+        if keynoteApp.isHidden {
             log.info("Keynote is hidden; unhiding before export")
             keynoteApp.unhide()
             Thread.sleep(forTimeInterval: 0.3)
@@ -151,7 +154,7 @@ func pullFromKeynote(
         let selectionBoxes: [SelectionBox]
         if wantSelection {
             let probeScript = """
-                tell application "Keynote"
+                tell application id "\(keynoteID)"
                     with timeout of 30 seconds
                     if not (exists front document) then error number -1728
                     set docCount to count of documents
@@ -277,7 +280,7 @@ func pullFromKeynote(
         // slide-index loop is O(n) but runs before the heavier export work.
         if !wantSelection {
             let nameScript = """
-                tell application "Keynote"
+                tell application id "\(keynoteID)"
                     with timeout of 30 seconds
                     if not (exists front document) then error number -1728
                     tell front document
@@ -333,13 +336,14 @@ func pullFromKeynote(
         //     never touches the user's deck/selection/clipboard. Falls through when
         //     the clipboard doesn't match the live selection or paste/export fails.
         if wantSelection, !selectionBoxes.isEmpty,
-           let kpid = NSRunningApplication
-               .runningApplications(withBundleIdentifier: "com.apple.iWork.Keynote")
-               .first?.processIdentifier,
-           let url = extractSelectionViaPaste(selectionBoxes: selectionBoxes, keynotePID: kpid,
+           let url = extractSelectionViaPaste(
+               selectionBoxes: selectionBoxes,
+               keynotePID: keynoteApp.processIdentifier,
+               keynoteID: keynoteID,
                docName: pdfDocName, slideIndex: pdfSlideIndex) {
             // The scratch-doc round-trip drops the user's canvas selection; restore it.
-            restoreKeynoteSelection(slideIndex: probeSlideIndex, selectionBoxes: selectionBoxes)
+            restoreKeynoteSelection(slideIndex: probeSlideIndex, selectionBoxes: selectionBoxes,
+                                    keynoteID: keynoteID)
             // Delay re-activation: after the scratch doc closes and the selection
             // restore runs activate, Keynote's window server asynchronously promotes
             // its window — an immediate activate call races and loses.
@@ -406,7 +410,7 @@ func pullFromKeynote(
         let exportScript: String
         if wantSelection {
             exportScript = """
-                tell application "Keynote"
+                tell application id "\(keynoteID)"
                     with timeout of 90 seconds
                     tell front document
                         export to (POSIX file "\(exportURL.path)") as PDF
@@ -416,7 +420,7 @@ func pullFromKeynote(
                 """
         } else {
             exportScript = """
-                tell application "Keynote"
+                tell application id "\(keynoteID)"
                     with timeout of 90 seconds
                     tell front document
                         set savedSkipped to skipped of every slide
@@ -503,7 +507,8 @@ func pullFromKeynote(
 
         // 5. Restore the user's selection (selection pull only).
         if wantSelection {
-            restoreKeynoteSelection(slideIndex: probeSlideIndex, selectionBoxes: selectionBoxes)
+            restoreKeynoteSelection(slideIndex: probeSlideIndex, selectionBoxes: selectionBoxes,
+                                    keynoteID: keynoteID)
         }
 
         // Delay re-activation: the selection restore's activate (and any Keynote
@@ -522,7 +527,8 @@ func pullFromKeynote(
 /// so this builds fresh `iWork item` references at restore time by iterating the
 /// slide's items and matching by position — the references in `toSelect` are live
 /// at the exact moment `set selection` is called, the only pattern that works.
-private func restoreKeynoteSelection(slideIndex: Int, selectionBoxes: [SelectionBox]) {
+private func restoreKeynoteSelection(slideIndex: Int, selectionBoxes: [SelectionBox],
+                                     keynoteID: String) {
     guard slideIndex > 0, !selectionBoxes.isEmpty else { return }
     let posChecks = selectionBoxes.map { box in
         let x = Int(box.x.rounded())
@@ -530,7 +536,7 @@ private func restoreKeynoteSelection(slideIndex: Int, selectionBoxes: [Selection
         return "((item 1 of p) = \(x) and (item 2 of p) = \(y))"
     }.joined(separator: " or ")
     let restoreScript = """
-        tell application "Keynote"
+        tell application id "\(keynoteID)"
             with timeout of 30 seconds
             activate
             tell front document
@@ -580,6 +586,7 @@ private func restoreKeynoteSelection(slideIndex: Int, selectionBoxes: [Selection
 private func extractSelectionViaPaste(
     selectionBoxes: [SelectionBox],
     keynotePID: pid_t,
+    keynoteID: String,
     docName: String? = nil,
     slideIndex: Int? = nil
 ) -> URL? {
@@ -600,7 +607,7 @@ private func extractSelectionViaPaste(
     // The scratch doc's name is returned so finishScript/close can address it by
     // name rather than `front document`, which may shift if paste fronts a window.
     let setupScript = """
-        tell application "Keynote"
+        tell application id "\(keynoteID)"
             with timeout of 30 seconds
             if not (exists front document) then error number -1728
             set srcW to width of front document
@@ -641,7 +648,7 @@ private func extractSelectionViaPaste(
     defer {
         log.info("paste tier: closing scratch doc '\(scratchName, privacy: .public)'")
         let closeScript = """
-            tell application "Keynote"
+            tell application id "\(keynoteID)"
                 with timeout of 30 seconds
                 set closed to false
                 try
@@ -676,8 +683,8 @@ private func extractSelectionViaPaste(
     // export run before the paste landed on a slow machine ("nothing pasted").
     let pasteDeadline = Date().addingTimeInterval(2.0)
     let countScript = """
-        tell application "Keynote"
-            with timeout of 5 seconds
+        tell application id "\(keynoteID)"
+            with timeout of 30 seconds
             try
                 return (count of iWork items of slide 1 of document "\(scratchRef)") as string
             on error
@@ -702,7 +709,7 @@ private func extractSelectionViaPaste(
     // Address the scratch doc by name so that even if the paste action caused
     // another window to come forward, we never read from or close the wrong doc.
     let finishScript = """
-        tell application "Keynote"
+        tell application id "\(keynoteID)"
             with timeout of 90 seconds
             set m to 0
             set okExport to false
@@ -1220,9 +1227,9 @@ func triggerKeynoteClipboard(appState: AppState, setStatus: @escaping (String) -
             }
             return
         }
-        guard let keynoteApp = NSRunningApplication
-            .runningApplications(withBundleIdentifier: "com.apple.iWork.Keynote").first
-        else {
+        // Resolve across both Keynote identities, biased toward the app the
+        // user was last in (see keynoteBundleIDs).
+        guard let keynoteApp = runningKeynote(preferring: prevFrontApp) else {
             DispatchQueue.main.async {
                 watchdog.cancel()
                 appState.keynotePullStalled = false
@@ -1232,14 +1239,18 @@ func triggerKeynoteClipboard(appState: AppState, setStatus: @escaping (String) -
             }
             return
         }
+        let keynoteID = keynoteApp.bundleIdentifier ?? keynoteBundleIDs[0]
+        log.info("clipboard pull: Keynote \(keynoteVersionString(preferring: keynoteApp) ?? "unknown", privacy: .public) (\(keynoteID, privacy: .public))")
         if keynoteApp.isHidden {
             keynoteApp.unhide()
             Thread.sleep(forTimeInterval: 0.3)
         }
         // Actively (re-)request Automation permission before the first real
         // Apple Event — see AppState.requestKeynoteAutomationPermission for
-        // why the passive status check alone isn't enough.
-        if !token.isCancelled, appState.requestKeynoteAutomationPermission() == false {
+        // why the passive status check alone isn't enough. Must name the
+        // resolved Keynote: TCC keys consent per bundle ID.
+        if !token.isCancelled,
+           appState.requestKeynoteAutomationPermission(bundleID: keynoteID) == false {
             DispatchQueue.main.async {
                 watchdog.cancel()
                 appState.keynotePullStalled = false
@@ -1250,7 +1261,8 @@ func triggerKeynoteClipboard(appState: AppState, setStatus: @escaping (String) -
             return
         }
         let kpid = keynoteApp.processIdentifier
-        let result = extractClipboardViaScratchDoc(keynotePID: kpid, prevFrontApp: prevFrontApp)
+        let result = extractClipboardViaScratchDoc(keynotePID: kpid, keynoteID: keynoteID,
+                                                   prevFrontApp: prevFrontApp)
         DispatchQueue.main.async {
             watchdog.cancel()
             appState.keynotePullStalled = false
@@ -1274,12 +1286,13 @@ func triggerKeynoteClipboard(appState: AppState, setStatus: @escaping (String) -
 /// a cropped vector PDF. No selection-geometry reads; the button is only
 /// reachable when `keynoteClipboardReady` confirms native Keynote data is present.
 private func extractClipboardViaScratchDoc(keynotePID: pid_t,
+                                              keynoteID: String,
                                               prevFrontApp: NSRunningApplication? = nil) -> URL? {
     // One round-trip: read the source slide size, create the scratch doc, match
     // its size, and blank the theme placeholders. The size must be read before
     // `make new document` — the new doc becomes `front document` immediately.
     let setupScript = """
-        tell application "Keynote"
+        tell application id "\(keynoteID)"
             with timeout of 30 seconds
             if not (exists front document) then error number -1728
             set srcW to width of front document
@@ -1317,7 +1330,7 @@ private func extractClipboardViaScratchDoc(keynotePID: pid_t,
             Thread.sleep(forTimeInterval: 0.1)
         }
         let closeScript = """
-            tell application "Keynote"
+            tell application id "\(keynoteID)"
                 with timeout of 30 seconds
                 set closed to false
                 try
@@ -1343,8 +1356,8 @@ private func extractClipboardViaScratchDoc(keynotePID: pid_t,
     // export run before the paste landed on a slow machine ("nothing pasted").
     let pasteDeadline = Date().addingTimeInterval(2.0)
     let countScript = """
-        tell application "Keynote"
-            with timeout of 5 seconds
+        tell application id "\(keynoteID)"
+            with timeout of 30 seconds
             try
                 return (count of iWork items of slide 1 of document "\(scratchRef)") as string
             on error
@@ -1363,7 +1376,7 @@ private func extractClipboardViaScratchDoc(keynotePID: pid_t,
 
     let exportURL = makeTempKeynotePDFURL()
     let finishScript = """
-        tell application "Keynote"
+        tell application id "\(keynoteID)"
             with timeout of 90 seconds
             set m to 0
             set okExport to false

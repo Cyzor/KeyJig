@@ -213,9 +213,8 @@ class AppState: ObservableObject {
         // ── Keynote running state ─────────────────────────────────────────
         // Seed current state, then track via workspace notifications (zero
         // polling cost).
-        keynoteRunning = NSRunningApplication
-            .runningApplications(withBundleIdentifier: "com.apple.iWork.Keynote")
-            .first != nil
+        // Either Keynote identity counts as "running" — see keynoteBundleIDs.
+        keynoteRunning = runningKeynote() != nil
 
         let nc = NSWorkspace.shared.notificationCenter
         workspaceObservers.append(nc.addObserver(
@@ -223,7 +222,7 @@ class AppState: ObservableObject {
             object: nil, queue: .main) { [weak self] note in
                 guard let app = note.userInfo?[NSWorkspace.applicationUserInfoKey]
                     as? NSRunningApplication,
-                    app.bundleIdentifier == "com.apple.iWork.Keynote" else { return }
+                    isKeynoteBundleID(app.bundleIdentifier) else { return }
                 self?.keynoteRunning = true
         })
         workspaceObservers.append(nc.addObserver(
@@ -231,8 +230,10 @@ class AppState: ObservableObject {
             object: nil, queue: .main) { [weak self] note in
                 guard let app = note.userInfo?[NSWorkspace.applicationUserInfoKey]
                     as? NSRunningApplication,
-                    app.bundleIdentifier == "com.apple.iWork.Keynote" else { return }
-                self?.keynoteRunning = false
+                    isKeynoteBundleID(app.bundleIdentifier) else { return }
+                // The *other* Keynote may still be running (14.x and 15.x
+                // coexist), so re-resolve rather than assuming false.
+                self?.keynoteRunning = runningKeynote() != nil
         })
 
         // ── Clipboard monitoring ──────────────────────────────────────────
@@ -268,7 +269,9 @@ class AppState: ObservableObject {
         // Build an AE address descriptor for Keynote's bundle ID.
         // typeApplicationBundleID = 'bund' = 0x62756E64 — works without the
         // target app running, unlike process-ID or URL descriptors.
-        guard let data = "com.apple.iWork.Keynote".data(using: .utf8),
+        // TCC is keyed per bundle ID, so this must name the same Keynote the
+        // pipeline will drive — a 14.x grant says nothing about the 15.x app.
+        guard let data = keynoteBundleID().data(using: .utf8),
               let desc = NSAppleEventDescriptor(descriptorType: 0x62756E64, data: data),
               let ptr = desc.aeDesc else { return }
 
@@ -297,8 +300,12 @@ class AppState: ObservableObject {
     /// the entry stays undecided forever and every subsequent NSAppleScript
     /// send to Keynote blocks silently with no dialog and no error. Call this
     /// once at the start of each pull, before the first real Apple Event.
-    func requestKeynoteAutomationPermission() -> Bool {
-        guard let data = "com.apple.iWork.Keynote".data(using: .utf8),
+    ///
+    /// `bundleID` must be the Keynote the pull will actually drive — TCC keys
+    /// Automation consent per bundle ID, and Keynote 15 ("Creator Studio",
+    /// `com.apple.Keynote`) carries a separate entry from the pre-15 app.
+    func requestKeynoteAutomationPermission(bundleID: String = keynoteBundleID()) -> Bool {
+        guard let data = bundleID.data(using: .utf8),
               let desc = NSAppleEventDescriptor(descriptorType: 0x62756E64, data: data),
               let ptr = desc.aeDesc else { return true }
 

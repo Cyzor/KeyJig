@@ -43,18 +43,75 @@ enum KeynoteInsertError: LocalizedError {
     }
 }
 
+// MARK: - Keynote identity
+
+/// Every bundle ID Keynote has shipped under, **newest identity first**.
+///
+/// Keynote 15.1 ("Creator Studio", January 2026) is a *separate app*, not an
+/// update: it installs as `/Applications/Keynote Creator Studio.app` with the
+/// iOS/visionOS identifier `com.apple.Keynote` and leaves any pre-15 install
+/// in place. So both apps can be installed *and* both can be running, and a
+/// hardcoded `com.apple.iWork.Keynote` silently misses the app the user is
+/// actually working in ("Keynote isn't running" with Keynote on screen).
+///
+/// Order matters: it is the tiebreak when nothing else disambiguates.
+let keynoteBundleIDs = ["com.apple.Keynote", "com.apple.iWork.Keynote"]
+
+/// True when `bundleID` is any version of Keynote.
+func isKeynoteBundleID(_ bundleID: String?) -> Bool {
+    guard let bundleID else { return false }
+    return keynoteBundleIDs.contains(bundleID)
+}
+
+/// The Keynote the user is actually working in.
+///
+/// `preferring` is the app that was frontmost before KeyJig took focus
+/// (`AppDelegate.appBeforePopover`, or the live frontmost app). When that is
+/// itself a Keynote it wins outright — with both versions running it is the
+/// only trustworthy signal for which one the user means, and guessing wrong
+/// pastes into the wrong document. Otherwise: any running Keynote, newest
+/// identity first.
+func runningKeynote(preferring preferred: NSRunningApplication? = nil) -> NSRunningApplication? {
+    if let preferred, isKeynoteBundleID(preferred.bundleIdentifier), !preferred.isTerminated {
+        return preferred
+    }
+    for bundleID in keynoteBundleIDs {
+        if let app = NSRunningApplication
+            .runningApplications(withBundleIdentifier: bundleID).first {
+            return app
+        }
+    }
+    return nil
+}
+
+/// Bundle ID to address Keynote by — the running instance's when there is one,
+/// else the newest *installed*. Used for AppleScript (`tell application id …`)
+/// and for the Automation permission request, both of which must name the same
+/// app the rest of the pipeline drives. Falls back to the modern ID so a
+/// not-installed Keynote still produces a coherent (if unsatisfiable) target.
+func keynoteBundleID(preferring preferred: NSRunningApplication? = nil) -> String {
+    if let running = runningKeynote(preferring: preferred),
+       let bundleID = running.bundleIdentifier {
+        return bundleID
+    }
+    for bundleID in keynoteBundleIDs
+    where NSWorkspace.shared.urlForApplication(withBundleIdentifier: bundleID) != nil {
+        return bundleID
+    }
+    return keynoteBundleIDs[0]
+}
+
 // MARK: - Keynote version
 
-/// Version string of the user's Keynote (e.g. "14.5"), read from the app
+/// Version string of the user's Keynote (e.g. "15.3.1"), read from the app
 /// bundle's Info.plist — no Apple Events, no launch required. Prefers the
-/// running instance's bundle; falls back to the installed app. nil when
+/// running instance's bundle; falls back to the newest installed app. nil when
 /// Keynote isn't installed or the plist is unreadable.
-func keynoteVersionString() -> String? {
-    let url = NSRunningApplication
-        .runningApplications(withBundleIdentifier: "com.apple.iWork.Keynote")
-        .first?.bundleURL
-        ?? NSWorkspace.shared.urlForApplication(
-            withBundleIdentifier: "com.apple.iWork.Keynote")
+func keynoteVersionString(preferring preferred: NSRunningApplication? = nil) -> String? {
+    let url = runningKeynote(preferring: preferred)?.bundleURL
+        ?? keynoteBundleIDs.lazy.compactMap {
+            NSWorkspace.shared.urlForApplication(withBundleIdentifier: $0)
+        }.first
     guard let url, let bundle = Bundle(url: url) else { return nil }
     return bundle.infoDictionary?["CFBundleShortVersionString"] as? String
 }
@@ -100,30 +157,37 @@ func sendSVGToKeynote(
         return
     }
 
-    // 2. Verify Keynote is running.
-    guard let keynoteApp = NSRunningApplication
-        .runningApplications(withBundleIdentifier: "com.apple.iWork.Keynote").first
-    else {
+    // 2. Verify Keynote is running. Resolved across both Keynote identities
+    //    (see keynoteBundleIDs) and biased toward the app the user was last
+    //    in, so a 14.x/15.x side-by-side install targets the right one.
+    let preferredApp = AppDelegate.shared?.appBeforePopover
+        ?? NSWorkspace.shared.frontmostApplication
+    guard let keynoteApp = runningKeynote(preferring: preferredApp) else {
         completion(.keynoteNotRunning)
         return
     }
+    let targetBundleID = keynoteApp.bundleIdentifier ?? keynoteBundleIDs[0]
 
     // 2b. Version gate: SVG paste needs Keynote ≥ 13.1. Logged either way so
     //     reports from untested versions are triageable.
-    let keynoteVersion = keynoteVersionString()
-    log.info("push: Keynote version \(keynoteVersion ?? "unknown", privacy: .public)")
+    let keynoteVersion = keynoteVersionString(preferring: keynoteApp)
+    log.info("push: Keynote \(keynoteVersion ?? "unknown", privacy: .public) (\(targetBundleID, privacy: .public))")
     if !keynoteSupportsSVGImport(keynoteVersion) {
         completion(.keynoteTooOld(keynoteVersion ?? "?"))
         return
     }
 
     // 3. Verify Keynote has a document open (NSAppleScript is synchronous;
-    //    main thread only — the short timeout keeps a modally-blocked Keynote
-    //    from beachballing KeyJig for the ~2-minute default AE timeout).
+    //    main thread only — the timeout keeps a modally-blocked Keynote from
+    //    beachballing KeyJig for the ~2-minute default AE timeout). Addressed
+    //    by bundle ID, not name: with both Keynotes installed the process name
+    //    is "Keynote" for either, so `tell application "Keynote"` is ambiguous.
+    //    30 s, not 10 — Keynote 15 can take >15 s to answer its *first* Apple
+    //    Event after launch, which spuriously failed the first push/pull.
     var scriptError: NSDictionary?
     NSAppleScript(source: """
-        tell application "Keynote"
-            with timeout of 10 seconds
+        tell application id "\(targetBundleID)"
+            with timeout of 30 seconds
             if not (exists front document) then error number -1728
             end timeout
         end tell
