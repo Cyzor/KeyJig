@@ -121,6 +121,10 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
         AppDelegate.shared = self
         NSApplication.shared.delegate = self
 
+        // Must start before the first push/pull so it has activation history
+        // to answer from when both Keynote 14.x and 15.x are running.
+        KeynoteActivationTracker.shared.start()
+
         UserDefaults.standard.register(defaults: [
             "completionHookScript": "",
         ])

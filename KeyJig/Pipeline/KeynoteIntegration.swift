@@ -63,14 +63,81 @@ func isKeynoteBundleID(_ bundleID: String?) -> Bool {
     return keynoteBundleIDs.contains(bundleID)
 }
 
+/// Tracks the most recently activated Keynote, so the pipeline can target the
+/// one the user is actually working in when both a 14.x and a 15.x install are
+/// running.
+///
+/// The *instantaneous* frontmost app is useless at the moment of a push or
+/// pull: the user just clicked KeyJig, so `NSWorkspace.frontmostApplication`
+/// is KeyJig itself. `AppDelegate.appBeforePopover` covers only the popover
+/// path — it is nil when the trigger came from a document window, which
+/// silently collapsed the preference to "newest wins". Watching activations
+/// gives one signal that is correct for both trigger paths.
+final class KeynoteActivationTracker {
+    static let shared = KeynoteActivationTracker()
+    private var observer: NSObjectProtocol?
+
+    /// Main thread only — written from the workspace notification queue (.main)
+    /// and read via `preferredKeynoteApp()`, which asserts the same.
+    private(set) var lastActive: NSRunningApplication?
+
+    private init() {}
+
+    /// Call once at launch. The tracker has to be listening *before* the first
+    /// push or pull, or it has no activation history to answer from.
+    func start() {
+        guard observer == nil else { return }
+        // Seed from the current frontmost so a session in which the user never
+        // switches apps still resolves to the right Keynote.
+        if let front = NSWorkspace.shared.frontmostApplication,
+           isKeynoteBundleID(front.bundleIdentifier) {
+            lastActive = front
+        }
+        observer = NSWorkspace.shared.notificationCenter.addObserver(
+            forName: NSWorkspace.didActivateApplicationNotification,
+            object: nil, queue: .main) { [weak self] note in
+                guard let app = note.userInfo?[NSWorkspace.applicationUserInfoKey]
+                    as? NSRunningApplication,
+                    isKeynoteBundleID(app.bundleIdentifier) else { return }
+                self?.lastActive = app
+        }
+    }
+}
+
+/// Best available signal for *which* Keynote the user means, most trustworthy
+/// first. Pass the result as `runningKeynote(preferring:)`.
+///
+/// Deliberately separate from the `prevFrontApp` used for focus restoration:
+/// that one must stay the user's real previous app (InDesign, say), while this
+/// one is only ever a Keynote. Conflating them would restore focus to Keynote
+/// after a pull.
+///
+/// **Main thread only.**
+func preferredKeynoteApp() -> NSRunningApplication? {
+    assert(Thread.isMainThread, "preferredKeynoteApp must be called on the main thread")
+    // 1. The app that was frontmost before the popover took focus — exact when
+    //    the pull was triggered from the menu-bar popover.
+    if let app = AppDelegate.shared?.appBeforePopover,
+       isKeynoteBundleID(app.bundleIdentifier) {
+        return app
+    }
+    // 2. The last Keynote to activate. The only usable signal for a
+    //    window-triggered push/pull, where (1) is nil and the live frontmost
+    //    app is KeyJig.
+    if let app = KeynoteActivationTracker.shared.lastActive, !app.isTerminated {
+        return app
+    }
+    // 3. Nothing better — let runningKeynote fall through to newest-first.
+    return nil
+}
+
 /// The Keynote the user is actually working in.
 ///
-/// `preferring` is the app that was frontmost before KeyJig took focus
-/// (`AppDelegate.appBeforePopover`, or the live frontmost app). When that is
-/// itself a Keynote it wins outright — with both versions running it is the
-/// only trustworthy signal for which one the user means, and guessing wrong
-/// pastes into the wrong document. Otherwise: any running Keynote, newest
-/// identity first.
+/// `preferring` should come from `preferredKeynoteApp()`. When it names a
+/// Keynote it wins outright — with both versions running it is the only
+/// trustworthy signal for which one the user means, and guessing wrong pastes
+/// into the wrong document. Otherwise: any running Keynote, newest identity
+/// first.
 func runningKeynote(preferring preferred: NSRunningApplication? = nil) -> NSRunningApplication? {
     if let preferred, isKeynoteBundleID(preferred.bundleIdentifier), !preferred.isTerminated {
         return preferred
@@ -160,9 +227,7 @@ func sendSVGToKeynote(
     // 2. Verify Keynote is running. Resolved across both Keynote identities
     //    (see keynoteBundleIDs) and biased toward the app the user was last
     //    in, so a 14.x/15.x side-by-side install targets the right one.
-    let preferredApp = AppDelegate.shared?.appBeforePopover
-        ?? NSWorkspace.shared.frontmostApplication
-    guard let keynoteApp = runningKeynote(preferring: preferredApp) else {
+    guard let keynoteApp = runningKeynote(preferring: preferredKeynoteApp()) else {
         completion(.keynoteNotRunning)
         return
     }

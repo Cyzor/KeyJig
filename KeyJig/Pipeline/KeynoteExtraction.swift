@@ -95,16 +95,21 @@ func pullFromKeynote(
 ) {
     keynotePullQueue.async { autoreleasepool {
 
-        // Use the app that was frontmost before the popover opened; fall back to
-        // current frontmost when triggered from a document window (no popover).
-        // Resolved first because it also disambiguates *which* Keynote to drive
-        // when both a 14.x and a 15.x install are running.
-        let prevFrontApp: NSRunningApplication? = DispatchQueue.main.sync {
-            AppDelegate.shared?.appBeforePopover ?? NSWorkspace.shared.frontmostApplication
+        // Two distinct signals, read together on the main thread:
+        //  • prevFrontApp — the user's real previous app, restored via
+        //    activateFrontmost() once the pull is done (may be InDesign, etc).
+        //  • preferredKeynote — which *Keynote* to drive when both a 14.x and
+        //    a 15.x install are running. Never conflate the two: the live
+        //    frontmost app here is KeyJig, so it can't answer the second
+        //    question, and a Keynote can't be allowed to answer the first.
+        let (prevFrontApp, preferredKeynote): (NSRunningApplication?, NSRunningApplication?)
+            = DispatchQueue.main.sync {
+                (AppDelegate.shared?.appBeforePopover ?? NSWorkspace.shared.frontmostApplication,
+                 preferredKeynoteApp())
         }
 
         // 1. Verify Keynote is running — either identity (see keynoteBundleIDs).
-        guard let keynoteApp = runningKeynote(preferring: prevFrontApp) else {
+        guard let keynoteApp = runningKeynote(preferring: preferredKeynote) else {
             DispatchQueue.main.async { completion(.failure(.keynoteNotRunning)) }
             return
         }
@@ -1206,6 +1211,9 @@ func triggerKeynoteClipboard(appState: AppState, setStatus: @escaping (String) -
     // frontmost (e.g. when triggered from a document window, not the popover).
     let prevFrontApp = AppDelegate.shared?.appBeforePopover
         ?? NSWorkspace.shared.frontmostApplication
+    // Separate signal: which Keynote to drive (see preferredKeynoteApp).
+    // Captured here on the main thread, before the background dispatch below.
+    let preferredKeynote = preferredKeynoteApp()
 
     // See triggerKeynoteSlide for rationale — same watchdog against a silently
     // stalled Apple Event, most commonly a reset Automation TCC entry.
@@ -1227,9 +1235,9 @@ func triggerKeynoteClipboard(appState: AppState, setStatus: @escaping (String) -
             }
             return
         }
-        // Resolve across both Keynote identities, biased toward the app the
-        // user was last in (see keynoteBundleIDs).
-        guard let keynoteApp = runningKeynote(preferring: prevFrontApp) else {
+        // Resolve across both Keynote identities, biased toward the Keynote the
+        // user was last in (see keynoteBundleIDs / preferredKeynoteApp).
+        guard let keynoteApp = runningKeynote(preferring: preferredKeynote) else {
             DispatchQueue.main.async {
                 watchdog.cancel()
                 appState.keynotePullStalled = false
